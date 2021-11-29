@@ -1,12 +1,14 @@
 package de.wiesler;
 
 public class Classifier {
+    public static final int STORAGE_SIZE = (1 << Constants.LOG_MAX_BUCKETS);
+
     private final Tree tree;
     private final int num_buckets;
     private final int[] sorted_splitters;
     private final boolean equal_buckets;
 
-    public Classifier(int[] sorted_splitters, int log_buckets, boolean equal_buckets) {
+    public Classifier(int[] sorted_splitters, int[] tree, int log_buckets, boolean equal_buckets) {
         assert (log_buckets <= Constants.LOG_MAX_BUCKETS + 1);
         int num_buckets = 1 << log_buckets;
 
@@ -16,14 +18,21 @@ public class Classifier {
             num_buckets = 2 * num_buckets;
         }
 
-        this.tree = new Tree(sorted_splitters, log_buckets);
+        this.tree = new Tree(sorted_splitters, tree, log_buckets);
         this.sorted_splitters = sorted_splitters;
         this.num_buckets = num_buckets;
         this.equal_buckets = equal_buckets;
     }
 
-    public static Classifier from_sorted_samples(int[] values, int start, int end, int num_buckets, int step) {
-        final int[] splitters = new int[Constants.MAX_BUCKETS / 2];
+    public static Classifier from_sorted_samples(
+            int[] values,
+            int start,
+            int end,
+            int[] splitters,
+            int[] tree,
+            int num_buckets,
+            int step
+    ) {
         int splitter = start + step - 1;
         int offset = 0;
         // Select num_buckets - 1 splitters with step size step, make unique
@@ -55,7 +64,7 @@ public class Classifier {
             splitters[i] = values[splitter];
         }
 
-        return new Classifier(splitters, log_buckets, use_equal_buckets);
+        return new Classifier(splitters, tree, log_buckets, use_equal_buckets);
     }
 
     public int num_buckets() {

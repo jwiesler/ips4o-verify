@@ -4,21 +4,17 @@ public class Tree {
     private final int[] tree;
     private final int log_buckets;
 
-    
-    // sorted_splitters[..num_splitters] is sorted
-    // storage.length == sorted_splitters.length
-    public Tree(int[] sorted_splitters, int log_buckets) {
-        int[] storage = new int[Constants.MAX_BUCKETS / 2];
+    public Tree(int[] sorted_splitters, int[] tree, int log_buckets) {
         assert (log_buckets >= 1);
-        assert (log_buckets <= Constants.LOG_MAX_BUCKETS + 1);
+        assert (log_buckets <= Constants.LOG_MAX_BUCKETS);
 
         final int num_buckets = 1 << log_buckets;
         final int num_splitters = num_buckets - 1;
 
-        assert (num_buckets <= storage.length);
+        assert (num_buckets <= tree.length);
 
         this.log_buckets = log_buckets;
-        this.tree = storage;
+        this.tree = tree;
         this.build(1, sorted_splitters, 0, num_splitters);
     }
 

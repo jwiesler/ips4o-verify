@@ -23,7 +23,7 @@ public class Sorter {
         }
     }
 
-    private static SampleResult sample(int[] values, int start, int end) {
+    private static SampleResult sample(int[] values, int start, int end, Storage storage) {
         int n = end - start;
         int log_buckets = Constants.log_buckets(n);
         int num_buckets = 1 << log_buckets;
@@ -32,7 +32,7 @@ public class Sorter {
 
         Functions.select_n(values, start, end, num_samples);
 
-        sort(values, start, start + num_samples);
+        sort(values, start, start + num_samples, storage);
 
         return new SampleResult(num_samples, num_buckets, step);
     }
@@ -151,14 +151,14 @@ public class Sorter {
         }
     }
 
-    private static PartitionResult partition(int[] values, int begin, int end, int[] bucket_starts) {
+    private static PartitionResult partition(int[] values, int begin, int end, int[] bucket_starts, Storage storage) {
         Classifier classifier;
         {
-            SampleResult sample = sample(values, begin, end);
+            SampleResult sample = sample(values, begin, end, storage);
             int num_samples = sample.num_samples;
             int num_buckets = sample.num_buckets;
             int step = sample.step;
-            classifier = Classifier.from_sorted_samples(values, begin, begin + num_samples, num_buckets, step);
+            classifier = Classifier.from_sorted_samples(values, begin, begin + num_samples, storage.splitters, storage.tree, num_buckets, step);
         }
 
         if (classifier == null) {
@@ -184,11 +184,8 @@ public class Sorter {
             }
         }
 
-        int[] swap_1 = new int[Buffers.BUFFER_SIZE];
-        int[] swap_2 = new int[Buffers.BUFFER_SIZE];
-        int[] overflow = new int[Buffers.BUFFER_SIZE];
-
-        Permute.permute(values, begin, end, classifier, bucket_pointers, swap_1, swap_2, overflow);
+        int[] overflow = storage.overflow;
+        Permute.permute(values, begin, end, classifier, bucket_pointers, storage.swap_1, storage.swap_2, overflow);
 
         cleanup(values,
                 begin,
@@ -203,9 +200,9 @@ public class Sorter {
         return new PartitionResult(classifier.num_buckets(), classifier.equal_buckets());
     }
 
-    private static void sample_sort(int[] values, int start, int end) {
+    private static void sample_sort(int[] values, int start, int end, Storage storage) {
         int[] bucket_starts = new int[Constants.MAX_BUCKETS + 1];
-        PartitionResult partition = partition(values, start, end, bucket_starts);
+        PartitionResult partition = partition(values, start, end, bucket_starts, storage);
 
         if (partition == null) {
             fallback_sort(values, start, end);
@@ -223,7 +220,7 @@ public class Sorter {
             int inner_start = bucket_starts[i];
             int inner_end = bucket_starts[i + 1];
             if (inner_end - inner_start > 2 * Constants.BASE_CASE_SIZE) {
-                sample_sort(values, inner_start, inner_end);
+                sample_sort(values, inner_start, inner_end, storage);
             }
         }
 
@@ -231,21 +228,21 @@ public class Sorter {
             int inner_start = bucket_starts[num_buckets - 1];
             int inner_end = bucket_starts[num_buckets];
             if (inner_end - inner_start > 2 * Constants.BASE_CASE_SIZE) {
-                sample_sort(values, inner_start, inner_end);
+                sample_sort(values, inner_start, inner_end, storage);
             }
         }
     }
 
-    public static void sort(int[] values, int start, int end) {
+    public static void sort(int[] values, int start, int end, Storage storage) {
         if (end - start <= 2 * Constants.BASE_CASE_SIZE) {
             base_case_sort(values, start, end);
         } else {
-            sample_sort(values, start, end);
+            sample_sort(values, start, end, storage);
         }
     }
 
     private static void fallback_sort(int[] values, int start, int end) {
-//        java.util.Arrays.sort(values, start, end);
+        java.util.Arrays.sort(values, start, end);
     }
 
     private static void base_case_sort(int[] values, int start, int end) {
@@ -258,6 +255,6 @@ public class Sorter {
       @  assignable values[*];
       @*/
     public static void sort(int[] values) {
-        sort(values, 0, values.length);
+        sort(values, 0, values.length, new Storage());
     }
 }
