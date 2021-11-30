@@ -1,11 +1,34 @@
 package de.wiesler;
 
 public class Functions {
+    /*@
+      @ public model_behaviour
+      @   requires index >= 0;
+      @ static model boolean isAlignedTo(int index, int alignment) {
+      @     return index % alignment == 0;
+      @ }
+      @*/
+
+    /*@
+      @ public model_behaviour
+      @   requires values != null;
+      @   requires 0 <= begin && begin <= values.length;
+      @   requires 0 <= end && end <= values.length;
+      @   requires begin <= end;
+      @ static model boolean isValidSlice(int[] values, int begin, int end);
+      @*/
+
+    /*@
+      @ public model_behaviour
+      @   requires isValidSlice(values, begin, end);
+      @ static model boolean isSortedSlice(int[] values, int begin, int end) {
+      @     return (\forall int i; 0 <= i && i < values.length - 1; values[i] <= values[i + 1]);
+      @ }
+      @*/
+
     /*@ public normal_behaviour
-      @  requires 0 <= begin && begin <= values.length;
-      @  requires 0 <= end && end <= values.length;
+      @  requires isValidSlice(values, begin, end);
       @  requires num_samples <= end - begin;
-      @  requires begin <= end;
       @  assignable values[begin..end];
       @*/
     public static void select_n(int[] values, int begin, int end, int num_samples) {

@@ -3,7 +3,7 @@ package de.wiesler;
 public class Main {
 
     public static void main(String[] args) {
-        /*var random = new java.util.Random(42);
+        var random = new java.util.Random(42);
         var storage = new Storage();
 
         for (int j = 0; j < 1000000; ++j) {
@@ -29,6 +29,6 @@ public class Main {
             System.out.println("Sort took " + elapsed + " vs " + elapsed_std);
 
             assert (java.util.Arrays.equals(values, copy));
-        }*/
+        }
     }
 }

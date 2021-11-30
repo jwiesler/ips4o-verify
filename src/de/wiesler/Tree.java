@@ -4,6 +4,25 @@ public class Tree {
     private final int[] tree;
     private final int log_buckets;
 
+    /*@
+      @ invariant this.tree.length == Classifier.STORAGE_SIZE;
+      @
+      @ invariant 1 <= this.log_buckets && this.log_buckets <= Constants.LOG_MAX_BUCKETS;
+      @ invariant (1 << this.log_buckets) <= Classifier.STORAGE_SIZE;
+      @*/
+
+    /*@ public normal_behaviour
+      @
+      @  requires sorted_splitters.length == Classifier.STORAGE_SIZE;
+      @  requires tree.length == Classifier.STORAGE_SIZE;
+      @
+      @  requires 1 <= log_buckets && log_buckets <= Constants.LOG_MAX_BUCKETS;
+      @  requires (1 << log_buckets) <= Classifier.STORAGE_SIZE;
+      @
+      @  requires Functions.isSortedSlice(sorted_splitters, 0, (1 << log_buckets) - 1);
+      @
+      @  assignable tree[*];
+      @*/
     public Tree(int[] sorted_splitters, int[] tree, int log_buckets) {
         assert (log_buckets >= 1);
         assert (log_buckets <= Constants.LOG_MAX_BUCKETS);
@@ -22,24 +41,52 @@ public class Tree {
         return log_buckets;
     }
 
-    void build(int position, int[] sorted_splitters, int start, int len) {
-        final int mid = len / 2;
-        this.tree[position] = sorted_splitters[start + mid];
-        if (2 * position < (1 << this.log_buckets)) {
-            this.build(2 * position, sorted_splitters, start, mid);
-            this.build(2 * position + 1, sorted_splitters, start + mid, len - mid);
+    /*@ normal_behaviour
+      @  requires 1 <= position && position < (1 << this.log_buckets);
+      @  requires Functions.isValidSlice(sorted_splitters, begin, end);
+      @  requires end - begin == (1 << this.log_buckets) - position;
+      @
+      @  assignable this.tree[position..(1 << this.log_buckets)];
+      @*/
+    void build(int position, int[] sorted_splitters, int begin, int end) {
+        final int mid = begin + (end - begin) / 2;
+        this.tree[position] = sorted_splitters[mid];
+        if (2 * position + 1 < (1 << this.log_buckets)) {
+            this.build(2 * position, sorted_splitters, begin, mid);
+            this.build(2 * position + 1, sorted_splitters, mid, end);
         }
     }
 
+    /*@ normal_behaviour
+      @  ensures (1 << this.log_buckets) <= \result && \result <= (1 << (this.log_buckets + 1));
+      @*/
     int classify(int value) {
         int b = 1;
+
+        /*@
+          @ loop_invariant 0 <= i && i <= this.log_buckets;
+          @
+          @ loop_invariant i > 0 ==> (1 << i - 1) <= b;
+          @ loop_invariant i == 0 ==> b == 1;
+          @ loop_invariant b < (1 << (i - 1));
+          @
+          @ decreases this.log_buckets - i;
+          @ assignable b;
+          @*/
         for (int i = 0; i < this.log_buckets; ++i) {
             b = 2 * b + Constants.toInt(Constants.cmp(this.tree[b], value));
         }
         return b;
     }
 
-    // values.length == indices.length
+    /*@ normal_behaviour
+      @  requires Functions.isValidSlice(values, begin, end);
+      @  requires indices.length == end - begin;
+      @
+      @  ensures (\forall int i; 0 <= i < indices.length; 0 <= indices[i] < (1 << this.log_buckets));
+      @
+      @  assignable indices[*];
+      @*/
     void classify_all(int[] values, int begin, int end, int[] indices) {
         assert (end - begin == indices.length);
         Functions.fill(indices, 1);

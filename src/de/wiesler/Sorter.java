@@ -139,6 +139,18 @@ public class Sorter {
         }
     }
 
+    /*@ public normal_behaviour
+      @  requires bucket_starts.length == Constants.MAX_BUCKETS + 1;
+      @  requires Functions.isValidSlice(values, begin, end);
+      @  requires (\forall int i; 0 <= i < bucket_starts.length; bucket_starts[i] == 0);
+      @
+      @  ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @  ensures (\forall int i; 1 <= i < bucket_starts.length; bucket_starts[i - 1] <= bucket_starts[i]);
+      @  ensures bucket_starts[bucket_starts.length - 1] == end - begin;
+      @
+      @  assignable values[begin..end];
+      @  assignable storage.*;
+      @*/
     private static PartitionResult partition(int[] values, int begin, int end, int[] bucket_starts, Storage storage) {
         Classifier classifier;
         {
@@ -188,6 +200,16 @@ public class Sorter {
         return new PartitionResult(classifier.num_buckets(), classifier.equal_buckets());
     }
 
+    /*@ public normal_behaviour
+      @  requires Functions.isValidSlice(values, start, end);
+      @  requires end - start > 2 * Constants.BASE_CASE_SIZE;
+      @
+      @  ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @  ensures Functions.isSortedSlice(values, start, end);
+      @
+      @  assignable values[start..end];
+      @  assignable storage.*;
+      @*/
     private static void sample_sort(int[] values, int start, int end, Storage storage) {
         int[] bucket_starts = new int[Constants.MAX_BUCKETS + 1];
         PartitionResult partition = partition(values, start, end, bucket_starts, storage);
@@ -221,14 +243,39 @@ public class Sorter {
         }
     }
 
+    /*@ public normal_behaviour
+      @  requires Functions.isValidSlice(values, start, end);
+      @
+      @  ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @  ensures Functions.isSortedSlice(values, start, end);
+      @
+      @  assignable values[start..end];
+      @*/
     private static void fallback_sort(int[] values, int start, int end) {
         java.util.Arrays.sort(values, start, end);
     }
 
+    /*@ public normal_behaviour
+      @  requires Functions.isValidSlice(values, start, end);
+      @
+      @  ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @  ensures Functions.isSortedSlice(values, start, end);
+      @
+      @  assignable values[start..end];
+      @*/
     private static void base_case_sort(int[] values, int start, int end) {
         fallback_sort(values, start, end);
     }
 
+    /*@ public normal_behaviour
+      @  requires Functions.isValidSlice(values, start, end);
+      @
+      @  ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @  ensures Functions.isSortedSlice(values, start, end);
+      @
+      @  assignable values[start..end];
+      @  assignable storage.*;
+      @*/
     public static void sort(int[] values, int start, int end, Storage storage) {
         if (end - start <= 2 * Constants.BASE_CASE_SIZE) {
             base_case_sort(values, start, end);
@@ -239,7 +286,8 @@ public class Sorter {
 
     /*@ public normal_behaviour
       @  ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
-      @  ensures (\forall int i; 0<=i && i<values.length-1; values[i] <= values[i+1]);
+      @  ensures Functions.isSortedSlice(values, 0, values.length);
+      @
       @  assignable values[*];
       @*/
     public static void sort(int[] values) {
