@@ -107,62 +107,59 @@ public class Classifier {
         }
     }
 
-    private int classify_locally(int[] values, int begin, int end, Buffers buffers, int[] bucket_sizes) {
-        final int BATCH_SIZE = 16;
-
+    public int classify_locally(int[] values, int begin, int end, int[] bucket_starts, Buffers buffers) {
         buffers.reset();
 
         int write = begin;
 
-        int i = begin;
-        if (end - begin > BATCH_SIZE) {
-            int cutoff = end - BATCH_SIZE;
-            final int[] indices = new int[BATCH_SIZE];
-            while (i <= cutoff) {
-                this.classify_all(values, i, i + BATCH_SIZE, indices);
+        {
+            final int BATCH_SIZE = 16;
+            int i = begin;
+            if (end - begin > BATCH_SIZE) {
+                int cutoff = end - BATCH_SIZE;
+                final int[] indices = new int[BATCH_SIZE];
+                while (i <= cutoff) {
+                    this.classify_all(values, i, i + BATCH_SIZE, indices);
 
-                for (int j = 0; j < indices.length; ++j) {
-                    int bucket = indices[j];
-                    int value = values[i + j];
-                    if (buffers.push(value, bucket, values, write, end)) {
-                        write += Buffers.BUFFER_SIZE;
-                        bucket_sizes[bucket] += Buffers.BUFFER_SIZE;
+                    for (int j = 0; j < indices.length; ++j) {
+                        int bucket = indices[j];
+                        int value = values[i + j];
+                        if (buffers.push(value, bucket, values, write, end)) {
+                            write += Buffers.BUFFER_SIZE;
+                            bucket_starts[bucket] += Buffers.BUFFER_SIZE;
+                        }
                     }
+
+                    i += BATCH_SIZE;
                 }
+            }
 
-                i += BATCH_SIZE;
+            for (; i < end; ++i) {
+                int value = values[i];
+                int bucket = this.classify(value);
+                if (buffers.push(value, bucket, values, write, end)) {
+                    write += Buffers.BUFFER_SIZE;
+                    bucket_starts[bucket] += Buffers.BUFFER_SIZE;
+                }
             }
         }
 
-        for (; i < end; ++i) {
-            int value = values[i];
-            int bucket = this.classify(value);
-            if (buffers.push(value, bucket, values, write, end)) {
-                write += Buffers.BUFFER_SIZE;
-                bucket_sizes[bucket] += Buffers.BUFFER_SIZE;
-            }
-        }
+        {
+            // bucket_starts contains the bucket counts without buffer contents
+            // Calculate bucket starts
+            int sum = begin;
+            for (int i = 0; i < this.num_buckets; ++i) {
+                // Add the partially filled buffers
+                int size = bucket_starts[i] + buffers.len(i);
 
+                // Exclusive prefix sum
+                bucket_starts[i] = sum;
+                sum += size;
+            }
+            bucket_starts[this.num_buckets] = sum;
+
+            assert (sum == end);
+        }
         return write;
-    }
-
-    public int classify_locally(int[] values, int begin, int end, int[] bucket_starts, Buffers buffers) {
-        int first_empty_position = this.classify_locally(values, begin, end, buffers, bucket_starts);
-
-        // bucket_starts contains the bucket counts without buffer contents
-        // Calculate bucket starts
-        int sum = begin;
-        for (int i = 0; i < this.num_buckets; ++i) {
-            // Add the partially filled buffers
-            int size = bucket_starts[i] + buffers.len(i);
-
-            // Exclusive prefix sum
-            bucket_starts[i] = sum;
-            sum += size;
-        }
-        bucket_starts[this.num_buckets] = sum;
-
-        assert (sum == end);
-        return first_empty_position;
     }
 }
