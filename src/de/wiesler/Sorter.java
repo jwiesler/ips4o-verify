@@ -37,21 +37,6 @@ public class Sorter {
         return new SampleResult(num_samples, num_buckets, step);
     }
 
-    private static int classify(
-            int[] values,
-            int begin,
-            int end,
-            Classifier classifier,
-            Buffers buffers,
-            int[] bucket_starts
-    ) {
-        buffers.reset();
-        return classifier.classify_locally(values, begin, end, bucket_starts, buffers);
-
-        // IPS4OML_ASSUME_NOT(bucket_start_[num_buckets_] != end_ - begin_);
-        // => all values are in a bucket
-    }
-
     public static void cleanup(
             final int[] values,
             final int begin,
@@ -166,7 +151,7 @@ public class Sorter {
         }
 
         Buffers buffers = new Buffers();
-        int first_empty_position = classify(values, begin, end, classifier, buffers, bucket_starts);
+        int first_empty_position = classifier.classify_locally(values, begin, end, bucket_starts, buffers);
 
         BucketPointers bucket_pointers = new BucketPointers();
         for (int bucket = 0; bucket < classifier.num_buckets(); ++bucket) {

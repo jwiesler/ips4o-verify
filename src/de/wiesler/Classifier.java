@@ -110,6 +110,8 @@ public class Classifier {
     private int classify_locally(int[] values, int begin, int end, Buffers buffers, int[] bucket_sizes) {
         final int BATCH_SIZE = 16;
 
+        buffers.reset();
+
         int write = begin;
 
         int i = begin;
@@ -146,6 +148,7 @@ public class Classifier {
 
     public int classify_locally(int[] values, int begin, int end, int[] bucket_starts, Buffers buffers) {
         int[] bucket_sizes = new int[Constants.MAX_BUCKETS];
+
         int first_empty_position = this.classify_locally(values, begin, end, buffers, bucket_sizes);
 
         // Calculate bucket starts
