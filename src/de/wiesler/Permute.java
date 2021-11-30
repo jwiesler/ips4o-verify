@@ -15,7 +15,7 @@ public class Permute {
             return -1;
         }
 
-        Functions.copy_block_to_buffer(values, begin, end, read, buffer);
+        Functions.copy_block_to_buffer(values, begin, end, begin + read, buffer);
         int first_value = buffer[0];
         return classifier.classify(first_value);
     }
@@ -35,7 +35,7 @@ public class Permute {
         while (true) {
             BucketPointers.Increment increment = bucket_pointers.increment_write(target_bucket);
             boolean occupied = increment.occupied;
-            int write = increment.position;
+            int write = begin + increment.position;
 
             if (occupied) {
                 int new_target = classifier.classify(values[write]);

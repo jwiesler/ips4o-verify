@@ -3,10 +3,6 @@ package de.wiesler;
 public class Buffers {
     public static final int BUFFER_SIZE = 1024 / 4;
 
-    public static int align_to_next_block_in(int begin, int offset) {
-        return begin + align_to_next_block(offset - begin);
-    }
-
     public static int align_to_next_block(int offset) {
         return (offset + BUFFER_SIZE - 1) & (-BUFFER_SIZE);
     }
@@ -14,9 +10,11 @@ public class Buffers {
     private final int[] buffer;
     private final int[] indices;
 
-    public Buffers() {
-        this.buffer = new int[2 * BUFFER_SIZE * Constants.MAX_BUCKETS];
-        this.indices = new int[Constants.MAX_BUCKETS];
+    public Buffers(int[] buffer, int[] indices) {
+        this.buffer = buffer;
+        this.indices = indices;
+
+        Functions.fill(this.indices, 0);
     }
 
     public boolean push(int value, int bucket, int[] values, int write, int end) {
@@ -39,10 +37,6 @@ public class Buffers {
         int offset = bucket * BUFFER_SIZE;
         System.arraycopy(this.buffer, offset, values, head_start, head_len);
         System.arraycopy(this.buffer, offset + head_len, values, tail_start, tail_len);
-    }
-
-    public void reset() {
-        Functions.fill(this.indices, 0);
     }
 
     public int len(int bucket) {

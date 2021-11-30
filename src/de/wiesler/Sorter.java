@@ -49,15 +49,18 @@ public class Sorter {
             final int overflow_bucket
     ) {
         final boolean is_last_level = end - begin <= Constants.SINGLE_LEVEL_THRESHOLD;
-        final int max_offset = begin + Permute.max_offset(end - begin);
+        final int max_offset = Permute.max_offset(end - begin);
 
         for (int bucket = 0; bucket < num_buckets; ++bucket) {
-            final int start = bucket_starts[bucket];
-            final int stop = bucket_starts[bucket + 1];
-            final int write = bucket_pointers.write(bucket);
+            final int relative_start = bucket_starts[bucket];
+            final int relative_stop = bucket_starts[bucket + 1];
+            final int relative_write = bucket_pointers.write(bucket);
+            final int start = begin + relative_start;
+            final int stop = begin + relative_stop;
+            final int write = begin + relative_write;
 
-            int head_start = start;
-            int head_stop = Functions.min(Buffers.align_to_next_block_in(begin, start), stop);
+            int head_start = begin + relative_start;
+            int head_stop = begin + Functions.min(Buffers.align_to_next_block(relative_start), relative_stop);
 
             int tail_start;
             int tail_stop;
@@ -66,12 +69,12 @@ public class Sorter {
             // - write to an offset >= max_offset was stopped
             // - bucket pointer write increment returns the old value => write - BUFFER_SIZE >= max_offset
             // - this block is in the overflow buffer
-            if (overflow_bucket != -1 && bucket == overflow_bucket && write >= Buffers.BUFFER_SIZE && write - Buffers.BUFFER_SIZE >= max_offset) {
+            if (overflow_bucket != -1 && bucket == overflow_bucket && relative_write >= Buffers.BUFFER_SIZE && relative_write - Buffers.BUFFER_SIZE >= max_offset) {
                 // Overflow
 
                 // Overflow buffer has been written => write pointer must be at end of bucket
                 // This gives stop <= write
-                assert (Buffers.align_to_next_block_in(begin, stop) == write);
+                assert (Buffers.align_to_next_block(relative_stop) == relative_write);
 
                 tail_start = write - Buffers.BUFFER_SIZE;
                 tail_stop = stop;
@@ -94,7 +97,7 @@ public class Sorter {
             } else if (stop < write) {
                 if (Buffers.BUFFER_SIZE < stop - start) {
                     // Final block has been written
-                    assert (Buffers.align_to_next_block_in(begin, stop) == write);
+                    assert (Buffers.align_to_next_block(relative_stop) == relative_write);
 
                     int overflow_len = write - stop;
 
@@ -150,15 +153,15 @@ public class Sorter {
             return null;
         }
 
-        Buffers buffers = new Buffers();
+        Buffers buffers = new Buffers(storage.buffers_buffer, storage.buffers_indices);
         int first_empty_position = classifier.classify_locally(values, begin, end, bucket_starts, buffers);
 
-        BucketPointers bucket_pointers = new BucketPointers();
-        for (int bucket = 0; bucket < classifier.num_buckets(); ++bucket) {
-            int start = Buffers.align_to_next_block_in(begin, bucket_starts[bucket]);
-            int stop = Buffers.align_to_next_block_in(begin, bucket_starts[bucket + 1]);
-            bucket_pointers.init(bucket, start, stop, first_empty_position);
-        }
+        BucketPointers bucket_pointers = new BucketPointers(
+                bucket_starts,
+                classifier.num_buckets(),
+                first_empty_position - begin,
+                storage.bucket_pointers
+        );
 
         int overflow_bucket = -1;
         for (int bucket = classifier.num_buckets(); bucket-- > 0; ) {
@@ -202,27 +205,19 @@ public class Sorter {
         }
 
         for (int i = 0; i < num_buckets; i += 1 + Constants.toInt(equal_buckets)) {
-            int inner_start = bucket_starts[i];
-            int inner_end = bucket_starts[i + 1];
+            int inner_start = start + bucket_starts[i];
+            int inner_end = start + bucket_starts[i + 1];
             if (inner_end - inner_start > 2 * Constants.BASE_CASE_SIZE) {
                 sample_sort(values, inner_start, inner_end, storage);
             }
         }
 
         if (equal_buckets) {
-            int inner_start = bucket_starts[num_buckets - 1];
-            int inner_end = bucket_starts[num_buckets];
+            int inner_start = start + bucket_starts[num_buckets - 1];
+            int inner_end = start + bucket_starts[num_buckets];
             if (inner_end - inner_start > 2 * Constants.BASE_CASE_SIZE) {
                 sample_sort(values, inner_start, inner_end, storage);
             }
-        }
-    }
-
-    public static void sort(int[] values, int start, int end, Storage storage) {
-        if (end - start <= 2 * Constants.BASE_CASE_SIZE) {
-            base_case_sort(values, start, end);
-        } else {
-            sample_sort(values, start, end, storage);
         }
     }
 
@@ -232,6 +227,14 @@ public class Sorter {
 
     private static void base_case_sort(int[] values, int start, int end) {
         fallback_sort(values, start, end);
+    }
+
+    public static void sort(int[] values, int start, int end, Storage storage) {
+        if (end - start <= 2 * Constants.BASE_CASE_SIZE) {
+            base_case_sort(values, start, end);
+        } else {
+            sample_sort(values, start, end, storage);
+        }
     }
 
     /*@ public normal_behaviour

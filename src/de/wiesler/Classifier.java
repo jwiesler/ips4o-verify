@@ -107,9 +107,8 @@ public class Classifier {
         }
     }
 
-    public int classify_locally(int[] values, int begin, int end, int[] bucket_starts, Buffers buffers) {
-        buffers.reset();
 
+    public int classify_locally(int[] values, int begin, int end, int[] bucket_starts, Buffers buffers) {
         int write = begin;
 
         {
@@ -147,7 +146,7 @@ public class Classifier {
         {
             // bucket_starts contains the bucket counts without buffer contents
             // Calculate bucket starts
-            int sum = begin;
+            int sum = 0;
             for (int i = 0; i < this.num_buckets; ++i) {
                 // Add the partially filled buffers
                 int size = bucket_starts[i] + buffers.len(i);
@@ -158,7 +157,7 @@ public class Classifier {
             }
             bucket_starts[this.num_buckets] = sum;
 
-            assert (sum == end);
+            assert (sum == end - begin);
         }
         return write;
     }

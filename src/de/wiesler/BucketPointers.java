@@ -4,11 +4,20 @@ public class BucketPointers {
     // 2 * n integer (read, write)
     private final int[] buffer;
 
-    public BucketPointers() {
-        this.buffer = new int[2 * Constants.MAX_BUCKETS];
+    private final int num_buckets;
+
+    public BucketPointers(int[] bucket_starts, int num_buckets, int first_empty_position, int[] buffer) {
+        this.buffer = buffer;
+        this.num_buckets = num_buckets;
+
+        for (int bucket = 0; bucket < num_buckets; ++bucket) {
+            int start = Buffers.align_to_next_block(bucket_starts[bucket]);
+            int stop = Buffers.align_to_next_block(bucket_starts[bucket + 1]);
+            this.init(bucket, start, stop, first_empty_position);
+        }
     }
 
-    public void init(int bucket, int start, int stop, int first_empty_position) {
+    void init(int bucket, int start, int stop, int first_empty_position) {
         int read;
         if (first_empty_position <= start) {
             read = start;
