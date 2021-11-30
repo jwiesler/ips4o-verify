@@ -147,21 +147,20 @@ public class Classifier {
     }
 
     public int classify_locally(int[] values, int begin, int end, int[] bucket_starts, Buffers buffers) {
-        int[] bucket_sizes = new int[Constants.MAX_BUCKETS];
+        int first_empty_position = this.classify_locally(values, begin, end, buffers, bucket_starts);
 
-        int first_empty_position = this.classify_locally(values, begin, end, buffers, bucket_sizes);
-
+        // bucket_starts contains the bucket counts without buffer contents
         // Calculate bucket starts
         int sum = begin;
-        bucket_starts[0] = sum;
         for (int i = 0; i < this.num_buckets; ++i) {
             // Add the partially filled buffers
-            bucket_sizes[i] += buffers.len(i);
+            int size = bucket_starts[i] + buffers.len(i);
 
-            // Prefix sum
-            sum += bucket_sizes[i];
-            bucket_starts[i + 1] = sum;
+            // Exclusive prefix sum
+            bucket_starts[i] = sum;
+            sum += size;
         }
+        bucket_starts[this.num_buckets] = sum;
 
         assert (sum == end);
         return first_empty_position;
