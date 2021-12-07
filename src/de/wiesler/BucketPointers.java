@@ -29,13 +29,13 @@ public class BucketPointers {
       @*/
 
     /*@ public normal_behaviour
-      @   requires buffer.length == 2 * Constants.MAX_BUCKETS;
-      @   requires 2 <= num_buckets && num_buckets <= Constants.MAX_BUCKETS;
-      @   requires 0 <= first_empty_position && Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
-      @   requires bucket_starts.length >= num_buckets + 1;
-      @   requires (\forall int i; 1 <= i && i <= num_buckets; bucket_starts[i - 1] <= bucket_starts[i]);
+      @     requires buffer.length == 2 * Constants.MAX_BUCKETS;
+      @     requires 2 <= num_buckets && num_buckets <= Constants.MAX_BUCKETS;
+      @     requires 0 <= first_empty_position && Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
+      @     requires bucket_starts.length >= num_buckets + 1;
+      @     requires (\forall int i; 1 <= i && i <= num_buckets; bucket_starts[i - 1] <= bucket_starts[i]);
       @
-      @   assignable buffer[*];
+      @     assignable buffer[*];
       @*/
     public BucketPointers(int[] bucket_starts, int num_buckets, int first_empty_position, int[] buffer) {
         this.buffer = buffer;
@@ -57,17 +57,17 @@ public class BucketPointers {
     }
 
     /*@ public normal_behaviour
-      @   requires 0 <= bucket && bucket < Constants.MAX_BUCKETS;
-      @   requires 0 <= start && 0 <= stop && 0 <= first_empty_position;
-      @   requires start <= stop;
-      @   requires Functions.isAlignedTo(start, Buffers.BUFFER_SIZE);
-      @   requires Functions.isAlignedTo(stop, Buffers.BUFFER_SIZE);
-      @   requires Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
-      @   requires bucket < num_buckets;
+      @     requires 0 <= bucket && bucket < Constants.MAX_BUCKETS;
+      @     requires 0 <= start && 0 <= stop && 0 <= first_empty_position;
+      @     requires start <= stop;
+      @     requires Functions.isAlignedTo(start, Buffers.BUFFER_SIZE);
+      @     requires Functions.isAlignedTo(stop, Buffers.BUFFER_SIZE);
+      @     requires Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
+      @     requires bucket < num_buckets;
       @
-      @   ensures isValidBucketPointerAt(bucket);
+      @     ensures isValidBucketPointerAt(bucket);
       @
-      @   assignable this.buffer[(2 * bucket)..(2 * bucket + 1)];
+      @     assignable this.buffer[(2 * bucket)..(2 * bucket + 1)];
       @*/
     void init(int bucket, int start, int stop, int first_empty_position) {
         int read;

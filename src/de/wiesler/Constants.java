@@ -30,14 +30,16 @@ public class Constants {
     }
 
     /*@ public normal_behaviour
-      @  ensures \result == (b ? 1 : 0);
+      @ ensures \result == (b ? 1 : 0);
+      @ assignable \nothing;
       @*/
     public static int toInt(boolean b) {
         return b ? 1 : 0;
     }
 
     /*@ public normal_behaviour
-      @  ensures \result == (a < b);
+      @ ensures \result == (a < b);
+      @ assignable \nothing;
       @*/
     public static boolean cmp(int a, int b) {
         return a < b;

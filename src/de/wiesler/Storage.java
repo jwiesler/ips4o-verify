@@ -7,9 +7,9 @@ public class Storage {
     public final int[] bucket_pointers;
     public final int[] buffers_buffer;
     public final int[] buffers_indices;
-    public int[] swap_1;
-    public int[] swap_2;
-    public int[] overflow;
+    public final int[] swap_1;
+    public final int[] swap_2;
+    public final int[] overflow;
 
     /*@
       @ invariant this.tree.length == Classifier.STORAGE_SIZE;
@@ -24,7 +24,8 @@ public class Storage {
       @*/
 
     /*@ public normal_behaviour
-      @   ensures true;
+      @ ensures true;
+      @ assignable \nothing;
       @*/
     Storage() {
         this.splitters = new int[Classifier.STORAGE_SIZE];

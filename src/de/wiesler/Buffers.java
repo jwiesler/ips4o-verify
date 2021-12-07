@@ -4,8 +4,10 @@ public class Buffers {
     public static final int BUFFER_SIZE = 1024 / 4;
 
     /*@ public normal_behaviour
-      @  requires offset >= 0;
-      @  ensures \result >= offset && Functions.isAlignedTo(\result, BUFFER_SIZE);
+      @ requires offset >= 0;
+      @ ensures \result >= offset && Functions.isAlignedTo(\result, BUFFER_SIZE);
+      @
+      @ assignable \nothing;
       @*/
     public static int align_to_next_block(int offset) {
         return (offset + BUFFER_SIZE - 1) & (-BUFFER_SIZE);
@@ -22,9 +24,11 @@ public class Buffers {
       @*/
 
     /*@ public normal_behaviour
-      @   requires buffer != null && indices != null;
-      @   requires buffer.length == 2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS;
-      @   requires indices.length == Constants.MAX_BUCKETS;
+      @ requires buffer != null && indices != null;
+      @ requires buffer.length == 2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS;
+      @ requires indices.length == Constants.MAX_BUCKETS;
+      @
+      @ assignable indices[*];
       @*/
     public Buffers(int[] buffer, int[] indices) {
         this.buffer = buffer;
@@ -34,17 +38,17 @@ public class Buffers {
     }
 
     /*@ public normal_behaviour
-      @   requires 0 <= bucket && bucket < Constants.MAX_BUCKETS;
-      @   requires Functions.isValidSlice(values, write, end);
-      @   requires this.indices[bucket] == BUFFER_SIZE ==> (end - write >= BUFFER_SIZE);
+      @ requires 0 <= bucket && bucket < Constants.MAX_BUCKETS;
+      @ requires Functions.isValidSlice(values, write, end);
+      @ requires this.indices[bucket] == BUFFER_SIZE ==> (end - write >= BUFFER_SIZE);
       @
-      @   // Todo value is inside the buffer
-      @   // If \result => values[write..write + BUFFER_SIZE] is the current buffer content
-      @   // Else values is unchanged
+      @ // Todo value is inside the buffer
+      @ // If \result => values[write..write + BUFFER_SIZE] is the current buffer content
+      @ // Else values is unchanged
       @
-      @   assignable this.indices[bucket];
-      @   assignable this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE];
-      @   assignable values[write..(write + BUFFER_SIZE)];
+      @ assignable this.indices[bucket];
+      @ assignable this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE];
+      @ assignable values[write..(write + BUFFER_SIZE)];
       @*/
     public boolean push(int value, int bucket, int[] values, int write, int end) {
         int buffer_offset = bucket * BUFFER_SIZE;
@@ -62,15 +66,15 @@ public class Buffers {
     }
 
     /*@ public normal_behaviour
-      @   requires 0 <= bucket && bucket < Constants.MAX_BUCKETS;
+      @ requires 0 <= bucket && bucket < Constants.MAX_BUCKETS;
       @
-      @   requires Functions.isValidSlice(values, head_start, head_start + head_len);
-      @   requires Functions.isValidSlice(values, tail_start, tail_start + tail_len);
+      @ requires Functions.isValidSlice(values, head_start, head_start + head_len);
+      @ requires Functions.isValidSlice(values, tail_start, tail_start + tail_len);
       @
-      @   requires head_len + tail_len == this.indices[bucket];
+      @ requires head_len + tail_len == this.indices[bucket];
       @
-      @   assignable values[head_start..(head_start + head_len)];
-      @   assignable values[tail_start..(tail_start + tail_len)];
+      @ assignable values[head_start..(head_start + head_len)];
+      @ assignable values[tail_start..(tail_start + tail_len)];
       @*/
     public void distribute(int bucket, int[] values, int head_start, int head_len, int tail_start, int tail_len) {
         assert (head_len + tail_len == this.indices[bucket]);

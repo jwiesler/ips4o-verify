@@ -3,7 +3,7 @@ package de.wiesler;
 public class Functions {
     /*@
       @ public model_behaviour
-      @   requires index >= 0;
+      @ requires index >= 0;
       @ static model boolean isAlignedTo(int index, int alignment) {
       @     return index % alignment == 0;
       @ }
@@ -11,46 +11,50 @@ public class Functions {
 
     /*@
       @ public model_behaviour
-      @   requires values != null;
-      @   requires 0 <= begin && begin <= values.length;
-      @   requires 0 <= end && end <= values.length;
-      @   requires begin <= end;
-      @ static model boolean isValidSlice(int[] values, int begin, int end);
+      @ requires true;
+      @ static model boolean isValidSlice(int[] values, int begin, int end) {
+      @     return values != null &&
+      @         0 <= begin && begin <= values.length &&
+      @         0 <= end && end <= values.length &&
+      @         begin <= end;
+      @ }
       @*/
 
     /*@
       @ public model_behaviour
-      @   requires isValidSlice(values, begin, end);
+      @ requires isValidSlice(values, begin, end);
       @ static model boolean isSortedSlice(int[] values, int begin, int end) {
       @     return (\forall int i; 0 <= i && i < values.length - 1; values[i] <= values[i + 1]);
       @ }
       @*/
 
     /*@ public normal_behaviour
-      @  requires isValidSlice(values, begin, end);
-      @  requires num_samples <= end - begin;
-      @  assignable values[begin..end];
+      @ requires isValidSlice(values, begin, end);
+      @ requires num_samples <= end - begin;
+      @ assignable values[begin..end];
       @*/
     public static void select_n(int[] values, int begin, int end, int num_samples) {
     }
 
     /*@ public normal_behaviour
-      @  ensures \result == ((a >= b) ? a : b);
+      @ ensures \result == ((a >= b) ? a : b);
+      @ assignable \nothing;
       @*/
     public static int max(int a, int b) {
         return (a >= b) ? a : b;
     }
 
     /*@ public normal_behaviour
-      @  ensures \result == ((a <= b) ? a : b);
+      @ ensures \result == ((a <= b) ? a : b);
+      @ assignable \nothing;
       @*/
     public static int min(int a, int b) {
         return (a <= b) ? a : b;
     }
 
     /*@ public normal_behaviour
-      @  ensures (\forall int i; 0 <= i && i < values.length; values[i] == value);
-      @  assignable values[*];
+      @ ensures (\forall int i; 0 <= i && i < values.length; values[i] == value);
+      @ assignable values[*];
       @*/
     public static void fill(int[] values, int value) {
         /*@

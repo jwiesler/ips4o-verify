@@ -9,8 +9,8 @@ public class Classifier {
     private final boolean equal_buckets;
 
     /*@ public normal_behaviour
-      @  requires tree.length == Classifier.STORAGE_SIZE;
-      @  requires sorted_splitters.length == Classifier.STORAGE_SIZE;
+      @ requires tree.length == Classifier.STORAGE_SIZE;
+      @ requires sorted_splitters.length == Classifier.STORAGE_SIZE;
       @*/
     public Classifier(int[] sorted_splitters, int[] tree, int log_buckets, boolean equal_buckets) {
         assert (log_buckets <= Constants.LOG_MAX_BUCKETS + 1);
@@ -29,10 +29,10 @@ public class Classifier {
     }
 
     /*@ public normal_behaviour
-      @  requires Functions.isValidSlice(values, start, end);
+      @ requires Functions.isValidSlice(values, start, end);
       @
-      @  requires splitters.length == Classifier.STORAGE_SIZE;
-      @  requires tree.length == Classifier.STORAGE_SIZE;
+      @ requires splitters.length == Classifier.STORAGE_SIZE;
+      @ requires tree.length == Classifier.STORAGE_SIZE;
       @*/
     public static Classifier from_sorted_samples(
             int[] values,
@@ -86,8 +86,8 @@ public class Classifier {
     }
 
     /*@ public normal_behaviour
-      @  ensures 0 <= \result && result < this.num_buckets;
-      @  // Ensures sorting
+      @ ensures 0 <= \result && result < this.num_buckets;
+      @ // Ensures sorting
       @*/
     public int classify(int value) {
         int index = this.tree.classify(value);
@@ -104,11 +104,11 @@ public class Classifier {
     }
 
     /*@ public normal_behaviour
-      @  requires Functions.isValidSlice(values, begin, end);
-      @  requires end - begin == indices.length;
+      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires end - begin == indices.length;
       @
-      @  ensures (\forall int i; 0 <= i && i < indices.length; 0 <= indices[i] && indices[i] < this.num_buckets);
-      @  // Ensures sorting
+      @ ensures (\forall int i; 0 <= i && i < indices.length; 0 <= indices[i] && indices[i] < this.num_buckets);
+      @ // Ensures sorting
       @*/
     public void classify_all(int[] values, int begin, int end, int[] indices) {
         // TODO class invariant
@@ -132,8 +132,8 @@ public class Classifier {
 
     /*@
       @ public model_behaviour
-      @   requires bucket_starts.length == Constants.MAX_BUCKETS + 1;
-      @   requires buckets_count > 0 && buckets_count <= bucket_starts.length;
+      @ requires bucket_starts.length == Constants.MAX_BUCKETS + 1;
+      @ requires buckets_count > 0 && buckets_count <= bucket_starts.length;
       @ static model boolean validBucketStarts(int[] bucket_starts, int buckets_count, int values_len) {
       @     return
       @         (\forall int i; 1 <= i < buckets_count; bucket_starts[i - 1] <= bucket_starts[i]) &&
@@ -142,18 +142,18 @@ public class Classifier {
       @*/
 
     /*@ public normal_behaviour
-      @  requires bucket_starts.length >= this.num_buckets + 1;
-      @  requires Functions.isValidSlice(values, begin, end);
-      @  requires (\forall int i; 0 <= i < this.num_buckets; bucket_starts[i] == 0);
+      @ requires bucket_starts.length >= this.num_buckets + 1;
+      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires (\forall int i; 0 <= i < this.num_buckets; bucket_starts[i] == 0);
       @
-      @  ensures Classifier.validBucketStarts(bucket_starts, classifier.num_buckets(), end - begin);
-      @  // All values are either in a buffer or in values[..\result]
-      @  // values[..\result] is block classified
-      @  // Bucket starts
+      @ ensures Classifier.validBucketStarts(bucket_starts, classifier.num_buckets(), end - begin);
+      @ // All values are either in a buffer or in values[..\result]
+      @ // values[..\result] is block classified
+      @ // Bucket starts
       @
-      @  assignable values[begin..end];
-      @  assignable bucket_starts[0..classifier.num_buckets() + 1];
-      @  assignable buffers.*;
+      @ assignable values[begin..end];
+      @ assignable bucket_starts[0..classifier.num_buckets() + 1];
+      @ assignable buffers.*;
       @*/
     public int classify_locally(int[] values, int begin, int end, int[] bucket_starts, Buffers buffers) {
         int write = begin;
@@ -173,7 +173,7 @@ public class Classifier {
                   @ // All elements in values[..write] or buffers or values[i..end]
                   @ // values[..write] is block classified
                   @
-                  @ decreases i - cutoff;
+                  @ decreases cutoff - i;
                   @
                   @ assignable buffers.*;
                   @ assignable write;
