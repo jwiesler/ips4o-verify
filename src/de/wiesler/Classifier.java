@@ -11,6 +11,8 @@ public class Classifier {
     /*@ public normal_behaviour
       @ requires tree.length == Classifier.STORAGE_SIZE;
       @ requires sorted_splitters.length == Classifier.STORAGE_SIZE;
+      @
+      @ assignable sorted_splitters[*], tree[*];
       @*/
     public Classifier(int[] sorted_splitters, int[] tree, int log_buckets, boolean equal_buckets) {
         assert (log_buckets <= Constants.LOG_MAX_BUCKETS + 1);
@@ -33,6 +35,8 @@ public class Classifier {
       @
       @ requires splitters.length == Classifier.STORAGE_SIZE;
       @ requires tree.length == Classifier.STORAGE_SIZE;
+      @
+      @ assignable splitters[*], tree[*];
       @*/
     public static Classifier from_sorted_samples(
             int[] values,

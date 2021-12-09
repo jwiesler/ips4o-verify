@@ -11,6 +11,14 @@ public class Functions {
 
     /*@
       @ public model_behaviour
+      @ requires lower <= upper;
+      @ static model boolean isBetweenInclusive(int index, int lower, int upper) {
+      @     return lower <= index && index <= upper;
+      @ }
+      @*/
+
+    /*@
+      @ public model_behaviour
       @ requires true;
       @ static model boolean isValidSlice(int[] values, int begin, int end) {
       @     return values != null &&
@@ -24,13 +32,16 @@ public class Functions {
       @ public model_behaviour
       @ requires isValidSlice(values, begin, end);
       @ static model boolean isSortedSlice(int[] values, int begin, int end) {
-      @     return (\forall int i; 0 <= i && i < values.length - 1; values[i] <= values[i + 1]);
+      @     return (\forall int i; begin <= i && i < end - 1; values[i] <= values[i + 1]);
       @ }
       @*/
 
     /*@ public normal_behaviour
       @ requires isValidSlice(values, begin, end);
       @ requires num_samples <= end - begin;
+      @
+      @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @
       @ assignable values[begin..end];
       @*/
     public static void select_n(int[] values, int begin, int end, int num_samples) {
