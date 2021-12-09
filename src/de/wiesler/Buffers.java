@@ -41,8 +41,7 @@ public class Buffers {
       @ requires 0 <= bucket && bucket < Constants.MAX_BUCKETS;
       @ requires Functions.isValidSlice(values, write, end);
       @ requires this.indices[bucket] == BUFFER_SIZE ==> (end - write >= BUFFER_SIZE);
-      @ requires this.buffer != values;
-      @ requires this.indices != values;
+      @ requires this.buffer != values && this.indices != values;
       @
       @ ensures \result ==>
       @     (\forall int i; 0 <= i && i < BUFFER_SIZE; values[write + i] == \old(this.buffer[bucket * BUFFER_SIZE + i])) &&
@@ -78,15 +77,21 @@ public class Buffers {
       @ requires Functions.isValidSlice(values, tail_start, tail_start + tail_len);
       @
       @ requires head_len + tail_len == this.indices[bucket];
+      @ // Don't overlap
+      @ requires head_start + head_len <= tail_start;
+      @ requires values != this.buffer && values != this.indices;
       @
-      @ assignable values[head_start..(head_start + head_len)];
-      @ assignable values[tail_start..(tail_start + tail_len)];
+      @ ensures (\forall int i; 0 <= i && i < head_len; values[head_start + i] == this.buffer[bucket * BUFFER_SIZE + i]);
+      @ ensures (\forall int i; 0 <= i && i < tail_len; values[tail_start + i] == this.buffer[bucket * BUFFER_SIZE + head_len + i]);
+      @
+      @ assignable values[head_start..(head_start + head_len - 1)];
+      @ assignable values[tail_start..(tail_start + tail_len - 1)];
       @*/
     public void distribute(int bucket, int[] values, int head_start, int head_len, int tail_start, int tail_len) {
         assert (head_len + tail_len == this.indices[bucket]);
         int offset = bucket * BUFFER_SIZE;
-        System.arraycopy(this.buffer, offset, values, head_start, head_len);
-        System.arraycopy(this.buffer, offset + head_len, values, tail_start, tail_len);
+        Functions.copy(this.buffer, offset, values, head_start, head_len);
+        Functions.copy(this.buffer, offset + head_len, values, tail_start, tail_len);
     }
 
     public int len(int bucket) {
