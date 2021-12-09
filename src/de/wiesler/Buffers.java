@@ -17,14 +17,14 @@ public class Buffers {
     private final int[] indices;
 
     /*@
-      @ invariant this.buffer != null && this.indices != null;
+      @ invariant this.buffer != null && this.indices != null && this.buffer != this.indices;
       @ invariant this.buffer.length == 2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS;
       @ invariant this.indices.length == Constants.MAX_BUCKETS;
       @ invariant (\forall int i; 0 <= i && i < this.indices.length; 0 <= this.indices[i] && this.indices[i] <= BUFFER_SIZE);
       @*/
 
     /*@ public normal_behaviour
-      @ requires buffer != null && indices != null;
+      @ requires buffer != null && indices != null && buffer != indices;
       @ requires buffer.length == 2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS;
       @ requires indices.length == Constants.MAX_BUCKETS;
       @
@@ -41,10 +41,16 @@ public class Buffers {
       @ requires 0 <= bucket && bucket < Constants.MAX_BUCKETS;
       @ requires Functions.isValidSlice(values, write, end);
       @ requires this.indices[bucket] == BUFFER_SIZE ==> (end - write >= BUFFER_SIZE);
+      @ requires this.buffer != values;
+      @ requires this.indices != values;
       @
-      @ // Todo value is inside the buffer
-      @ // If \result => values[write..write + BUFFER_SIZE] is the current buffer content
-      @ // Else values is unchanged
+      @ ensures \result ==>
+      @     (\forall int i; 0 <= i && i < BUFFER_SIZE; values[write + i] == \old(this.buffer[bucket * BUFFER_SIZE + i])) &&
+      @     this.indices[bucket] == 1 && this.buffer[bucket * BUFFER_SIZE] == value;
+      @ ensures !\result ==>
+      @     this.indices[bucket] == \old(this.indices[bucket]) + 1 &&
+      @     this.buffer[bucket * BUFFER_SIZE + \old(this.indices[bucket])] == value;
+      @ // TODO Else values is unchanged?
       @
       @ assignable this.indices[bucket];
       @ assignable this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE];
@@ -56,7 +62,7 @@ public class Buffers {
         boolean written = false;
         if (index == BUFFER_SIZE) {
             assert (write + BUFFER_SIZE <= end);
-            System.arraycopy(buffer, buffer_offset, values, write, BUFFER_SIZE);
+            Functions.copy(buffer, buffer_offset, values, write, BUFFER_SIZE);
             index = 0;
             written = true;
         }

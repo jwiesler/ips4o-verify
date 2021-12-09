@@ -79,6 +79,19 @@ public class Functions {
         }
     }
 
+    /*@ public normal_behaviour
+      @ requires 0 <= length;
+      @ requires 0 <= srcPos && srcPos + length <= src.length;
+      @ requires 0 <= destPos && destPos + length <= dest.length;
+      @
+      @ ensures (\forall int i; 0 <= i && i < length; dest[destPos + i] == \old(src[srcPos + i]));
+      @
+      @ assignable dest[destPos..destPos + length - 1];
+      @*/
+    public static void copy(int[] src, int srcPos, int[] dest, int destPos, int length) {
+        System.arraycopy(src, srcPos, dest, destPos, length);
+    }
+
     public static int isSorted(int[] values, int begin, int end) {
         for (int i = begin + 1; i < end; ++i) {
             if (values[i - 1] > values[i]) {
