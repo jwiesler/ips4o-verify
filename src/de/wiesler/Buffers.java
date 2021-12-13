@@ -7,7 +7,7 @@ public class Buffers {
       @ requires offset >= 0;
       @ ensures \result >= offset && Functions.isAlignedTo(\result, BUFFER_SIZE);
       @
-      @ assignable \nothing;
+      @ assignable \strictly_nothing;
       @*/
     public static int align_to_next_block(int offset) {
         return (offset + BUFFER_SIZE - 1) & (-BUFFER_SIZE);

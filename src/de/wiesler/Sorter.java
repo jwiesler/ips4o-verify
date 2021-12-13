@@ -15,8 +15,8 @@ public class Sorter {
         public int num_samples;
         public int num_buckets;
         public int step;
-
-        public SampleResult(int num_samples, int num_buckets, int step) {
+        
+        public /*@ strictly_pure */ SampleResult(int num_samples, int num_buckets, int step) {
             this.num_samples = num_samples;
             this.num_buckets = num_buckets;
             this.step = step;

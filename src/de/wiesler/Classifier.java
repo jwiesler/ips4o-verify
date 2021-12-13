@@ -92,6 +92,7 @@ public class Classifier {
     /*@ public normal_behaviour
       @ ensures 0 <= \result && result < this.num_buckets;
       @ // Ensures sorting
+      @ assignable \strictly_nothing;
       @*/
     public int classify(int value) {
         int index = this.tree.classify(value);
@@ -113,6 +114,8 @@ public class Classifier {
       @
       @ ensures (\forall int i; 0 <= i && i < indices.length; 0 <= indices[i] && indices[i] < this.num_buckets);
       @ // Ensures sorting
+      @
+      @ assignable indices[*];
       @*/
     public void classify_all(int[] values, int begin, int end, int[] indices) {
         // TODO class invariant

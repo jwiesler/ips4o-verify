@@ -3,7 +3,7 @@ package de.wiesler;
 public class Functions {
     /*@
       @ public model_behaviour
-      @ requires index >= 0;
+      @ requires index >= 1;
       @ static model boolean isAlignedTo(int index, int alignment) {
       @     return index % alignment == 0;
       @ }
@@ -49,7 +49,7 @@ public class Functions {
 
     /*@ public normal_behaviour
       @ ensures \result == ((a >= b) ? a : b);
-      @ assignable \nothing;
+      @ assignable \strictly_nothing;
       @*/
     public static int max(int a, int b) {
         return (a >= b) ? a : b;
@@ -57,7 +57,7 @@ public class Functions {
 
     /*@ public normal_behaviour
       @ ensures \result == ((a <= b) ? a : b);
-      @ assignable \nothing;
+      @ assignable \strictly_nothing;
       @*/
     public static int min(int a, int b) {
         return (a <= b) ? a : b;

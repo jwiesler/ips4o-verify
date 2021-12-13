@@ -62,7 +62,7 @@ public class Tree {
     /*@ normal_behaviour
       @ ensures (1 << this.log_buckets) <= \result && \result <= (1 << (this.log_buckets + 1));
       @
-      @ assignable \nothing;
+      @ assignable \strictly_nothing;
       @*/
     int classify(int value) {
         int b = 1;

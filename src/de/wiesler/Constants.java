@@ -8,6 +8,12 @@ public class Constants {
     public static final int TWO_LEVEL_THRESHOLD = SINGLE_LEVEL_THRESHOLD * (1 << LOG_MAX_BUCKETS);
     public static final int EQUAL_BUCKETS_THRESHOLD = 5;
 
+    /*@ public normal_behaviour
+      @ ensures \result > 0;
+      @ ensures 1 << (\result + 1) <= n;
+      @ ensures n <= 1 << \result;
+      @ assignable \strictly_nothing;
+      @*/
     public static int log2(int n) {
         int log = 0;
         if ((n & 0xffff0000) != 0) {
@@ -31,7 +37,7 @@ public class Constants {
 
     /*@ public normal_behaviour
       @ ensures \result == (b ? 1 : 0);
-      @ assignable \nothing;
+      @ assignable \strictly_nothing;
       @*/
     public static int toInt(boolean b) {
         return b ? 1 : 0;
@@ -39,12 +45,18 @@ public class Constants {
 
     /*@ public normal_behaviour
       @ ensures \result == (a < b);
-      @ assignable \nothing;
+      @ assignable \strictly_nothing;
       @*/
     public static boolean cmp(int a, int b) {
         return a < b;
     }
 
+    /*@ public normal_behaviour
+      @ ensures \result > 0 && \result <= LOG_MAX_BUCKETS;
+      @ ensures 1 << (\result + 1) <= n;
+      @ ensures n <= 1 << \result;
+      @ assignable \strictly_nothing;
+      @*/
     public static int log_buckets(int n) {
         if (n <= SINGLE_LEVEL_THRESHOLD) {
             // Only one more level until the base case, reduce the number of buckets
@@ -59,6 +71,10 @@ public class Constants {
         }
     }
 
+    /*@ public normal_behaviour
+      @ ensures \result > 0;
+      @ assignable \strictly_nothing;
+      @*/
     public static int oversampling_factor(int n) {
         final double v = 0.2 * log2(n);
         return Functions.max((int) v, 1);
