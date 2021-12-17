@@ -13,8 +13,7 @@ public class BucketPointers {
     /*@ public model_behaviour
       @     requires true;
       @ static model boolean isValidBucketPointer(int read, int write) {
-      @     return
-      @         0 <= read &&
+      @     return 0 <= read &&
       @         0 <= write &&
       @         Functions.isAlignedTo(read, Buffers.BUFFER_SIZE) &&
       @         Functions.isAlignedTo(write, Buffers.BUFFER_SIZE);

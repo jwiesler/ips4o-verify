@@ -13,8 +13,15 @@ public class Buffers {
         return (offset + BUFFER_SIZE - 1) & (-BUFFER_SIZE);
     }
 
-    private final int[] buffer;
-    private final int[] indices;
+    private /*@ spec_public @*/ final int[] buffer;
+    private /*@ spec_public @*/ final int[] indices;
+
+    /*@ public model_behaviour
+      @ requires true;
+      @ model boolean doesNotAlias(int[] array) {
+      @     return array != this.buffer && array != this.indices;
+      @ }
+      @*/
 
     /*@
       @ invariant this.buffer != null && this.indices != null && this.buffer != this.indices;
@@ -41,8 +48,9 @@ public class Buffers {
       @ requires 0 <= bucket && bucket < Constants.MAX_BUCKETS;
       @ requires Functions.isValidSlice(values, write, end);
       @ requires this.indices[bucket] == BUFFER_SIZE ==> (end - write >= BUFFER_SIZE);
-      @ requires this.buffer != values && this.indices != values;
+      @ requires this.doesNotAlias(values);
       @
+      @ ensures \result == (this.indices[bucket] == BUFFER_SIZE);
       @ ensures \result ==>
       @     (\forall int i; 0 <= i && i < BUFFER_SIZE; values[write + i] == \old(this.buffer[bucket * BUFFER_SIZE + i])) &&
       @     this.indices[bucket] == 1 && this.buffer[bucket * BUFFER_SIZE] == value;
@@ -79,7 +87,7 @@ public class Buffers {
       @ requires head_len + tail_len == this.indices[bucket];
       @ // Don't overlap
       @ requires head_start + head_len <= tail_start;
-      @ requires values != this.buffer && values != this.indices;
+      @ requires this.doesNotAlias(values);
       @
       @ ensures (\forall int i; 0 <= i && i < head_len; values[head_start + i] == this.buffer[bucket * BUFFER_SIZE + i]);
       @ ensures (\forall int i; 0 <= i && i < tail_len; values[tail_start + i] == this.buffer[bucket * BUFFER_SIZE + head_len + i]);
@@ -94,7 +102,7 @@ public class Buffers {
         Functions.copy(this.buffer, offset + head_len, values, tail_start, tail_len);
     }
 
-    public int len(int bucket) {
+    public /*@ strictly_pure */ int len(int bucket) {
         return this.indices[bucket];
     }
 }

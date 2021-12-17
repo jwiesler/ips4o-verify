@@ -4,6 +4,13 @@ public class Tree {
     private final int[] tree;
     private final int log_buckets;
 
+    /*@ public model_behaviour
+      @ requires true;
+      @ model boolean doesNotAlias(int[] array) {
+      @     return array != this.tree;
+      @ }
+      @*/
+
     /*@
       @ invariant this.tree.length == Classifier.STORAGE_SIZE;
       @
@@ -44,16 +51,23 @@ public class Tree {
     }
 
     /*@ normal_behaviour
+      @ requires this.tree != null;
+      @ requires this.tree.length == Classifier.STORAGE_SIZE;
+      @
+      @ requires 1 <= this.log_buckets && this.log_buckets <= Constants.LOG_MAX_BUCKETS;
+      @ requires (1 << this.log_buckets) <= Classifier.STORAGE_SIZE;
+      @
       @ requires 1 <= position && position < (1 << this.log_buckets);
       @ requires Functions.isValidSlice(sorted_splitters, begin, end);
       @ requires end - begin == (1 << this.log_buckets) - position;
+      @ requires end - begin >= 1;
       @
       @ assignable this.tree[position..(1 << this.log_buckets)];
       @*/
     /*@ helper */ void build(int position, int[] sorted_splitters, int begin, int end) {
         final int mid = begin + (end - begin) / 2;
         this.tree[position] = sorted_splitters[mid];
-        if (2 * position + 1 < (1 << this.log_buckets)) {
+        if (2 * position + 1 < (2 * this.log_buckets)) {
             this.build(2 * position, sorted_splitters, begin, mid);
             this.build(2 * position + 1, sorted_splitters, mid, end);
         }
