@@ -133,16 +133,16 @@ public class Classifier {
           @ // );
           @ loop_invariant (\forall
           @     int j;
-          @     0 <= j < target_offset;
+          @     0 <= j < target_offset - 1;
           @     // It is unique in the target array (or: strictly ascending)
-          @     (j > 0 ==> target[j - 1] < target[j])
+          @     target[j] < target[j + 1]
           @ );
           @
           @ decreases count - i;
           @ assignable target[1..count - 1];
           @*/
         for (int i = 1; i < count; ++i) {
-            if (Constants.cmp(target[target_offset], values[offset])) {
+            if (Constants.cmp(target[target_offset - 1], values[offset])) {
                 target[target_offset] = values[offset];
                 target_offset += 1;
             }
