@@ -107,7 +107,7 @@ public class Tree {
       @*/
     void classify_all(int[] values, int begin, int end, int[] indices) {
         assert (end - begin == indices.length);
-        Functions.fill(indices, 1);
+        Functions.fill(indices, 0, indices.length, 1);
         for (int i = 0; i < this.log_buckets; ++i) {
             for (int j = 0; j < indices.length; ++j) {
                 int value = values[begin + j];

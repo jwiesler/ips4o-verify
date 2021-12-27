@@ -210,7 +210,7 @@ public class Classifier {
             splitters[i] = splitters[splitter_count - 1];
         }
 
-        Functions.fill(tree, 0);
+        Functions.fill(tree, 0, tree.length, 0);
         return new Classifier(splitters, tree, log_buckets, use_equal_buckets);
     }
 

@@ -15,6 +15,7 @@ public class Buffers {
 
     private /*@ spec_public @*/ final int[] buffer;
     private /*@ spec_public @*/ final int[] indices;
+    //@ ghost int buckets;
 
     /*@ public model_behaviour
       @ requires true;
@@ -24,33 +25,40 @@ public class Buffers {
       @*/
 
     /*@
-      @ invariant this.buffer != null && this.indices != null && this.buffer != this.indices;
+      @ invariant this.buffer != this.indices;
       @ invariant this.buffer.length == 2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS;
       @ invariant this.indices.length == Constants.MAX_BUCKETS;
-      @ invariant (\forall int i; 0 <= i && i < this.indices.length; 0 <= this.indices[i] && this.indices[i] <= BUFFER_SIZE);
+      @ invariant Functions.isBetweenInclusive(this.buckets, 0, Constants.MAX_BUCKETS);
+      @ invariant (\forall int i; 0 <= i && i < this.buckets; 0 <= this.indices[i] && this.indices[i] <= BUFFER_SIZE);
       @*/
 
     /*@ public normal_behaviour
-      @ requires buffer != null && indices != null && buffer != indices;
+      @ requires buffer != indices;
       @ requires buffer.length == 2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS;
       @ requires indices.length == Constants.MAX_BUCKETS;
+      @ requires Functions.isBetweenInclusive(num_buckets, 0, Constants.MAX_BUCKETS);
+      @ 
+      @ ensures this.buckets == num_buckets;
+      @ ensures this.buffer == buffer;
+      @ ensures this.indices == indices;
       @
-      @ assignable indices[*];
+      @ assignable indices[0..num_buckets - 1];
       @*/
-    public Buffers(int[] buffer, int[] indices) {
+    public Buffers(int[] buffer, int[] indices, int num_buckets) {
         this.buffer = buffer;
         this.indices = indices;
+        //@ set buckets = num_buckets;
 
-        Functions.fill(this.indices, 0);
+        Functions.fill(this.indices, 0, num_buckets, 0);
     }
 
     /*@ public normal_behaviour
-      @ requires 0 <= bucket && bucket < Constants.MAX_BUCKETS;
+      @ requires 0 <= bucket && bucket < this.buckets;
       @ requires Functions.isValidSlice(values, write, end);
       @ requires this.indices[bucket] == BUFFER_SIZE ==> (end - write >= BUFFER_SIZE);
       @ requires this.doesNotAlias(values);
       @
-      @ ensures \result == (this.indices[bucket] == BUFFER_SIZE);
+      @ ensures \result == (\old(this.indices[bucket]) == BUFFER_SIZE);
       @ ensures \result ==>
       @     (\forall int i; 0 <= i && i < BUFFER_SIZE; values[write + i] == \old(this.buffer[bucket * BUFFER_SIZE + i])) &&
       @     this.indices[bucket] == 1 && this.buffer[bucket * BUFFER_SIZE] == value;
@@ -79,7 +87,7 @@ public class Buffers {
     }
 
     /*@ public normal_behaviour
-      @ requires 0 <= bucket && bucket < Constants.MAX_BUCKETS;
+      @ requires 0 <= bucket && bucket < this.buckets;
       @
       @ requires Functions.isValidSlice(values, head_start, head_start + head_len);
       @ requires Functions.isValidSlice(values, tail_start, tail_start + tail_len);

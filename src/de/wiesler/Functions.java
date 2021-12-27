@@ -64,17 +64,17 @@ public class Functions {
     }
 
     /*@ public normal_behaviour
-      @ ensures (\forall int i; 0 <= i && i < values.length; values[i] == value);
-      @ assignable values[*];
+      @ ensures (\forall int i; begin <= i && i < end; values[i] == value);
+      @ assignable values[begin..end - 1];
       @*/
-    public static void fill(int[] values, int value) {
+    public static void fill(int[] values, int begin, int end, int value) {
         /*@
-          @ loop_invariant 0 <= i && i <= len;
-          @ loop_invariant (\forall int j; 0 <= j && j < i; values[j] == value);
-          @ assignable values[*];
-          @ decreases len - i;
+          @ loop_invariant 0 <= begin && i <= end;
+          @ loop_invariant (\forall int j; begin <= j && j < i; values[j] == value);
+          @ assignable values[begin..end - 1];
+          @ decreases end - begin;
           @*/
-        for (int i = 0, len = values.length; i < len; i++) {
+        for (int i = begin; i < end; i++) {
             values[i] = value;
         }
     }

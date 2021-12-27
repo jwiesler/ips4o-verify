@@ -210,7 +210,7 @@ public class Sorter {
             return null;
         }
 
-        Buffers buffers = new Buffers(storage.buffers_buffer, storage.buffers_indices);
+        Buffers buffers = new Buffers(storage.buffers_buffer, storage.buffers_indices, classifier.num_buckets());
         int first_empty_position = classifier.classify_locally(values, begin, end, bucket_starts, buffers);
 
         BucketPointers bucket_pointers = new BucketPointers(
