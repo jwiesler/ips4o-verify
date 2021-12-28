@@ -7,8 +7,8 @@ public class BucketPointers {
     //@ invariant buffer.length == 2 * Constants.MAX_BUCKETS;
     //@ invariant (\forall int i; 0 <= i && i < this.buffer.length; isValidBucketPointerAt(i));
 
-    // TODO shadow num_buckets, bucket_starts?
-    private final int num_buckets;
+    // TODO shadow bucket_starts?
+    //@ ghost int buckets;
 
     /*@ public model_behaviour
       @     requires true;
@@ -28,21 +28,22 @@ public class BucketPointers {
       @*/
 
     /*@ public normal_behaviour
-      @     requires buffer.length == 2 * Constants.MAX_BUCKETS;
-      @     requires 2 <= num_buckets && num_buckets <= Constants.MAX_BUCKETS;
-      @     requires 0 <= first_empty_position && Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
-      @     requires bucket_starts.length >= num_buckets + 1;
-      @     requires (\forall int i; 1 <= i && i <= num_buckets; bucket_starts[i - 1] <= bucket_starts[i]);
+      @ requires buffer.length == 2 * Constants.MAX_BUCKETS;
+      @ requires buffer != bucket_starts;
+      @ requires Functions.isBetweenInclusive(num_buckets, 2, Constants.MAX_BUCKETS);
+      @ requires 0 <= first_empty_position && Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
+      @ requires bucket_starts.length >= num_buckets + 1;
+      @ requires (\forall int i; 1 <= i && i <= num_buckets; bucket_starts[i - 1] <= bucket_starts[i]);
       @
-      @     assignable buffer[0..2 * num_buckets - 1];
+      @ assignable buffer[0..2 * num_buckets - 1];
       @*/
     public BucketPointers(int[] bucket_starts, int num_buckets, int first_empty_position, int[] buffer) {
         this.buffer = buffer;
-        this.num_buckets = num_buckets;
+        //@ set buckets = num_buckets;
 
         /*@
-          @ loop_invariant 0 <= bucket && bucket <= this.num_buckets;
-          @ loop_invariant (\forall int i; 0 <= i && i <= num_buckets; isValidBucketPointerAt(i));
+          @ loop_invariant 0 <= bucket && bucket <= this.buckets;
+          @ loop_invariant (\forall int i; 0 <= i && i <= this.buckets; isValidBucketPointerAt(i));
           @
           @ decreases num_buckets - bucket;
           @
@@ -56,17 +57,15 @@ public class BucketPointers {
     }
 
     /*@ public normal_behaviour
-      @     requires 0 <= bucket && bucket < Constants.MAX_BUCKETS;
-      @     requires 0 <= start && 0 <= stop && 0 <= first_empty_position;
-      @     requires start <= stop;
-      @     requires Functions.isAlignedTo(start, Buffers.BUFFER_SIZE);
-      @     requires Functions.isAlignedTo(stop, Buffers.BUFFER_SIZE);
-      @     requires Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
-      @     requires bucket < num_buckets;
+      @ requires Functions.isBetween(bucket, 0, this.buckets);
+      @ requires Functions.isBetweenInclusive(start, 0, stop) && 0 <= first_empty_position;
+      @ requires Functions.isAlignedTo(start, Buffers.BUFFER_SIZE);
+      @ requires Functions.isAlignedTo(stop, Buffers.BUFFER_SIZE);
+      @ requires Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
       @
-      @     ensures isValidBucketPointerAt(bucket);
+      @ ensures isValidBucketPointerAt(bucket);
       @
-      @     assignable this.buffer[(2 * bucket)..(2 * bucket + 1) - 1];
+      @ assignable this.buffer[(2 * bucket)..(2 * bucket + 1) - 1];
       @*/
     void init(int bucket, int start, int stop, int first_empty_position) {
         int read;
