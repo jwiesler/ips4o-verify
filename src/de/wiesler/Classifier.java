@@ -292,7 +292,7 @@ public class Classifier {
       @ requires bucket_starts.length >= this.num_buckets + 1;
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires (\forall int i; 0 <= i < this.num_buckets; bucket_starts[i] == 0);
-      @ requires (\forall int i; 0 <= i < this.num_buckets; buffers.indices[i] == 0);
+      @ requires buffers.isEmpty();
       @ requires this.doesNotAlias(values) &&
       @     buffers.doesNotAlias(values) &&
       @     this.doesNotAlias(bucket_starts) &&
@@ -302,14 +302,15 @@ public class Classifier {
       @
       @ ensures begin <= \result && \result <= end && Functions.isAlignedTo(\result - begin, Buffers.BUFFER_SIZE);
       @ ensures this.isClassifiedBlocksRange(values, begin, \result, Buffers.BUFFER_SIZE);
+      @ ensures buffers.isClassifiedWith(this);
       @ ensures Classifier.validBucketStarts(bucket_starts, this.num_buckets, end - begin);
       @
       @ // All values are either in a buffer or in values[..\result]
       @ // Bucket starts
       @
-      @ assignable values[begin..end];
+      @ assignable values[begin..end - 1];
       @ assignable bucket_starts[0..this.num_buckets];
-      @ assignable buffers.indices[0..this.num_buckets], buffers.buffer[*];
+      @ assignable buffers.indices[0..this.num_buckets - 1], buffers.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1];
       @*/
     public int classify_locally(int[] values, int begin, int end, int[] bucket_starts, Buffers buffers) {
         int write = begin;
@@ -317,66 +318,84 @@ public class Classifier {
         {
             final int BATCH_SIZE = 16;
             int i = begin;
-            if (end - begin > BATCH_SIZE) {
-                int cutoff = end - BATCH_SIZE;
-                final int[] indices = new int[BATCH_SIZE];
 
-                /*@
-                  @ loop_invariant begin <= i && i <= cutoff;
-                  @ loop_invariant begin <= write && write <= i;
-                  @ loop_invariant Functions.isAlignedTo(i - begin, BATCH_SIZE);
-                  @ loop_invariant Functions.isAlignedTo(write - begin, Buffers.BUFFER_SIZE);
-                  @
-                  @ // Bucket starts contain all elements in values[..write]
-                  @ loop_invariant (\forall int j; 0 <= j && j < this.num_buckets; bucket_starts[j] == (\num_of int k; begin <= k && k < write; this.isClassified(values[k], j)));
-                  @
-                  @ // values[..write] is block classified
-                  @ loop_invariant isClassifiedBlocksRange(values, begin, write, Buffers.BUFFER_SIZE);
-                  @
-                  @ loop_invariant this.exactlyNElementsInBuffers(buffers, write - begin);
-                  @
-                  @ // All elements in values[..write] or buffers or values[i..end]
-                  @
-                  @
-                  @ decreases cutoff - i;
-                  @
-                  @ assignable values[write..i];
-                  @ assignable bucket_starts[0..this.num_buckets()];
-                  @ assignable indices[*];
-                  @*/
-                while (i <= cutoff) {
-                    this.classify_all(values, i, i + BATCH_SIZE, indices);
+            /*@ normal_behaviour
+              @ ensures begin <= i && i <= end;
+              @ ensures end - i <= BATCH_SIZE;
+              @ ensures begin <= write && write <= i;
+              @ ensures Functions.isAlignedTo(write - begin, Buffers.BUFFER_SIZE);
+              @
+              @ // Bucket starts contain all elements in values[..write]
+              @ ensures (\forall int j; 0 <= j && j < this.num_buckets; bucket_starts[j] == (\num_of int k; begin <= k && k < write; this.isClassified(values[k], j)));
+              @ // values[..write] is block classified
+              @ ensures isClassifiedBlocksRange(values, begin, write, Buffers.BUFFER_SIZE);
+              @ ensures this.exactlyNElementsInBuffers(buffers, i -  write);
+              @
+              @ assignable values[begin..end - 1];
+              @ assignable bucket_starts[0..this.num_buckets - 1];
+              @ assignable buffers.indices[0..this.num_buckets - 1], buffers.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1];
+              @*/
+            {
+                if (end - begin > BATCH_SIZE) {
+                    int cutoff = end - BATCH_SIZE;
+                    final int[] indices = new int[BATCH_SIZE];
 
                     /*@
-                      @ loop_invariant 0 <= j && j <= indices.length;
-                      @
+                      @ loop_invariant begin <= i && i <= cutoff;
                       @ loop_invariant begin <= write && write <= i;
+                      @ loop_invariant Functions.isAlignedTo(i - begin, BATCH_SIZE);
                       @ loop_invariant Functions.isAlignedTo(write - begin, Buffers.BUFFER_SIZE);
                       @
-                      @ // Bucket starts contain all full blocks already flushed
-                      @ // All elements in values[..write] or buffers or values[i + j..end]
+                      @ // Bucket starts contain all elements in values[..write]
+                      @ loop_invariant (\forall int j; 0 <= j && j < this.num_buckets; bucket_starts[j] == (\num_of int k; begin <= k && k < write; this.isClassified(values[k], j)));
+                      @
                       @ // values[..write] is block classified
-                      @ loop_invariant this.exactlyNElementsInBuffers(buffers, write - begin);
+                      @ loop_invariant isClassifiedBlocksRange(values, begin, write, Buffers.BUFFER_SIZE);
                       @
-                      @ decreases indices.length - j;
+                      @ loop_invariant this.exactlyNElementsInBuffers(buffers, i - write);
                       @
-                      @ assignable buffers.indices[0..this.num_buckets - 1], buffers.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1];
-                      @ assignable values[write..i];
-                      @ assignable bucket_starts[*];
+                      @ // All elements in values[..write] or buffers or values[i..end]
+                      @
+                      @
+                      @ decreases cutoff - i;
+                      @
+                      @ assignable values[begin..end - 1];
+                      @ assignable bucket_starts[0..this.num_buckets - 1];
+                      @ assignable indices[*];
                       @*/
-                    for (int j = 0; j < indices.length; ++j) {
-                        int bucket = indices[j];
-                        int value = values[i + j];
-                        if (buffers.push(value, bucket, values, write, end)) {
-                            write += Buffers.BUFFER_SIZE;
-                            bucket_starts[bucket] += Buffers.BUFFER_SIZE;
-                        }
-                    }
+                    while (i <= cutoff) {
+                        this.classify_all(values, i, i + BATCH_SIZE, indices);
 
-                    i += BATCH_SIZE;
+                        /*@
+                          @ loop_invariant 0 <= j && j <= indices.length;
+                          @
+                          @ loop_invariant begin <= write && write <= i;
+                          @ loop_invariant Functions.isAlignedTo(write - begin, Buffers.BUFFER_SIZE);
+                          @
+                          @ // Bucket starts contain all full blocks already flushed
+                          @ // All elements in values[..write] or buffers or values[i + j..end]
+                          @ // values[..write] is block classified
+                          @ loop_invariant this.exactlyNElementsInBuffers(buffers, write - begin);
+                          @
+                          @ decreases indices.length - j;
+                          @
+                          @ assignable buffers.indices[0..this.num_buckets - 1], buffers.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1];
+                          @ assignable values[begin..end - 1];
+                          @ assignable bucket_starts[0..this.num_buckets - 1];
+                          @*/
+                        for (int j = 0; j < indices.length; ++j) {
+                            int bucket = indices[j];
+                            int value = values[i + j];
+                            if (buffers.push(value, bucket, values, write, end)) {
+                                write += Buffers.BUFFER_SIZE;
+                                bucket_starts[bucket] += Buffers.BUFFER_SIZE;
+                            }
+                        }
+
+                        i += BATCH_SIZE;
+                    }
                 }
             }
-
             /*@
               @ loop_invariant begin <= i && i <= end;
               @ loop_invariant begin <= write && write <= i;
@@ -390,8 +409,8 @@ public class Classifier {
               @ decreases i - end;
               @
               @ assignable buffers.indices[0..this.num_buckets - 1], buffers.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1];
-              @ assignable values[write..i];
-              @ assignable bucket_starts[*];
+              @ assignable values[begin..end - 1];
+              @ assignable bucket_starts[0..this.num_buckets - 1];
               @*/
             for (; i < end; ++i) {
                 int value = values[i];
@@ -414,8 +433,7 @@ public class Classifier {
               @
               @ decreases i - end;
               @
-              @ assignable sum;
-              @ assignable bucket_starts[*];
+              @ assignable bucket_starts[0..this.num_buckets - 1];
               @*/
             for (int i = 0; i < this.num_buckets; ++i) {
                 // Add the partially filled buffers

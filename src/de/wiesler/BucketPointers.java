@@ -34,7 +34,7 @@ public class BucketPointers {
       @     requires bucket_starts.length >= num_buckets + 1;
       @     requires (\forall int i; 1 <= i && i <= num_buckets; bucket_starts[i - 1] <= bucket_starts[i]);
       @
-      @     assignable buffer[*];
+      @     assignable buffer[0..2 * num_buckets - 1];
       @*/
     public BucketPointers(int[] bucket_starts, int num_buckets, int first_empty_position, int[] buffer) {
         this.buffer = buffer;
@@ -46,7 +46,7 @@ public class BucketPointers {
           @
           @ decreases num_buckets - bucket;
           @
-          @ assignable this.buffer[2 * bucket..2 * num_buckets];
+          @ assignable this.buffer[0..2 * num_buckets - 1];
           @*/
         for (int bucket = 0; bucket < num_buckets; ++bucket) {
             int start = Buffers.align_to_next_block(bucket_starts[bucket]);
@@ -66,7 +66,7 @@ public class BucketPointers {
       @
       @     ensures isValidBucketPointerAt(bucket);
       @
-      @     assignable this.buffer[(2 * bucket)..(2 * bucket + 1)];
+      @     assignable this.buffer[(2 * bucket)..(2 * bucket + 1) - 1];
       @*/
     void init(int bucket, int start, int stop, int first_empty_position) {
         int read;

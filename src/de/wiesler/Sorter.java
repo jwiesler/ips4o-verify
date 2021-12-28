@@ -23,16 +23,36 @@ public class Sorter {
         }
     }
 
-    private static SampleResult sample(int[] values, int start, int end, Storage storage) {
-        int n = end - start;
+    /*@ public normal_behaviour
+      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires end - begin >= Constants.BASE_CASE_SIZE;
+      @
+      @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @ ensures Functions.isValidSubSlice(values, begin, end, begin, begin + \result.num_samples);
+      @ ensures \result.num_samples <= (end - begin) / 2;
+      @ ensures Functions.isSortedSlice(values, begin, begin + \result.num_samples);
+      @ ensures 0 < \result.step && 0 < \result.num_buckets && 0 < \result.num_samples;
+      @
+      @ // there exist enough samples to perform num_buckets selections with the given step size
+      @ ensures \result.step * \result.num_buckets - 1 <= \result.num_samples;
+      @
+      @ assignable storage.*;
+      @ assignable values[begin..end - 1];
+      @*/
+    private static SampleResult sample(int[] values, int begin, int end, Storage storage) {
+        int n = end - begin;
         int log_buckets = Constants.log_buckets(n);
         int num_buckets = 1 << log_buckets;
+        //@ assert num_buckets * Constants.BASE_CASE_SIZE <= n;
         int step = Functions.max(1, Constants.oversampling_factor(n));
+        //@ assert (1 << step) <= n / 5;
+        //@ assert step * num_buckets - 1 <= n / 2;
         int num_samples = Functions.min(step * num_buckets - 1, n / 2);
 
-        Functions.select_n(values, start, end, num_samples);
+        //@ assert Functions.isValidSubSlice(values, begin, end, begin, begin + num_samples) && 0 < num_samples;
+        Functions.select_n(values, begin, end, num_samples);
 
-        sort(values, start, start + num_samples, storage);
+        sort(values, begin, begin + num_samples, storage);
 
         return new SampleResult(num_samples, num_buckets, step);
     }
@@ -186,7 +206,7 @@ public class Sorter {
       @     (\forall int b; 0 <= b < \result.num_buckets; Sorter.smallBucketIsSorted(values, begin, end, bucket_starts[b], bucket_starts[b + 1])) &&
       @     !\result.equal_buckets;
       @
-      @ assignable values[begin..end];
+      @ assignable values[begin..end - 1];
       @ assignable storage.*;
       @ assignable bucket_starts[*];
       @*/
@@ -252,7 +272,7 @@ public class Sorter {
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures Functions.isSortedSlice(values, begin, end);
       @
-      @ assignable values[begin..end];
+      @ assignable values[begin..end - 1];
       @ assignable storage.*;
       @*/
     private static void sample_sort(int[] values, int begin, int end, Storage storage) {
@@ -275,7 +295,7 @@ public class Sorter {
           @ ensures (\forall int b; 0 <= b < num_buckets; Functions.isSortedSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1]));
           @ ensures (\forall int b; 0 <= b < num_buckets; Sorter.isBucketPartitioned(values, begin, end, bucket_starts[b], bucket_starts[b + 1]));
           @
-          @ assignable values[begin..end];
+          @ assignable values[begin..end - 1];
           @ assignable storage.*;
           @*/
         {
@@ -290,7 +310,7 @@ public class Sorter {
                   @
                   @ decreases num_buckets - bucket;
                   @
-                  @ assignable values[begin..end];
+                  @ assignable values[begin..end - 1];
                   @ assignable storage.*;
                   @*/
                 for (int bucket = 0; bucket < num_buckets; bucket += 1 + Constants.toInt(equal_buckets)) {
@@ -318,7 +338,7 @@ public class Sorter {
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures Functions.isSortedSlice(values, start, end);
       @
-      @ assignable values[start..end];
+      @ assignable values[start..end - 1];
       @*/
     private static void fallback_sort(int[] values, int start, int end) {
 //        java.util.Arrays.sort(values, start, end);
@@ -330,7 +350,7 @@ public class Sorter {
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures Functions.isSortedSlice(values, start, end);
       @
-      @ assignable values[start..end];
+      @ assignable values[start..end - 1];
       @*/
     private static void base_case_sort(int[] values, int start, int end) {
         fallback_sort(values, start, end);
@@ -342,7 +362,7 @@ public class Sorter {
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures Functions.isSortedSlice(values, start, end);
       @
-      @ assignable values[start..end];
+      @ assignable values[start..end - 1];
       @ assignable storage.*;
       @*/
     public static void sort(int[] values, int start, int end, Storage storage) {

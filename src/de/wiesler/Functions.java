@@ -19,12 +19,30 @@ public class Functions {
 
     /*@
       @ public model_behaviour
+      @ requires lower <= upper;
+      @ static model boolean isBetween(int index, int lower, int upper) {
+      @     return lower <= index && index < upper;
+      @ }
+      @*/
+
+    /*@
+      @ public model_behaviour
       @ requires true;
       @ static model boolean isValidSlice(int[] values, int begin, int end) {
       @     return values != null &&
-      @         0 <= begin && begin <= values.length &&
-      @         0 <= end && end <= values.length &&
+      @         isBetweenInclusive(begin, 0, values.length) &&
+      @         isBetweenInclusive(end, 0, values.length) &&
       @         begin <= end;
+      @ }
+      @*/
+
+    /*@
+      @ public model_behaviour
+      @ requires isValidSlice(values, begin, end);
+      @ static model boolean isValidSubSlice(int[] values, int begin, int end, int sub_begin, int sub_end) {
+      @     return isBetweenInclusive(sub_begin, begin, end) &&
+      @         isBetweenInclusive(sub_end, begin, end) &&
+      @         sub_begin <= sub_end;
       @ }
       @*/
 
@@ -38,11 +56,11 @@ public class Functions {
 
     /*@ public normal_behaviour
       @ requires isValidSlice(values, begin, end);
-      @ requires num_samples <= end - begin;
+      @ requires 1 <= num_samples && num_samples <= end - begin;
       @
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @
-      @ assignable values[begin..end];
+      @ assignable values[begin..end - 1];
       @*/
     public static void select_n(int[] values, int begin, int end, int num_samples) {
     }

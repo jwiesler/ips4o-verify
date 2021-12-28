@@ -24,6 +24,24 @@ public class Buffers {
       @ }
       @*/
 
+    /*@ public model_behaviour
+      @ requires true;
+      @ model boolean isEmpty() {
+      @     return (\forall int b; Functions.isBetween(b, 0, this.buckets); this.indices[b] == 0);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires true;
+      @ model boolean isClassifiedWith(Classifier classifier) {
+      @     return (\forall 
+      @         int b; 
+      @         Functions.isBetween(b, 0, this.buckets);
+      @         (\forall int i; Functions.isBetween(i, b * BUFFER_SIZE, b * BUFFER_SIZE + this.indices[b]); classifier.isClassified(this.buffer[i], b))
+      @     );
+      @ }
+      @*/
+
     /*@
       @ invariant this.buffer != this.indices;
       @ invariant this.buffer.length == 2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS;
@@ -41,6 +59,7 @@ public class Buffers {
       @ ensures this.buckets == num_buckets;
       @ ensures this.buffer == buffer;
       @ ensures this.indices == indices;
+      @ ensures this.isEmpty();
       @
       @ assignable indices[0..num_buckets - 1];
       @*/
@@ -68,8 +87,8 @@ public class Buffers {
       @ // TODO Else values is unchanged?
       @
       @ assignable this.indices[bucket];
-      @ assignable this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE];
-      @ assignable values[write..(write + BUFFER_SIZE)];
+      @ assignable this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1];
+      @ assignable values[write..(write + BUFFER_SIZE) - 1];
       @*/
     public boolean push(int value, int bucket, int[] values, int write, int end) {
         int buffer_offset = bucket * BUFFER_SIZE;
