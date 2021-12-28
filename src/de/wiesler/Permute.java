@@ -88,6 +88,19 @@ public class Permute {
         return max_offset;
     }
 
+    /*@ public normal_behaviour
+      @ requires Functions.isValidSlice(values, begin, end);
+      @ // aliasing
+      @ // bucket pointers readable content is block classified
+      @ 
+      @ // blocks from the readable content are distributed to the buckets
+      @ // bucket pointers contain the per bucket remaining space
+      @ // overflow contains the overflowing bucket iff an overflow happens
+      @
+      @ assignable values[begin..end - 1];
+      @ assignable bucket_pointers[*];
+      @ assignable swap_1[*], swap_2[*], overflow[*];
+      @*/
     public static void permute(
             final int[] values,
             final int begin,
