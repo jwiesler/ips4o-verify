@@ -146,4 +146,75 @@ public class Functions {
         assert (to.length == Buffers.BUFFER_SIZE);
         System.arraycopy(buffer, 0, to, 0, Buffers.BUFFER_SIZE);
     }
+
+    /*@ public normal_behaviour
+      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires Functions.isSortedSlice(values, begin, end);
+      @ requires values != target;
+      @
+      @ requires target.length >= count;
+      @
+      @ requires count > 0;
+      @ requires step > 0;
+      @ requires begin + count * step - 1 < end;
+      @
+      @ ensures (\forall
+      @     int i;
+      @     0 <= i < \result;
+      @     // It is from the source array
+      @     // (\exists int j; begin <= j < end; values[j] == target[i]) &&
+      @     // It is unique in the target array (or: strictly ascending)
+      @     (i > 0 ==> target[i - 1] < target[i])
+      @ );
+      @ ensures Functions.isValidSlice(target, 0, \result);
+      @
+      @ assignable target[0..count - 1];
+      @*/
+    public static int copy_unique(
+            int[] values,
+            int begin,
+            int end,
+            int count,
+            int step,
+            int[] target
+    ) {
+        int offset = begin + step - 1;
+        target[0] = values[offset];
+        int target_offset = 1;
+        offset += step;
+
+        /*@
+          @ loop_invariant 1 <= i && i <= count;
+          @ loop_invariant 1 <= target_offset && target_offset <= i;
+          @
+          @ loop_invariant begin <= offset;
+          @ loop_invariant offset == begin + (step * (i + 1)) - 1;
+          @ loop_invariant i < count ==> offset < end;
+          @
+          @ // loop_invariant (\forall
+          @ //     int j;
+          @ //     0 <= j < target_offset;
+          @ //     // It is from the source array
+          @ //     (\exists int k; begin <= k < end; values[k] == target[j])
+          @ // );
+          @ loop_invariant (\forall
+          @     int j;
+          @     0 <= j < target_offset - 1;
+          @     // It is unique in the target array (or: strictly ascending)
+          @     target[j] < target[j + 1]
+          @ );
+          @
+          @ decreases count - i;
+          @ assignable target[1..count - 1];
+          @*/
+        for (int i = 1; i < count; ++i) {
+            if (Constants.cmp(target[target_offset - 1], values[offset])) {
+                target[target_offset] = values[offset];
+                target_offset += 1;
+            }
+            offset += step;
+        }
+
+        return target_offset;
+    }
 }

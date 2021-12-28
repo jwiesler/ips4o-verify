@@ -57,6 +57,11 @@ public class Sorter {
         return new SampleResult(num_samples, num_buckets, step);
     }
 
+    /*@ // For all buckets:
+      @ // * Permutation of: (\old(written blocks) + buffer content) <-> (full block content)
+      @ // * Bucket pointers have exactly enough space for buffer content (+ overflow)
+      @ // Overflow happens <=> buffer is the last buffer with size >= 1 block and aligning this block leads to out of bounds
+      @*/
     public static void cleanup(
             final int[] values,
             final int begin,
@@ -65,9 +70,17 @@ public class Sorter {
             final int[] bucket_starts,
             final BucketPointers bucket_pointers,
             final int num_buckets,
-            final int[] overflow,
-            final int overflow_bucket
+            final int[] overflow
     ) {
+        int overflow_bucket = -1;
+        for (int bucket = num_buckets; bucket-- > 0; ) {
+            int bucket_size = bucket_starts[bucket + 1] - bucket_starts[bucket];
+            if (Buffers.BUFFER_SIZE < bucket_size) {
+                overflow_bucket = bucket;
+                break;
+            }
+        }
+
         final boolean is_last_level = end - begin <= Constants.SINGLE_LEVEL_THRESHOLD;
         final int max_offset = Permute.max_offset(end - begin);
 
@@ -220,14 +233,19 @@ public class Sorter {
         Classifier classifier;
         {
             SampleResult sample = sample(values, begin, end, storage);
-            int num_samples = sample.num_samples;
-            int num_buckets = sample.num_buckets;
-            int step = sample.step;
-            classifier = Classifier.from_sorted_samples(values, begin, begin + num_samples, storage.splitters, storage.tree, num_buckets, step);
-        }
+            final int num_samples = sample.num_samples;
+            final int num_buckets = sample.num_buckets;
+            final int step = sample.step;
+            final int[] splitters = storage.splitters;
 
-        if (classifier == null) {
-            return null;
+            // Select num_buckets - 1 splitters
+            int num_splitters = Functions.copy_unique(values, begin, end, num_buckets - 1, step, splitters);
+
+            if (num_splitters <= 1) {
+                return null;
+            }
+
+            classifier = Classifier.from_sorted_samples(splitters, storage.tree, num_splitters, num_buckets);
         }
 
         Buffers buffers = new Buffers(storage.buffers_buffer, storage.buffers_indices, classifier.num_buckets());
@@ -240,15 +258,6 @@ public class Sorter {
                 storage.bucket_pointers
         );
 
-        int overflow_bucket = -1;
-        for (int bucket = classifier.num_buckets(); bucket-- > 0; ) {
-            int bucket_size = bucket_starts[bucket + 1] - bucket_starts[bucket];
-            if (Buffers.BUFFER_SIZE < bucket_size) {
-                overflow_bucket = bucket;
-                break;
-            }
-        }
-
         int[] overflow = storage.overflow;
         Permute.permute(values, begin, end, classifier, bucket_pointers, storage.swap_1, storage.swap_2, overflow);
 
@@ -259,8 +268,7 @@ public class Sorter {
                 bucket_starts,
                 bucket_pointers,
                 classifier.num_buckets(),
-                overflow,
-                overflow_bucket);
+                overflow);
 
         return new PartitionResult(classifier.num_buckets(), classifier.equal_buckets());
     }

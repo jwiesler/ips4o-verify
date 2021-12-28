@@ -82,117 +82,32 @@ public class Classifier {
     }
 
     /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
-      @ requires Functions.isSortedSlice(values, begin, end);
-      @ requires values != target;
+      @ requires Functions.isSortedSlice(splitters, 0, num_splitters);
+      @ requires splitters != tree;
       @
-      @ requires target.length >= count;
-      @
-      @ requires count > 0;
-      @ requires step > 0;
-      @ requires begin + count * step - 1 < end;
-      @
-      @ ensures (\forall
-      @     int i;
-      @     0 <= i < \result;
-      @     // It is from the source array
-      @     // (\exists int j; begin <= j < end; values[j] == target[i]) &&
-      @     // It is unique in the target array (or: strictly ascending)
-      @     (i > 0 ==> target[i - 1] < target[i])
-      @ );
-      @ ensures Functions.isValidSlice(target, 0, \result);
-      @
-      @ assignable target[0..count - 1];
-      @*/
-    private static int copy_unique(
-            int[] values,
-            int begin,
-            int end,
-            int count,
-            int step,
-            int[] target
-    ) {
-        int offset = begin + step - 1;
-        target[0] = values[offset];
-        int target_offset = 1;
-        offset += step;
-
-        /*@
-          @ loop_invariant 1 <= i && i <= count;
-          @ loop_invariant 1 <= target_offset && target_offset <= i;
-          @
-          @ loop_invariant begin <= offset;
-          @ loop_invariant offset == begin + (step * (i + 1)) - 1;
-          @ loop_invariant i < count ==> offset < end;
-          @
-          @ // loop_invariant (\forall
-          @ //     int j;
-          @ //     0 <= j < target_offset;
-          @ //     // It is from the source array
-          @ //     (\exists int k; begin <= k < end; values[k] == target[j])
-          @ // );
-          @ loop_invariant (\forall
-          @     int j;
-          @     0 <= j < target_offset - 1;
-          @     // It is unique in the target array (or: strictly ascending)
-          @     target[j] < target[j + 1]
-          @ );
-          @
-          @ decreases count - i;
-          @ assignable target[1..count - 1];
-          @*/
-        for (int i = 1; i < count; ++i) {
-            if (Constants.cmp(target[target_offset - 1], values[offset])) {
-                target[target_offset] = values[offset];
-                target_offset += 1;
-            }
-            offset += step;
-        }
-
-        return target_offset;
-    }
-
-    /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
-      @ requires Functions.isSortedSlice(values, begin, end);
-      @ requires splitters != tree && values != tree && values != splitters;
-      @
-      @ requires 0 < step && 1 < num_buckets && num_buckets <= (1 << Constants.LOG_MAX_BUCKETS);
+      @ requires 0 < num_splitters && 1 < num_buckets && num_buckets <= (1 << Constants.LOG_MAX_BUCKETS);
       @ requires splitters.length == Classifier.STORAGE_SIZE;
       @ requires tree.length == Classifier.STORAGE_SIZE;
       @
-      @ requires begin + (num_buckets - 1) * step + 1 <= end;
-      @
       @ assignable splitters[*], tree[*];
       @*/
-    public static /*@ nullable */ Classifier from_sorted_samples(
-            int[] values,
-            int begin,
-            int end,
+    public static Classifier from_sorted_samples(
             int[] splitters,
             int[] tree,
-            int num_buckets,
-            int step
+            int num_splitters,
+            int num_buckets
     ) {
-        int max_splitters = num_buckets - 1;
-        // Select num_buckets - 1 splitters
-        int splitter_count = copy_unique(values, begin, end, max_splitters, step, splitters);
-
-        if (splitter_count == 0) {
-            return null;
-        }
-
         // Check for duplicate splitters
-        boolean use_equal_buckets = (max_splitters - splitter_count) >= Constants.EQUAL_BUCKETS_THRESHOLD;
+        boolean use_equal_buckets = (num_buckets - 1 - num_splitters) >= Constants.EQUAL_BUCKETS_THRESHOLD;
 
         // Fill the array to the next power of two
-        int log_buckets = Constants.log2(splitter_count) + 1;
+        int log_buckets = Constants.log2(num_splitters) + 1;
         int actual_num_buckets = 1 << log_buckets;
         assert (actual_num_buckets <= splitters.length);
-        assert (splitter_count < actual_num_buckets);
+        assert (num_splitters < actual_num_buckets);
 
         /*@
-          @ loop_invariant splitter_count <= i && i <= actual_num_buckets;
+          @ loop_invariant num_splitters <= i && i <= actual_num_buckets;
           @
           @ loop_invariant (\forall
           @     int j;
@@ -204,10 +119,10 @@ public class Classifier {
           @ );
           @
           @ decreases actual_num_buckets - i;
-          @ assignable splitters[splitter_count..actual_num_buckets - 1];
+          @ assignable splitters[num_splitters..actual_num_buckets - 1];
           @*/
-        for (int i = splitter_count; i < actual_num_buckets; ++i) {
-            splitters[i] = splitters[splitter_count - 1];
+        for (int i = num_splitters; i < actual_num_buckets; ++i) {
+            splitters[i] = splitters[num_splitters - 1];
         }
 
         Functions.fill(tree, 0, tree.length, 0);
