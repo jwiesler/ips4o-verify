@@ -221,7 +221,9 @@ public class Sorter {
       @             (\forall int i; 
       @                 bucket_starts[b] <= i < bucket_starts[b + 1]; 
       @                 values[begin + bucket_starts[b]] == values[begin + i]))
-      @     );
+      @     ) &&
+      @     // At least two non empty buckets
+      @     (\num_of int b; 0 <= b < \result.num_buckets; bucket_starts[b + 1] - bucket_starts[b] > 0) >= 2;
       @
       @ assignable values[begin..end - 1];
       @ assignable storage.*;
@@ -249,6 +251,7 @@ public class Sorter {
                 return null;
             }
 
+            // >= 2 unique splitters, therefore >= 3 buckets and >= 2 nonempty buckets
             classifier = Classifier.from_sorted_samples(splitters, storage.tree, num_splitters, num_buckets);
         }
 
@@ -284,6 +287,8 @@ public class Sorter {
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures Functions.isSortedSlice(values, begin, end);
       @
+      @ measured_by end - begin;
+      @ 
       @ assignable values[begin..end - 1];
       @ assignable storage.*;
       @*/
@@ -312,6 +317,10 @@ public class Sorter {
           @*/
         {
             if (end - begin > Constants.SINGLE_LEVEL_THRESHOLD) {
+                // For every bucket there exists another bucket that is not empty
+                // TODO does not parse
+                // @ assert (\forall int b; 0 <= b < num_buckets; (\exists int o; 0 <= o < num_buckets && b != o; bucket_starts[o + 1] - bucket_starts[o] > 0));
+
                 /*@ loop_invariant 0 <= bucket && bucket <= num_buckets;
                   @ loop_invariant \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
                   @ loop_invariant (\forall int b; 0 <= b < bucket; Functions.isSortedSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1]));
