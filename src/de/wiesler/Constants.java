@@ -46,19 +46,11 @@ public class Constants {
         return log + (n >>> 1);
     }
 
-    /*@ public normal_behaviour
-      @ ensures \result == (b ? 1 : 0);
-      @ assignable \strictly_nothing;
-      @*/
-    public static int toInt(boolean b) {
+    public static /*@ strictly_pure */ int toInt(boolean b) {
         return b ? 1 : 0;
     }
 
-    /*@ public normal_behaviour
-      @ ensures \result == (a < b);
-      @ assignable \strictly_nothing;
-      @*/
-    public static boolean cmp(int a, int b) {
+    public static /*@ strictly_pure */ boolean cmp(int a, int b) {
         return a < b;
     }
 
