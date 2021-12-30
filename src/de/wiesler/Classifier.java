@@ -85,7 +85,8 @@ public class Classifier {
       @ requires Functions.isSortedSlice(splitters, 0, num_splitters);
       @ requires splitters != tree;
       @
-      @ requires 0 < num_splitters && 1 < num_buckets && num_buckets <= (1 << Constants.LOG_MAX_BUCKETS);
+      @ requires 1 <= num_splitters && num_splitters <= num_buckets - 1;
+      @ requires 2 <= num_buckets && num_buckets <= (1 << Constants.LOG_MAX_BUCKETS);
       @ requires splitters.length == Classifier.STORAGE_SIZE;
       @ requires tree.length == Classifier.STORAGE_SIZE;
       @
@@ -102,21 +103,21 @@ public class Classifier {
 
         // Fill the array to the next power of two
         int log_buckets = Constants.log2(num_splitters) + 1;
+        //@ assert log_buckets <= Constants.LOG_MAX_BUCKETS;
         int actual_num_buckets = 1 << log_buckets;
-        assert (actual_num_buckets <= splitters.length);
-        assert (num_splitters < actual_num_buckets);
+        //@ assert actual_num_buckets <= splitters.length;
 
         /*@
           @ loop_invariant num_splitters <= i && i <= actual_num_buckets;
           @
           @ loop_invariant (\forall
           @     int j;
-          @     0 <= j < i;
-          @     // It is from the source array
-          @     (\exists int k; 0 <= k < i; splitters[k] == splitters[j]) &&
-          @     // Sorted
-          @     j > 0 ==> splitters[j - 1] <= splitters[j]
+          @     0 <= j < num_splitters;
+          @     // It is unchanged
+          @     splitters[j] == \old(splitters[j])
           @ );
+          @ loop_invariant (\forall int j; num_splitters <= j < i; splitters[j] == splitters[num_splitters - 1]);
+          @ loop_invariant Functions.isSortedSlice(splitters, 0, i);
           @
           @ decreases actual_num_buckets - i;
           @ assignable splitters[num_splitters..actual_num_buckets - 1];
@@ -125,6 +126,7 @@ public class Classifier {
             splitters[i] = splitters[num_splitters - 1];
         }
 
+        // TODO remove workaround
         Functions.fill(tree, 0, tree.length, 0);
         return new Classifier(splitters, tree, log_buckets, use_equal_buckets);
     }
