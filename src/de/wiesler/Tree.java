@@ -3,6 +3,7 @@ package de.wiesler;
 public class Tree {
     private final int[] tree;
     private final int log_buckets;
+    //@ ghost int num_buckets;
 
     /*@ public model_behaviour
       @ requires true;
@@ -15,7 +16,8 @@ public class Tree {
       @ invariant this.tree.length == Classifier.STORAGE_SIZE;
       @
       @ invariant 1 <= this.log_buckets && this.log_buckets <= Constants.LOG_MAX_BUCKETS;
-      @ invariant (1 << this.log_buckets) <= Classifier.STORAGE_SIZE;
+      @ invariant this.num_buckets == (1 << this.log_buckets);
+      @ invariant this.num_buckets <= Classifier.STORAGE_SIZE;
       @
       @ // accessible \inv, this.tree[*], this.log_buckets;
       @*/
@@ -26,20 +28,17 @@ public class Tree {
       @ requires tree.length == Classifier.STORAGE_SIZE;
       @
       @ requires 1 <= log_buckets && log_buckets <= Constants.LOG_MAX_BUCKETS;
-      @ requires (1 << log_buckets) <= Classifier.STORAGE_SIZE;
       @
       @ requires Functions.isSortedSlice(sorted_splitters, 0, (1 << log_buckets) - 1);
       @
       @ assignable tree[*];
       @*/
     public Tree(int[] sorted_splitters, int[] tree, int log_buckets) {
-        assert (log_buckets >= 1);
-        assert (log_buckets <= Constants.LOG_MAX_BUCKETS);
-
+        //@ set num_buckets = 1 << log_buckets;
         final int num_buckets = 1 << log_buckets;
         final int num_splitters = num_buckets - 1;
 
-        assert (num_buckets <= tree.length);
+        //@ assert num_buckets <= tree.length;
 
         this.log_buckets = log_buckets;
         this.tree = tree;
@@ -55,26 +54,28 @@ public class Tree {
       @ requires this.tree.length == Classifier.STORAGE_SIZE;
       @
       @ requires 1 <= this.log_buckets && this.log_buckets <= Constants.LOG_MAX_BUCKETS;
-      @ requires (1 << this.log_buckets) <= Classifier.STORAGE_SIZE;
+      @ requires this.num_buckets == (1 << this.log_buckets);
+      @ requires this.num_buckets <= Classifier.STORAGE_SIZE;
       @
-      @ requires 1 <= position && position < (1 << this.log_buckets);
+      @ requires 1 <= position && position < this.num_buckets;
       @ requires Functions.isValidSlice(sorted_splitters, begin, end);
-      @ requires end - begin == (1 << this.log_buckets) - position;
-      @ requires end - begin >= 1;
+      @ requires end - begin == this.num_buckets - position;
       @
+      @ measured_by end - begin;
+      @ 
       @ assignable this.tree[position..(1 << this.log_buckets)];
       @*/
     /*@ helper */ void build(int position, int[] sorted_splitters, int begin, int end) {
         final int mid = begin + (end - begin) / 2;
         this.tree[position] = sorted_splitters[mid];
-        if (2 * position + 1 < (2 * this.log_buckets)) {
+        if (2 * position + 1 < (1 << this.log_buckets)) {
             this.build(2 * position, sorted_splitters, begin, mid);
             this.build(2 * position + 1, sorted_splitters, mid, end);
         }
     }
 
     /*@ normal_behaviour
-      @ ensures (1 << this.log_buckets) <= \result && \result <= (1 << (this.log_buckets + 1));
+      @ ensures this.num_buckets <= \result && \result <= 2 * this.num_buckets;
       @
       @ assignable \strictly_nothing;
       @*/
@@ -101,7 +102,7 @@ public class Tree {
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires indices.length == end - begin;
       @
-      @ ensures (\forall int i; 0 <= i < indices.length; 0 <= indices[i] < (1 << this.log_buckets));
+      @ ensures (\forall int i; 0 <= i < indices.length; 0 <= indices[i] < this.num_buckets);
       @
       @ assignable indices[*];
       @*/

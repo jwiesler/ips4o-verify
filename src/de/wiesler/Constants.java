@@ -12,8 +12,9 @@ public class Constants {
       @ requires n > 0;
       @ static model boolean isLog2Of(int n, int log) {
       @     return log >= 0 &&
+      @         log <= 30 &&
       @         (1 << log) <= n &&
-      @         n <= (1 << (log + 1));
+      @         (log != 31 ==> n <= (1 << (log + 1)));
       @ }
       @*/
 
@@ -61,7 +62,15 @@ public class Constants {
         return a < b;
     }
 
-    public static /*@ strictly_pure */ int log_buckets(int n) {
+    /*@ public normal_behaviour
+      @ requires n >= BASE_CASE_SIZE;
+      @ ensures 1 <= \result && \result <= LOG_MAX_BUCKETS;
+      @ // Only the lower log bound holds since the function might yield a smaller result
+      @ ensures (1 << \result) * BASE_CASE_SIZE <= n;
+      @
+      @ assignable \strictly_nothing;
+      @*/
+    public static int log_buckets(int n) {
         if (n <= SINGLE_LEVEL_THRESHOLD) {
             // Only one more level until the base case, reduce the number of buckets
             return Functions.max(1, log2(n / BASE_CASE_SIZE));

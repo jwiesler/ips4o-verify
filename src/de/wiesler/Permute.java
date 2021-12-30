@@ -98,7 +98,7 @@ public class Permute {
       @ // overflow contains the overflowing bucket iff an overflow happens
       @
       @ assignable values[begin..end - 1];
-      @ assignable bucket_pointers[*];
+      @ assignable bucket_pointers.*;
       @ assignable swap_1[*], swap_2[*], overflow[*];
       @*/
     public static void permute(

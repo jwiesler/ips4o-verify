@@ -113,7 +113,7 @@ public class Classifier {
           @     int j;
           @     0 <= j < i;
           @     // It is from the source array
-          @     (\exists int k; begin <= k < end; values[k] == splitters[j]) &&
+          @     (\exists int k; 0 <= k < i; splitters[k] == splitters[j]) &&
           @     // Sorted
           @     j > 0 ==> splitters[j - 1] <= splitters[j]
           @ );

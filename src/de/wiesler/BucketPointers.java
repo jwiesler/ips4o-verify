@@ -21,7 +21,7 @@ public class BucketPointers {
       @*/
 
     /*@ public model_behaviour
-      @     requires 0 <= bucket && bucket < this.num_buckets;
+      @     requires 0 <= bucket && bucket < this.buckets;
       @ model boolean isValidBucketPointerAt(int bucket) {
       @     return isValidBucketPointer(this.buffer[2 * bucket], this.buffer[2 * bucket + 1]);
       @ }
