@@ -75,7 +75,8 @@ public class Tree {
     }
 
     /*@ normal_behaviour
-      @ ensures this.num_buckets <= \result && \result <= 2 * this.num_buckets;
+      @ ensures this.num_buckets <= \result;
+      @ ensures \result < 2 * this.num_buckets;
       @
       @ assignable \strictly_nothing;
       @*/
@@ -85,12 +86,12 @@ public class Tree {
         /*@
           @ loop_invariant 0 <= i && i <= this.log_buckets;
           @
-          @ loop_invariant i > 0 ==> (1 << i - 1) <= b;
+          @ loop_invariant (1 << i) <= b;
           @ loop_invariant i == 0 ==> b == 1;
-          @ loop_invariant b < (1 << (i - 1));
+          @ loop_invariant b < (1 << (i + 1));
           @
           @ decreases this.log_buckets - i;
-          @ assignable b;
+          @ assignable \strictly_nothing;
           @*/
         for (int i = 0; i < this.log_buckets; ++i) {
             b = 2 * b + Constants.toInt(Constants.cmp(this.tree[b], value));
@@ -101,15 +102,31 @@ public class Tree {
     /*@ normal_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires indices.length == end - begin;
+      @ requires values != indices && values != this.tree && indices != this.tree;
       @
-      @ ensures (\forall int i; 0 <= i < indices.length; 0 <= indices[i] < this.num_buckets);
+      @ ensures (\forall int i; 0 <= i < indices.length; this.num_buckets <= indices[i] < 2 * this.num_buckets);
       @
       @ assignable indices[*];
       @*/
     void classify_all(int[] values, int begin, int end, int[] indices) {
-        assert (end - begin == indices.length);
         Functions.fill(indices, 0, indices.length, 1);
+
+        /*@ loop_invariant 0 <= i && i <= this.log_buckets;
+          @
+          @ loop_invariant (\forall int k; 0 <= k < indices.length; (1 << i) <= indices[k] < (1 << (i + 1)));
+          @
+          @ decreases this.log_buckets - i;
+          @ assignable indices[*];
+          @*/
         for (int i = 0; i < this.log_buckets; ++i) {
+            /*@ loop_invariant 0 <= j && j <= indices.length;
+              @
+              @ loop_invariant (\forall int k; j <= k < indices.length; (1 << i) <= indices[k] < (1 << (i + 1)));
+              @ loop_invariant (\forall int k; 0 <= k < j; (1 << (i + 1)) <= indices[k] < (1 << (i + 2)));
+              @
+              @ decreases indices.length - j;
+              @ assignable indices[*];
+              @*/
             for (int j = 0; j < indices.length; ++j) {
                 int value = values[begin + j];
                 int index = indices[j];
