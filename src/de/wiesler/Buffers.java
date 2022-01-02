@@ -6,6 +6,7 @@ public class Buffers {
     /*@ public normal_behaviour
       @ requires offset >= 0;
       @ ensures \result >= offset && Functions.isAlignedTo(\result, BUFFER_SIZE);
+      @ ensures \result - offset < BUFFER_SIZE;
       @
       @ assignable \strictly_nothing;
       @*/

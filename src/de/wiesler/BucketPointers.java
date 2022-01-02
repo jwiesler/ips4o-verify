@@ -4,11 +4,11 @@ public class BucketPointers {
     // 2 * n integer (read, write)
     private final int[] buffer;
 
-    //@ invariant buffer.length == 2 * Constants.MAX_BUCKETS;
-    //@ invariant (\forall int i; 0 <= i && i < this.buffer.length; isValidBucketPointerAt(i));
+    //@ invariant Functions.isBetweenInclusive(this.num_buckets, 0, this.buffer.length);
+    //@ invariant (\forall int i; 0 <= i && i < this.num_buckets; isValidBucketPointerAt(i));
 
-    // TODO shadow bucket_starts?
-    //@ ghost int buckets;
+    //@ ghost int num_buckets;
+    //@ ghost int bucket_starts[];
 
     /*@ public model_behaviour
       @     requires true;
@@ -21,29 +21,35 @@ public class BucketPointers {
       @*/
 
     /*@ public model_behaviour
-      @     requires 0 <= bucket && bucket < this.buckets;
+      @     requires 0 <= bucket && bucket < this.num_buckets;
       @ model boolean isValidBucketPointerAt(int bucket) {
       @     return isValidBucketPointer(this.buffer[2 * bucket], this.buffer[2 * bucket + 1]);
       @ }
       @*/
 
     /*@ public normal_behaviour
-      @ requires buffer.length == 2 * Constants.MAX_BUCKETS;
       @ requires buffer != bucket_starts;
-      @ requires Functions.isBetweenInclusive(num_buckets, 2, Constants.MAX_BUCKETS);
-      @ requires 0 <= first_empty_position && Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
-      @ requires bucket_starts.length >= num_buckets + 1;
-      @ requires (\forall int i; 1 <= i && i <= num_buckets; bucket_starts[i - 1] <= bucket_starts[i]);
+      @ requires 2 * num_buckets <= buffer.length;
+      @ requires Functions.isBetweenInclusive(num_buckets, 1, bucket_starts.length - 1);
+      @ requires Functions.isSortedSlice(bucket_starts, 0, num_buckets + 1);
+      @ requires bucket_starts[0] == 0;
+      @ requires Functions.isBetweenInclusive(first_empty_position, 0, bucket_starts[num_buckets]);
+      @ requires Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
       @
+      @ ensures (\forall int i; 0 <= i && i < num_buckets; this.isValidBucketPointerAt(i));
       @ assignable buffer[0..2 * num_buckets - 1];
       @*/
     public BucketPointers(int[] bucket_starts, int num_buckets, int first_empty_position, int[] buffer) {
         this.buffer = buffer;
-        //@ set buckets = num_buckets;
+        //@ ghost BucketPointers self = this;
+        //@ set self.num_buckets = num_buckets;
+        //@ set self.bucket_starts = bucket_starts;
+
+        Lemma.ascending_geq_first(bucket_starts, 0, num_buckets + 1);
 
         /*@
-          @ loop_invariant 0 <= bucket && bucket <= this.buckets;
-          @ loop_invariant (\forall int i; 0 <= i && i <= this.buckets; isValidBucketPointerAt(i));
+          @ loop_invariant 0 <= bucket && bucket <= this.num_buckets;
+          @ loop_invariant (\forall int i; 0 <= i && i < bucket; this.isValidBucketPointerAt(i));
           @
           @ decreases num_buckets - bucket;
           @
@@ -56,18 +62,19 @@ public class BucketPointers {
         }
     }
 
-    /*@ public normal_behaviour
-      @ requires Functions.isBetween(bucket, 0, this.buckets);
+    /*@ normal_behaviour
+      @ requires this.num_buckets <= this.buffer.length;
+      @ requires Functions.isBetween(bucket, 0, this.num_buckets);
       @ requires Functions.isBetweenInclusive(start, 0, stop) && 0 <= first_empty_position;
       @ requires Functions.isAlignedTo(start, Buffers.BUFFER_SIZE);
       @ requires Functions.isAlignedTo(stop, Buffers.BUFFER_SIZE);
       @ requires Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
       @
-      @ ensures isValidBucketPointerAt(bucket);
+      @ ensures this.isValidBucketPointerAt(bucket);
       @
-      @ assignable this.buffer[(2 * bucket)..(2 * bucket + 1) - 1];
+      @ assignable this.buffer[(2 * bucket)..(2 * bucket + 1)];
       @*/
-    void init(int bucket, int start, int stop, int first_empty_position) {
+    /*@ helper @*/ void init(int bucket, int start, int stop, int first_empty_position) {
         int read;
         if (first_empty_position <= start) {
             read = start;
@@ -86,7 +93,7 @@ public class BucketPointers {
         public boolean occupied;
         public int position;
 
-        public Increment(boolean occupied, int position) {
+        public /*@ strictly_pure @*/ Increment(boolean occupied, int position) {
             this.occupied = occupied;
             this.position = position;
         }
