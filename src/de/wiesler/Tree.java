@@ -2,7 +2,7 @@ package de.wiesler;
 
 public class Tree {
     private final int[] tree;
-    private final int log_buckets;
+    private /*@ spec_public @*/ final int log_buckets;
     //@ ghost int num_buckets;
 
     /*@ public model_behaviour
@@ -12,25 +12,21 @@ public class Tree {
       @ }
       @*/
 
-    /*@
-      @ invariant this.tree.length == Classifier.STORAGE_SIZE;
-      @
-      @ invariant 1 <= this.log_buckets && this.log_buckets <= Constants.LOG_MAX_BUCKETS;
-      @ invariant this.num_buckets == (1 << this.log_buckets);
-      @ invariant this.num_buckets <= Classifier.STORAGE_SIZE;
+    /*@ public invariant Functions.isBetweenInclusive(this.log_buckets, 1, Constants.LOG_MAX_BUCKETS);
+      @ public invariant this.num_buckets == (1 << this.log_buckets);
+      @ public invariant Functions.isBetweenInclusive(this.num_buckets, 1, tree.length);
       @
       @ // accessible \inv, this.tree[*], this.log_buckets;
       @*/
 
     /*@ public normal_behaviour
-      @
-      @ requires sorted_splitters.length == Classifier.STORAGE_SIZE;
-      @ requires tree.length == Classifier.STORAGE_SIZE;
-      @
-      @ requires 1 <= log_buckets && log_buckets <= Constants.LOG_MAX_BUCKETS;
-      @
+      @ requires Functions.isBetweenInclusive(log_buckets, 1, Constants.LOG_MAX_BUCKETS);
       @ requires Functions.isSortedSlice(sorted_splitters, 0, (1 << log_buckets) - 1);
+      @ requires (1 << log_buckets) <= tree.length;
       @
+      @ ensures this.log_buckets == log_buckets;
+      @ ensures this.tree == tree;
+      @ 
       @ assignable tree[*];
       @*/
     public Tree(int[] sorted_splitters, int[] tree, int log_buckets) {

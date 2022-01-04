@@ -8,10 +8,11 @@ public class Classifier {
     private final int[] sorted_splitters;
     private final boolean equal_buckets;
 
-    /*@
-      @ invariant this.sorted_splitters.length == Classifier.STORAGE_SIZE;
-      @ invariant Functions.isBetweenInclusive(this.num_buckets, 0, Constants.MAX_BUCKETS - 1);
-      @ // invariant Functions.isSortedSlice(this.sorted_splitters, ;
+    /*@ public invariant Functions.isBetweenInclusive(this.num_buckets, 2, Constants.MAX_BUCKETS);
+      @ public invariant this.num_buckets == (1 << (this.tree.log_buckets + Constants.toInt(this.equal_buckets)));
+      @ invariant (1 << this.tree.log_buckets) <= this.sorted_splitters.length;
+      @ invariant Functions.isSortedSlice(this.sorted_splitters, 0, (1 << this.tree.log_buckets));
+      @ invariant this.sorted_splitters[this.num_buckets - 1] == this.sorted_splitters[this.num_buckets - 2];
       @*/
 
     /*@ public model_behaviour
@@ -60,24 +61,24 @@ public class Classifier {
       @*/
 
     /*@ public normal_behaviour
-      @ requires tree.length == Classifier.STORAGE_SIZE;
-      @ requires sorted_splitters.length == Classifier.STORAGE_SIZE;
+      @ requires tree != sorted_splitters;
+      @ requires Functions.isBetweenInclusive(log_buckets, 1, Constants.LOG_MAX_BUCKETS);
+      @ requires Functions.isSortedSlice(sorted_splitters, 0, 1 << log_buckets);
+      @ requires (1 << log_buckets) <= tree.length;
+      @ requires sorted_splitters[(1 << log_buckets) - 1] == sorted_splitters[(1 << log_buckets) - 2];
       @
       @ assignable sorted_splitters[*], tree[*];
       @*/
     public Classifier(int[] sorted_splitters, int[] tree, int log_buckets, boolean equal_buckets) {
-        assert (log_buckets <= Constants.LOG_MAX_BUCKETS + 1);
         int num_buckets = 1 << log_buckets;
+        //@ assert 2 <= num_buckets <= (1 << Constants.LOG_MAX_BUCKETS);
 
         int num_splitters = num_buckets - 1;
         sorted_splitters[num_splitters] = sorted_splitters[num_splitters - 1];
-        if (equal_buckets) {
-            num_buckets = 2 * num_buckets;
-        }
 
         this.tree = new Tree(sorted_splitters, tree, log_buckets);
         this.sorted_splitters = sorted_splitters;
-        this.num_buckets = num_buckets;
+        this.num_buckets = num_buckets << Constants.toInt(equal_buckets);
         this.equal_buckets = equal_buckets;
     }
 
