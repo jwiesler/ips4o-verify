@@ -14,7 +14,7 @@ public class Tree {
 
     /*@ public invariant Functions.isBetweenInclusive(this.log_buckets, 1, Constants.LOG_MAX_BUCKETS);
       @ public invariant this.num_buckets == (1 << this.log_buckets);
-      @ public invariant Functions.isBetweenInclusive(this.num_buckets, 1, tree.length);
+      @ public invariant Functions.isBetweenInclusive(this.num_buckets, 2, tree.length);
       @
       @ // accessible \inv, this.tree[*], this.log_buckets;
       @*/

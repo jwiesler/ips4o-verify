@@ -10,9 +10,9 @@ public class Classifier {
 
     /*@ public invariant Functions.isBetweenInclusive(this.num_buckets, 2, Constants.MAX_BUCKETS);
       @ public invariant this.num_buckets == (1 << (this.tree.log_buckets + Constants.toInt(this.equal_buckets)));
-      @ invariant (1 << this.tree.log_buckets) <= this.sorted_splitters.length;
-      @ invariant Functions.isSortedSlice(this.sorted_splitters, 0, (1 << this.tree.log_buckets));
-      @ invariant this.sorted_splitters[this.num_buckets - 1] == this.sorted_splitters[this.num_buckets - 2];
+      @ invariant this.tree.num_buckets <= this.sorted_splitters.length;
+      @ invariant Functions.isSortedSlice(this.sorted_splitters, 0, this.tree.num_buckets);
+      @ invariant this.sorted_splitters[this.tree.num_buckets - 1] == this.sorted_splitters[this.tree.num_buckets - 2];
       @*/
 
     /*@ public model_behaviour
@@ -74,9 +74,11 @@ public class Classifier {
         //@ assert 2 <= num_buckets <= (1 << Constants.LOG_MAX_BUCKETS);
 
         int num_splitters = num_buckets - 1;
-        sorted_splitters[num_splitters] = sorted_splitters[num_splitters - 1];
+        assert (sorted_splitters[num_splitters] == sorted_splitters[num_splitters - 1]);
 
         this.tree = new Tree(sorted_splitters, tree, log_buckets);
+        //@ assert this.tree.log_buckets == log_buckets;
+        //@ assert sorted_splitters[num_splitters] == sorted_splitters[num_splitters - 1];
         this.sorted_splitters = sorted_splitters;
         this.num_buckets = num_buckets << Constants.toInt(equal_buckets);
         this.equal_buckets = equal_buckets;
