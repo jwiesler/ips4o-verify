@@ -214,7 +214,14 @@ public class Sorter {
       @     (\forall int b; 0 <= b < \result.num_buckets; Sorter.isBucketPartitioned(values, begin, end, bucket_starts[b], bucket_starts[b + 1])) &&
       @     // Small buckets are sorted
       @     (\forall int b; 0 <= b < \result.num_buckets; Sorter.smallBucketIsSorted(values, begin, end, bucket_starts[b], bucket_starts[b + 1])) &&
-      @     !\result.equal_buckets;
+      @     // Equality buckets at odd indices
+      @     (\result.equal_buckets ==> 
+      @         (\forall int b; 
+      @             0 <= b < \result.num_buckets && b % 2 == 1;
+      @             (\forall int i; 
+      @                 bucket_starts[b] <= i < bucket_starts[b + 1]; 
+      @                 values[begin + bucket_starts[b]] == values[begin + i]))
+      @     );
       @
       @ assignable values[begin..end - 1];
       @ assignable storage.*;
