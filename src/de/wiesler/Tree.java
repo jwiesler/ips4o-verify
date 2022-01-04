@@ -43,11 +43,9 @@ public class Tree {
 
     /*@ normal_behaviour
       @ requires this.tree != null;
-      @ requires this.tree.length == Classifier.STORAGE_SIZE;
-      @
-      @ requires 1 <= this.log_buckets && this.log_buckets <= Constants.LOG_MAX_BUCKETS;
+      @ requires Functions.isBetweenInclusive(this.log_buckets, 1, Constants.LOG_MAX_BUCKETS);
       @ requires this.num_buckets == (1 << this.log_buckets);
-      @ requires this.num_buckets <= Classifier.STORAGE_SIZE;
+      @ requires Functions.isBetweenInclusive(this.num_buckets, 2, tree.length);
       @
       @ requires 1 <= position && position < this.num_buckets;
       @ requires Functions.isValidSlice(sorted_splitters, begin, end);
