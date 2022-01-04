@@ -48,9 +48,10 @@ public class Functions {
 
     /*@
       @ public model_behaviour
-      @ requires isValidSlice(values, begin, end);
+      @ requires true;
       @ static model boolean isSortedSlice(int[] values, int begin, int end) {
-      @     return (\forall int i; begin <= i && i < end - 1; values[i] <= values[i + 1]);
+      @     return isValidSlice(values, begin, end) && 
+      @         (\forall int i; begin <= i && i < end - 1; values[i] <= values[i + 1]);
       @ }
       @*/
     
@@ -157,7 +158,6 @@ public class Functions {
     }
 
     /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
       @ requires Functions.isSortedSlice(values, begin, end);
       @ requires values != target;
       @

@@ -29,9 +29,8 @@ public class Lemma {
     }
 
     /*@ public normal_behaviour
-      @ requires Functions.isBetweenInclusive(num_buckets, 1, bucket_starts.length - 1);
-      @ requires bucket_starts[0] == 0 && bucket_starts[num_buckets] == len;
-      @ requires Functions.isSortedSlice(bucket_starts, 0, num_buckets + 1);
+      @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets);
+      @ requires bucket_starts[num_buckets] == len;
       @ 
       @ ensures (\forall int i; 0 <= i < len; (\exists int b; 0 <= b < num_buckets; bucket_starts[b] <= i < bucket_starts[b + 1]));
       @ 
@@ -82,7 +81,6 @@ public class Lemma {
       @*/
 
     /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
       @ requires Functions.isSortedSlice(values, begin, end);
       @ 
       @ ensures (\forall int i; begin <= i < end; values[begin] <= values[i]);

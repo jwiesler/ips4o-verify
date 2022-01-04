@@ -193,9 +193,7 @@ public class Sorter {
 
     /*@ public model_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
-      @ requires bucket_begin <= bucket_end;
-      @ requires Functions.isBetweenInclusive(begin + bucket_begin, begin, end);
-      @ requires Functions.isBetweenInclusive(begin + bucket_end, begin, end);
+      @ requires Functions.isValidSubSlice(values, begin, end, begin + bucket_begin, begin + bucket_end);
       @
       @ static model boolean smallBucketIsSorted(int[] values, int begin, int end, int bucket_begin, int bucket_end) {
       @     return bucket_end - bucket_begin <= 2 * Constants.BASE_CASE_SIZE || end - begin <= Constants.SINGLE_LEVEL_THRESHOLD ==>
@@ -337,6 +335,8 @@ public class Sorter {
                 }
             }
         }
+
+        Lemma.sortedness_from_partition_sorted(values, begin, end, bucket_starts, num_buckets);
     }
 
     /*@ public normal_behaviour

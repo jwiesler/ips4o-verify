@@ -45,10 +45,6 @@ public class Tree {
         this.build(1, sorted_splitters, 0, num_splitters);
     }
 
-    public int log_buckets() {
-        return log_buckets;
-    }
-
     /*@ normal_behaviour
       @ requires this.tree != null;
       @ requires this.tree.length == Classifier.STORAGE_SIZE;

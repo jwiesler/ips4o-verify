@@ -131,11 +131,11 @@ public class Classifier {
         return new Classifier(splitters, tree, log_buckets, use_equal_buckets);
     }
 
-    public int num_buckets() {
+    public /*@ strictly_pure */ int num_buckets() {
         return this.num_buckets;
     }
 
-    public boolean equal_buckets() {
+    public /*@ strictly_pure */ boolean equal_buckets() {
         return this.equal_buckets;
     }
 
@@ -169,7 +169,7 @@ public class Classifier {
       @*/
     public void classify_all(int[] values, int begin, int end, int[] indices) {
         // TODO class invariant
-        assert (this.num_buckets == 1 << (this.tree.log_buckets() + Constants.toInt(this.equal_buckets)));
+        //@ assert (this.num_buckets == 1 << (this.tree.log_buckets + Constants.toInt(this.equal_buckets)));
 
         this.tree.classify_all(values, begin, end, indices);
         if (this.equal_buckets) {
