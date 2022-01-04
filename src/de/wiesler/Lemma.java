@@ -86,4 +86,14 @@ public class Lemma {
       @ ensures (\forall int i; begin <= i < end; values[begin] <= values[i]);
       @*/
     static void /*@ strictly_pure @*/ ascending_geq_first(int[] values, int begin, int end) {}
+
+    /*@ public normal_behaviour
+      @ requires Functions.isValidSlice(values, begin, end);
+      @ // all positive
+      @ requires (\forall int i; begin <= i < end; values[i] >= 0);
+      @ 
+      @ // lower bound of the sum is any term
+      @ ensures (\forall int i; begin <= i < end; values[i] <= (\sum int i; begin <= i < end; values[i]));
+      @*/
+    static void /*@ strictly_pure @*/ sum_geq_any_term(int[] values, int begin, int end) {}
 }
