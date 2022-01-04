@@ -46,10 +46,10 @@ public class Sorter {
         //@ assert num_buckets * Constants.BASE_CASE_SIZE <= n;
         int step = Functions.max(1, Constants.oversampling_factor(n));
         //@ assert (1 << step) <= n / 5;
-        //@ assert step * num_buckets - 1 <= n / 2;
+        //@ assert 0 < step * num_buckets - 1 && step * num_buckets - 1 <= n / 2;
         int num_samples = Functions.min(step * num_buckets - 1, n / 2);
 
-        //@ assert Functions.isValidSubSlice(values, begin, end, begin, begin + num_samples) && 0 < num_samples;
+        //@ assert Functions.isValidSubSlice(values, begin, end, begin, begin + num_samples);
         Functions.select_n(values, begin, end, num_samples);
 
         sort(values, begin, begin + num_samples, storage);
@@ -210,9 +210,8 @@ public class Sorter {
       @
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures \result != null ==>
-      @     Functions.isBetweenInclusive(\result.num_buckets, 1, Constants.MAX_BUCKETS) &&
-      @     bucket_starts[0] == 0 && bucket_starts[\result.num_buckets] == end - begin &&
-      @     Functions.isSortedSlice(bucket_starts, 0, \result.num_buckets) &&
+      @     Functions.isValidBucketStarts(bucket_starts, \result.num_buckets) &&
+      @     bucket_starts[\result.num_buckets] == end - begin &&
       @     // Buckets are partitioned
       @     (\forall int b; 0 <= b < \result.num_buckets; Sorter.isBucketPartitioned(values, begin, end, bucket_starts[b], bucket_starts[b + 1])) &&
       @     // Small buckets are sorted

@@ -4,13 +4,25 @@ public class BucketPointers {
     // 2 * n integer (read, write)
     private final int[] buffer;
 
-    //@ invariant Functions.isBetweenInclusive(this.num_buckets, 0, this.buffer.length);
-    //@ invariant (\forall int i; 0 <= i && i < this.num_buckets; isValidBucketPointerAt(i));
-
     //@ ghost int num_buckets;
     //@ ghost int bucket_starts[];
+    //@ ghost int first_empty_position;
 
-    /*@ public model_behaviour
+    /*@ model_behaviour
+      @ requires true;
+      @ static model boolean isBaseInvariantFullfilled(int[] buffer, int[] bucket_starts, int num_buckets, int first_empty_position) {
+      @     return buffer != bucket_starts &&
+      @         Functions.isValidBucketStarts(bucket_starts, num_buckets) &&
+      @         Functions.isBetweenInclusive(2 * num_buckets, 0, buffer.length) &&
+      @         Functions.isBetweenInclusive(first_empty_position, 0, bucket_starts[num_buckets]) &&
+      @         Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
+      @ }
+      @*/
+
+    //@ instance invariant BucketPointers.isBaseInvariantFullfilled(this.buffer, this.bucket_starts, this.num_buckets, this.first_empty_position);
+    //@ invariant (\forall int i; 0 <= i && i < this.num_buckets; this.isValidBucketPointerAt(i));
+
+    /*@ model_behaviour
       @     requires true;
       @ static model boolean isValidBucketPointer(int read, int write) {
       @     return 0 <= read &&
@@ -20,7 +32,7 @@ public class BucketPointers {
       @ }
       @*/
 
-    /*@ public model_behaviour
+    /*@ model_behaviour
       @     requires 0 <= bucket && bucket < this.num_buckets;
       @ model boolean isValidBucketPointerAt(int bucket) {
       @     return isValidBucketPointer(this.buffer[2 * bucket], this.buffer[2 * bucket + 1]);
@@ -28,13 +40,7 @@ public class BucketPointers {
       @*/
 
     /*@ public normal_behaviour
-      @ requires buffer != bucket_starts;
-      @ requires 2 * num_buckets <= buffer.length;
-      @ requires Functions.isBetweenInclusive(num_buckets, 1, bucket_starts.length - 1);
-      @ requires Functions.isSortedSlice(bucket_starts, 0, num_buckets + 1);
-      @ requires bucket_starts[0] == 0;
-      @ requires Functions.isBetweenInclusive(first_empty_position, 0, bucket_starts[num_buckets]);
-      @ requires Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
+      @ requires isBaseInvariantFullfilled(buffer, bucket_starts, num_buckets, first_empty_position);
       @
       @ ensures (\forall int i; 0 <= i && i < num_buckets; this.isValidBucketPointerAt(i));
       @ assignable buffer[0..2 * num_buckets - 1];
@@ -44,6 +50,7 @@ public class BucketPointers {
         //@ ghost BucketPointers self = this;
         //@ set self.num_buckets = num_buckets;
         //@ set self.bucket_starts = bucket_starts;
+        //@ set self.first_empty_position = first_empty_position;
 
         Lemma.ascending_geq_first(bucket_starts, 0, num_buckets + 1);
 
@@ -63,12 +70,12 @@ public class BucketPointers {
     }
 
     /*@ normal_behaviour
-      @ requires this.num_buckets <= this.buffer.length;
+      @ requires isBaseInvariantFullfilled(this.buffer, this.bucket_starts, this.num_buckets, this.first_empty_position);
+      @ 
       @ requires Functions.isBetween(bucket, 0, this.num_buckets);
-      @ requires Functions.isBetweenInclusive(start, 0, stop) && 0 <= first_empty_position;
+      @ requires Functions.isBetweenInclusive(start, 0, stop) && first_empty_position == this.first_empty_position;
       @ requires Functions.isAlignedTo(start, Buffers.BUFFER_SIZE);
       @ requires Functions.isAlignedTo(stop, Buffers.BUFFER_SIZE);
-      @ requires Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
       @
       @ ensures this.isValidBucketPointerAt(bucket);
       @

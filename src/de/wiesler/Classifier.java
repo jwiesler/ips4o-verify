@@ -189,16 +189,6 @@ public class Classifier {
 
     /*@
       @ public model_behaviour
-      @ requires bucket_starts.length == Constants.MAX_BUCKETS + 1;
-      @ requires buckets_count > 0 && buckets_count <= bucket_starts.length;
-      @ static model boolean validBucketStarts(int[] bucket_starts, int buckets_count, int values_len) {
-      @     return (\forall int i; 1 <= i < buckets_count; bucket_starts[i - 1] <= bucket_starts[i]) &&
-      @         (bucket_starts[buckets_count - 1] == values_len);
-      @ }
-      @*/
-
-    /*@
-      @ public model_behaviour
       @ requires true;
       @ model boolean exactlyNElementsInBuffers(Buffers buffers, int count) {
       @     return count == (\sum int bucket; this.isBucketIndex(bucket); buffers.indices[bucket]);
@@ -220,7 +210,7 @@ public class Classifier {
       @ ensures begin <= \result && \result <= end && Functions.isAlignedTo(\result - begin, Buffers.BUFFER_SIZE);
       @ ensures this.isClassifiedBlocksRange(values, begin, \result, Buffers.BUFFER_SIZE);
       @ ensures buffers.isClassifiedWith(this);
-      @ ensures Classifier.validBucketStarts(bucket_starts, this.num_buckets, end - begin);
+      @ ensures Functions.isValidBucketStarts(bucket_starts, this.num_buckets) && bucket_starts[this.num_buckets] == end - begin;
       @
       @ // All values are either in a buffer or in values[..\result]
       @ // Bucket starts

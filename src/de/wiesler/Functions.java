@@ -53,6 +53,16 @@ public class Functions {
       @     return (\forall int i; begin <= i && i < end - 1; values[i] <= values[i + 1]);
       @ }
       @*/
+    
+    /*@ public model_behaviour
+      @ requires true;
+      @ static model boolean isValidBucketStarts(int[] bucket_starts, int num_buckets) {
+      @     return isValidSlice(bucket_starts, 0, num_buckets + 1) &&
+      @         2 <= num_buckets &&
+      @         bucket_starts[0] == 0 &&
+      @         isSortedSlice(bucket_starts, 0, num_buckets + 1);
+      @ }
+      @*/
 
     /*@ public normal_behaviour
       @ requires isValidSlice(values, begin, end);
@@ -62,8 +72,7 @@ public class Functions {
       @
       @ assignable values[begin..end - 1];
       @*/
-    public static void select_n(int[] values, int begin, int end, int num_samples) {
-    }
+    public static void select_n(int[] values, int begin, int end, int num_samples) {}
 
     /*@ public normal_behaviour
       @ ensures \result == ((a >= b) ? a : b);
