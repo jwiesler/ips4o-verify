@@ -194,7 +194,7 @@ public class Classifier {
       @ public model_behaviour
       @ requires true;
       @ model boolean exactlyNElementsInBuffers(Buffers buffers, int count) {
-      @     return count == (\sum int bucket; this.isBucketIndex(bucket); buffers.indices[bucket]);
+      @     return count == (\sum int bucket; this.isBucketIndex(bucket); buffers.bufferAt(bucket).length);
       @ }
       @*/
 
