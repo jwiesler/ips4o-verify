@@ -352,7 +352,7 @@ public class Sorter {
             }
         }
 
-        Lemma.sortedness_from_partition_sorted(values, begin, end, bucket_starts, num_buckets);
+        //@ assert Lemma.sortednessFromPartitionSorted(values, begin, end, bucket_starts, num_buckets);
     }
 
     /*@ public normal_behaviour

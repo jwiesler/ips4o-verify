@@ -52,7 +52,7 @@ public class BucketPointers {
         //@ set self.bucket_starts = bucket_starts;
         //@ set self.first_empty_position = first_empty_position;
 
-        Lemma.ascending_geq_first(bucket_starts, 0, num_buckets + 1);
+        //@ assert Lemma.ascendingGeqFirst(bucket_starts, 0, num_buckets + 1);
 
         /*@
           @ loop_invariant 0 <= bucket && bucket <= this.num_buckets;
