@@ -209,6 +209,7 @@ public class Classifier {
       @     buffers.doesNotAlias(bucket_starts) &&
       @     this.doesNotAlias(buffers.buffer) &&
       @     this.doesNotAlias(buffers.indices) && values != bucket_starts;
+      @ requires buffers.buckets == this.num_buckets;
       @
       @ ensures begin <= \result && \result <= end && Functions.isAlignedTo(\result - begin, Buffers.BUFFER_SIZE);
       @ ensures this.isClassifiedBlocksRange(values, begin, \result, Buffers.BUFFER_SIZE);

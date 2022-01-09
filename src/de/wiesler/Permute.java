@@ -64,30 +64,6 @@ public class Permute {
         }
     }
 
-    // requires len > 0
-    public static int max_offset(int len) {
-        // First block offset *not* to write to:
-        // - if the length is already block aligned, the max offset is the offset to the end
-        //    |---|---|---|
-        //                ^
-        //                |
-        //             max/len
-        // - else we align the length to the next block
-        //    |---|---|---|
-        //            ^  ^
-        //           /   |
-        //         max  len
-
-        int aligned_len = Buffers.align_to_next_block(len);
-        int max_offset;
-        if (len == aligned_len) {
-            max_offset = aligned_len;
-        } else {
-            max_offset = aligned_len - Buffers.BUFFER_SIZE;
-        }
-        return max_offset;
-    }
-
     /*@ public normal_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ // aliasing
@@ -111,7 +87,7 @@ public class Permute {
             final int[] swap_2,
             final int[] overflow
     ) {
-        final int max_offset = begin + max_offset(end - begin);
+        final int max_offset = begin + Buffers.align_to_previous_block(end - begin);
         final int num_buckets = classifier.num_buckets();
 
         for (int bucket = 0; bucket < num_buckets; ++bucket) {

@@ -5,6 +5,7 @@ public class Buffers {
 
     /*@ public normal_behaviour
       @ requires offset >= 0;
+      @ 
       @ ensures \result >= offset && Functions.isAlignedTo(\result, BUFFER_SIZE);
       @ ensures \result - offset < BUFFER_SIZE;
       @
@@ -12,6 +13,23 @@ public class Buffers {
       @*/
     public static int align_to_next_block(int offset) {
         return (offset + BUFFER_SIZE - 1) & (-BUFFER_SIZE);
+    }
+
+    /*@ public normal_behaviour
+      @ requires offset >= 0;
+      @ 
+      @ ensures \result <= offset && Functions.isAlignedTo(\result, BUFFER_SIZE);
+      @ ensures offset - \result < BUFFER_SIZE;
+      @
+      @ assignable \strictly_nothing;
+      @*/
+    public static int align_to_previous_block(int offset) {
+        int aligned_offset = Buffers.align_to_next_block(offset);
+        if (offset == aligned_offset) {
+            return aligned_offset;
+        } else {
+            return aligned_offset - Buffers.BUFFER_SIZE;
+        }
     }
 
     private /*@ spec_public @*/ final int[] buffer;

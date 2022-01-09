@@ -57,121 +57,6 @@ public class Sorter {
         return new SampleResult(num_samples, num_buckets, step);
     }
 
-    /*@ // For all buckets:
-      @ // * Permutation of: (\old(written blocks) + buffer content) <-> (full block content)
-      @ // * Bucket pointers have exactly enough space for buffer content (+ overflow)
-      @ // Overflow happens <=> buffer is the last buffer with size >= 1 block and aligning this block leads to out of bounds
-      @*/
-    public static void cleanup(
-            final int[] values,
-            final int begin,
-            final int end,
-            final Buffers buffers,
-            final int[] bucket_starts,
-            final BucketPointers bucket_pointers,
-            final int num_buckets,
-            final int[] overflow
-    ) {
-        int overflow_bucket = -1;
-        for (int bucket = num_buckets; bucket-- > 0; ) {
-            int bucket_size = bucket_starts[bucket + 1] - bucket_starts[bucket];
-            if (Buffers.BUFFER_SIZE < bucket_size) {
-                overflow_bucket = bucket;
-                break;
-            }
-        }
-
-        final boolean is_last_level = end - begin <= Constants.SINGLE_LEVEL_THRESHOLD;
-        final int max_offset = Permute.max_offset(end - begin);
-
-        for (int bucket = 0; bucket < num_buckets; ++bucket) {
-            final int relative_start = bucket_starts[bucket];
-            final int relative_stop = bucket_starts[bucket + 1];
-            final int relative_write = bucket_pointers.write(bucket);
-            final int start = begin + relative_start;
-            final int stop = begin + relative_stop;
-            final int write = begin + relative_write;
-
-            int head_start = begin + relative_start;
-            int head_stop = begin + Functions.min(Buffers.align_to_next_block(relative_start), relative_stop);
-
-            int tail_start;
-            int tail_stop;
-
-            // Overflow happened:
-            // - write to an offset >= max_offset was stopped
-            // - bucket pointer write increment returns the old value => write - BUFFER_SIZE >= max_offset
-            // - this block is in the overflow buffer
-            if (overflow_bucket != -1 && bucket == overflow_bucket && relative_write >= Buffers.BUFFER_SIZE && relative_write - Buffers.BUFFER_SIZE >= max_offset) {
-                // Overflow
-
-                // Overflow buffer has been written => write pointer must be at end of bucket
-                // This gives stop <= write
-                assert (Buffers.align_to_next_block(relative_stop) == relative_write);
-
-                tail_start = write - Buffers.BUFFER_SIZE;
-                tail_stop = stop;
-
-                int head_len = head_stop - head_start;
-
-                // There must be space for at least block size elements
-                assert (Buffers.BUFFER_SIZE <= (tail_stop - tail_start) + head_len);
-
-                // Fill head: head.len() <= Buffers.BUFFER_SIZE
-                assert (head_start + head_len <= head_stop);
-                System.arraycopy(overflow, 0, values, head_start, head_len);
-                head_start = head_stop;
-
-                // Write remaining elements into tail
-                int tail_elements = Buffers.BUFFER_SIZE - head_len;
-                assert (start <= tail_start && tail_start + tail_elements <= tail_stop);
-                System.arraycopy(overflow, head_len, values, tail_start, tail_elements);
-                tail_start += tail_elements;
-            } else if (stop < write) {
-                if (Buffers.BUFFER_SIZE < stop - start) {
-                    // Final block has been written
-                    assert (Buffers.align_to_next_block(relative_stop) == relative_write);
-
-                    int overflow_len = write - stop;
-
-                    // Must fit, no other empty space left
-                    assert (overflow_len <= head_stop - head_start);
-
-                    // Write overflow of last block to head
-                    System.arraycopy(values, stop, values, head_start, overflow_len);
-                    head_start += overflow_len;
-
-                    // Tail is empty
-                } else {
-                    // Bucket is smaller than a block => head is the full block, no tail
-                }
-
-                tail_start = stop;
-                tail_stop = stop;
-            } else {
-                // Default case: No overflow, write <= stop
-                // This can't happen for buckets smaller than a block since they are never written to
-
-                tail_start = write;
-                tail_stop = stop;
-            }
-
-            // Write remaining elements from buffer to head and tail
-            buffers.distribute(
-                    bucket,
-                    values,
-                    head_start,
-                    head_stop - head_start,
-                    tail_start,
-                    tail_stop - tail_start
-            );
-
-            if (stop - start <= 2 * Constants.BASE_CASE_SIZE || is_last_level) {
-                base_case_sort(values, start, stop);
-            }
-        }
-    }
-
     /*@ public model_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires bucket_begin <= bucket_end;
@@ -268,7 +153,7 @@ public class Sorter {
         int[] overflow = storage.overflow;
         Permute.permute(values, begin, end, classifier, bucket_pointers, storage.swap_1, storage.swap_2, overflow);
 
-        cleanup(values,
+        Cleanup.cleanup(values,
                 begin,
                 end,
                 buffers,
