@@ -24,6 +24,7 @@ public class Classifier {
 
     /*@ public model_behaviour
       @ requires true;
+      @ accessible this.num_buckets;
       @ model boolean isBucketIndex(int bucket) {
       @     return Functions.isBetweenInclusive(bucket, 0, this.num_buckets - 1);
       @ }
@@ -31,6 +32,7 @@ public class Classifier {
 
     /*@ public model_behaviour
       @ requires this.isBucketIndex(bucket);
+      @ accessible this.*;
       @ model boolean isClassified(int value, int bucket) {
       @     return true;
       @ }
@@ -38,6 +40,7 @@ public class Classifier {
 
     /*@ public model_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
+      @ accessible this.*, values[begin..end - 1];
       @ model boolean isClassifiedBlock(int[] values, int begin, int end) {
       @     return (\exists int bucket; this.isBucketIndex(bucket);
       @         (\forall
@@ -51,6 +54,7 @@ public class Classifier {
     /*@ public model_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires Functions.isAlignedTo(end - begin, block_size);
+      @ accessible this.*, values[begin..end - 1];
       @ model boolean isClassifiedBlocksRange(int[] values, int begin, int end, int block_size) {
       @     return (\forall
       @         int block;

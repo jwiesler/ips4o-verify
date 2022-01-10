@@ -47,12 +47,13 @@ public class Buffers {
       @ requires true;
       @ ensures (\forall int b; Functions.isBetween(b, 0, this.buckets); this.bufferAt(b) == \seq_empty);
       @ model boolean isEmpty() {
-      @     return (\forall int b; Functions.isBetween(b, 0, this.buckets); this.indices[b] == 0);
+      @     return (\forall int b; Functions.isBetween(b, 0, this.buckets); this.indices[b] == \seq_empty);
       @ }
       @*/
 
     /*@ public model_behaviour
-      @ requires true;
+      @ requires Functions.isBetween(bucket, 0, this.buckets);
+      @ accessible this.*;
       @ model \seq bufferAt(int bucket) {
       @     return (\seq_def \bigint i; bucket * BUFFER_SIZE; bucket * BUFFER_SIZE + this.indices[bucket]; this.buffer[i]);
       @ }
@@ -60,11 +61,12 @@ public class Buffers {
 
     /*@ public model_behaviour
       @ requires true;
+      @ accessible this.*, classifier.*;
       @ model boolean isClassifiedWith(Classifier classifier) {
       @     return (\forall 
       @         int b; 
       @         Functions.isBetween(b, 0, this.buckets);
-      @         (\forall int i; Functions.isBetween(i, b * BUFFER_SIZE, b * BUFFER_SIZE + this.indices[b]); classifier.isClassified(this.buffer[i], b))
+      @         (\forall int i; 0 <= i < this.bufferAt(b).length; classifier.isClassified(this.bufferAt(b)[i], b))
       @     );
       @ }
       @*/
@@ -75,6 +77,8 @@ public class Buffers {
       @ invariant this.indices.length == Constants.MAX_BUCKETS;
       @ invariant Functions.isBetweenInclusive(this.buckets, 0, Constants.MAX_BUCKETS);
       @ invariant (\forall int i; 0 <= i && i < this.buckets; 0 <= this.indices[i] && this.indices[i] <= BUFFER_SIZE);
+      @ 
+      @ accessible \inv: this.buffer, this.indices, this.buckets;
       @*/
 
     /*@ public normal_behaviour

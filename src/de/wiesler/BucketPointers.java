@@ -106,7 +106,7 @@ public class BucketPointers {
         }
     }
 
-    public int write(int bucket) {
+    public /*@ strictly_pure @*/ int write(int bucket) {
         final int write_pos = 2 * bucket + 1;
         return this.buffer[write_pos];
     }

@@ -4,6 +4,7 @@ public class Functions {
     /*@
       @ public model_behaviour
       @ requires index >= 1;
+      @ accessible \nothing;
       @ static model boolean isAlignedTo(int index, int alignment) {
       @     return index % alignment == 0;
       @ }
@@ -12,6 +13,7 @@ public class Functions {
     /*@
       @ public model_behaviour
       @ requires lower <= upper;
+      @ accessible \nothing;
       @ static model boolean isBetweenInclusive(int index, int lower, int upper) {
       @     return lower <= index && index <= upper;
       @ }
@@ -20,6 +22,7 @@ public class Functions {
     /*@
       @ public model_behaviour
       @ requires lower <= upper;
+      @ accessible \nothing;
       @ static model boolean isBetween(int index, int lower, int upper) {
       @     return lower <= index && index < upper;
       @ }
@@ -28,6 +31,7 @@ public class Functions {
     /*@
       @ public model_behaviour
       @ requires true;
+      @ accessible \nothing;
       @ static model boolean isValidSlice(int[] values, int begin, int end) {
       @     return values != null &&
       @         isBetweenInclusive(begin, 0, values.length) &&
@@ -39,6 +43,7 @@ public class Functions {
     /*@
       @ public model_behaviour
       @ requires isValidSlice(values, begin, end);
+      @ accessible \nothing;
       @ static model boolean isValidSubSlice(int[] values, int begin, int end, int sub_begin, int sub_end) {
       @     return isBetweenInclusive(sub_begin, begin, end) &&
       @         isBetweenInclusive(sub_end, begin, end) &&
@@ -49,6 +54,7 @@ public class Functions {
     /*@
       @ public model_behaviour
       @ requires true;
+      @ accessible values[begin..end - 1];
       @ static model boolean isSortedSlice(int[] values, int begin, int end) {
       @     return isValidSlice(values, begin, end) && 
       @         (\forall int i; begin <= i && i < end - 1; values[i] <= values[i + 1]);
@@ -57,6 +63,7 @@ public class Functions {
     
     /*@ public model_behaviour
       @ requires true;
+      @ accessible bucket_starts[0..num_buckets];
       @ static model boolean isValidBucketStarts(int[] bucket_starts, int num_buckets) {
       @     return isValidSlice(bucket_starts, 0, num_buckets + 1) &&
       @         2 <= num_buckets &&
@@ -77,6 +84,7 @@ public class Functions {
 
     /*@ public normal_behaviour
       @ ensures \result == ((a >= b) ? a : b);
+      @ accessible \nothing;
       @ assignable \strictly_nothing;
       @*/
     public static int max(int a, int b) {
@@ -85,6 +93,7 @@ public class Functions {
 
     /*@ public normal_behaviour
       @ ensures \result == ((a <= b) ? a : b);
+      @ accessible \nothing;
       @ assignable \strictly_nothing;
       @*/
     public static int min(int a, int b) {
@@ -175,7 +184,7 @@ public class Functions {
       @     // It is unique in the target array (or: strictly ascending)
       @     (i > 0 ==> target[i - 1] < target[i])
       @ );
-      @ ensures Functions.isValidSlice(target, 0, \result);
+      @ ensures Functions.isBetweenInclusive(\result, 1, count);
       @
       @ assignable target[0..count - 1];
       @*/

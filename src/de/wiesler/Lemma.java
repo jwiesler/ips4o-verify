@@ -35,6 +35,8 @@ public class Lemma {
       @ 
       @ ensures \result;
       @ 
+      @ accessible bucket_starts[0..num_buckets];
+      @ 
       @ static model boolean bucketIndexFromOffset(int[] bucket_starts, int num_buckets, int len) {
       @     return (\forall int i; 0 <= i < len; (\exists int b; 0 <= b < num_buckets; bucket_starts[b] <= i < bucket_starts[b + 1]));
       @ }
@@ -45,6 +47,8 @@ public class Lemma {
       @ requires Functions.isSortedSlice(values, begin, end);
       @ 
       @ ensures \result;
+      @ 
+      @ accessible values[begin..end - 1];
       @ 
       @ static model boolean ascendingGeqFirst(int[] values, int begin, int end) {
       @     return (\forall int i; begin <= i < end; values[begin] <= values[i]);

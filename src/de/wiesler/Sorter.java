@@ -23,24 +23,27 @@ public class Sorter {
         }
     }
 
-    /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
-      @ requires end - begin >= Constants.BASE_CASE_SIZE;
-      @
-      @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
-      @ ensures Functions.isValidSubSlice(values, begin, end, begin, begin + \result.num_samples);
-      @ ensures \result.num_samples <= (end - begin) / 2;
-      @ ensures Functions.isSortedSlice(values, begin, begin + \result.num_samples);
-      @ ensures 0 < \result.step && 0 < \result.num_buckets && 0 < \result.num_samples;
-      @
-      @ // there exist enough samples to perform num_buckets selections with the given step size
-      @ ensures \result.step * \result.num_buckets - 1 <= \result.num_samples;
-      @
-      @ assignable storage.*;
-      @ assignable values[begin..end - 1];
+    /*@ public model_behaviour
+      @ requires n >= 1;
+      @ accessible r.*;
+      @ static model boolean isValidSampleResultForLen(SampleResult r, int n) {
+      @     return 
+      @         Functions.isBetweenInclusive(r.num_samples, 2, n / 2) &&
+      @         1 <= r.step &&
+      @         Functions.isBetweenInclusive(r.num_buckets, 2, 1 << Constants.LOG_MAX_BUCKETS) &&
+      @         // there are enough samples to perform num_buckets selections with the given step size
+      @         r.step * r.num_buckets - 1 <= r.num_samples;
+      @ }
       @*/
-    private static SampleResult sample(int[] values, int begin, int end, Storage storage) {
-        int n = end - begin;
+
+    /*@ public normal_behaviour
+      @ requires n >= Constants.BASE_CASE_SIZE;
+      @
+      @ ensures isValidSampleResultForLen(\result, n);
+      @ 
+      @ assignable \strictly_nothing;
+      @*/
+    private static SampleResult sample_parameters(int n) {
         int log_buckets = Constants.log_buckets(n);
         int num_buckets = 1 << log_buckets;
         //@ assert num_buckets * Constants.BASE_CASE_SIZE <= n;
@@ -49,12 +52,29 @@ public class Sorter {
         //@ assert 0 < step * num_buckets - 1 && step * num_buckets - 1 <= n / 2;
         int num_samples = Functions.min(step * num_buckets - 1, n / 2);
 
-        //@ assert Functions.isValidSubSlice(values, begin, end, begin, begin + num_samples);
-        Functions.select_n(values, begin, end, num_samples);
-
-        sort(values, begin, begin + num_samples, storage);
-
         return new SampleResult(num_samples, num_buckets, step);
+    }
+
+    /*@ public normal_behaviour
+      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires end - begin >= Constants.BASE_CASE_SIZE;
+      @
+      @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @ ensures isValidSampleResultForLen(\result, end - begin);
+      @ ensures Functions.isSortedSlice(values, begin, begin + \result.num_samples);
+      @ 
+      @ measured_by end - begin;
+      @
+      @ assignable storage.*;
+      @ assignable values[begin..end - 1];
+      @*/
+    private static SampleResult sample(int[] values, int begin, int end, Storage storage) {
+        SampleResult result = sample_parameters(end - begin);
+        
+        Functions.select_n(values, begin, end, result.num_samples);
+        sort(values, begin, begin + result.num_samples, storage);
+
+        return result;
     }
 
     /*@ public model_behaviour
@@ -62,6 +82,8 @@ public class Sorter {
       @ requires bucket_begin <= bucket_end;
       @ requires Functions.isBetweenInclusive(begin + bucket_begin, begin, end);
       @ requires Functions.isBetweenInclusive(begin + bucket_end, begin, end);
+      @ 
+      @ accessible values[begin..end - 1];
       @
       @ static model boolean isBucketPartitioned(int[] values, int begin, int end, int bucket_begin, int bucket_end) {
       @     return // for all bucket elements
@@ -79,6 +101,8 @@ public class Sorter {
     /*@ public model_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires Functions.isValidSubSlice(values, begin, end, begin + bucket_begin, begin + bucket_end);
+      @ 
+      @ accessible values[begin + bucket_begin..begin + bucket_end - 1];
       @
       @ static model boolean smallBucketIsSorted(int[] values, int begin, int end, int bucket_begin, int bucket_end) {
       @     return bucket_end - bucket_begin <= 2 * Constants.BASE_CASE_SIZE || end - begin <= Constants.SINGLE_LEVEL_THRESHOLD ==>
@@ -90,6 +114,7 @@ public class Sorter {
       @ requires bucket_starts.length == Constants.MAX_BUCKETS + 1;
       @ requires (\forall int b; 0 <= b < bucket_starts.length; bucket_starts[b] == 0);
       @ requires Functions.isValidSlice(values, begin, end);
+      @ requires end - begin >= Constants.BASE_CASE_SIZE;
       @
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures \result != null ==>
@@ -99,10 +124,10 @@ public class Sorter {
       @     (\forall int b; 0 <= b < \result.num_buckets; Sorter.isBucketPartitioned(values, begin, end, bucket_starts[b], bucket_starts[b + 1])) &&
       @     // Small buckets are sorted
       @     (\forall int b; 0 <= b < \result.num_buckets; Sorter.smallBucketIsSorted(values, begin, end, bucket_starts[b], bucket_starts[b + 1])) &&
-      @     // Equality buckets at odd indices
+      @     // Equality buckets at odd indices except the last bucket
       @     (\result.equal_buckets ==> 
       @         (\forall int b; 
-      @             0 <= b < \result.num_buckets && b % 2 == 1;
+      @             0 <= b < \result.num_buckets - 1 && b % 2 == 1;
       @             (\forall int i; 
       @                 bucket_starts[b] <= i < bucket_starts[b + 1]; 
       @                 values[begin + bucket_starts[b]] == values[begin + i]))
@@ -110,6 +135,8 @@ public class Sorter {
       @     // At least two non empty buckets
       @     (\num_of int b; 0 <= b < \result.num_buckets; bucket_starts[b + 1] - bucket_starts[b] > 0) >= 2;
       @
+      @ measured_by end - begin + 1;
+      @ 
       @ assignable values[begin..end - 1];
       @ assignable storage.*;
       @ assignable bucket_starts[*];
@@ -130,7 +157,7 @@ public class Sorter {
             final int[] splitters = storage.splitters;
 
             // Select num_buckets - 1 splitters
-            int num_splitters = Functions.copy_unique(values, begin, end, num_buckets - 1, step, splitters);
+            int num_splitters = Functions.copy_unique(values, begin, begin + num_samples, num_buckets - 1, step, splitters);
 
             if (num_splitters <= 1) {
                 return null;
@@ -166,13 +193,76 @@ public class Sorter {
     }
 
     /*@ public normal_behaviour
+      @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && bucket_starts[num_buckets] == end - begin;
+      @ // Buckets are partitioned
+      @ requires (\forall int b; 0 <= b < num_buckets; Sorter.isBucketPartitioned(values, begin, end, bucket_starts[b], bucket_starts[b + 1]));
+      @ // Small buckets are sorted
+      @ requires (\forall int b; 0 <= b < num_buckets; Sorter.smallBucketIsSorted(values, begin, end, bucket_starts[b], bucket_starts[b + 1]));
+      @ // Equality buckets at odd indices except the last bucket
+      @ requires equal_buckets ==> 
+      @         (\forall int b; 
+      @             0 <= b < num_buckets - 1 && b % 2 == 1;
+      @             (\forall int i; 
+      @                 bucket_starts[b] <= i < bucket_starts[b + 1]; 
+      @                 values[begin + bucket_starts[b]] == values[begin + i]));
+      @ // At least two non empty buckets
+      @ requires (\num_of int b; 0 <= b < num_buckets; bucket_starts[b + 1] - bucket_starts[b] > 0) >= 2;
+      @ 
+      @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @ ensures (\forall int b; 0 <= b < num_buckets; Functions.isSortedSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1]));
+      @ ensures (\forall int b; 0 <= b < num_buckets; Sorter.isBucketPartitioned(values, begin, end, bucket_starts[b], bucket_starts[b + 1]));
+      @ 
+      @ assignable values[begin..end - 1];
+      @ assignable storage.*;
+      @ 
+      @ measured_by end - begin + 1;
+      @*/
+    private static void sample_sort_recurse(int[] values, int begin, int end, Storage storage, int[] bucket_starts, int num_buckets, boolean equal_buckets) {
+        // For every bucket there exists another bucket that is not empty
+        // TODO does not parse
+        // @ assert (\forall int b; 0 <= b < num_buckets; (\exists int o; 0 <= o < num_buckets && b != o; bucket_starts[o + 1] - bucket_starts[o] > 0));
+        //@ assert Lemma.ascendingGeqFirst(bucket_starts, 0, num_buckets + 1);
+
+        /*@ loop_invariant 0 <= bucket && bucket <= num_buckets;
+          @ loop_invariant \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+          @ loop_invariant (\forall int b; 0 <= b < bucket; Functions.isSortedSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1]));
+          @ // Stays partitioned
+          @ loop_invariant (\forall int b; 0 <= b < num_buckets; Sorter.isBucketPartitioned(values, begin, end, bucket_starts[b], bucket_starts[b + 1]));
+          @ // All subsequent buckets keep the sorting property
+          @ loop_invariant (\forall int b; bucket <= b < num_buckets; Sorter.smallBucketIsSorted(values, begin, end, bucket_starts[b], bucket_starts[b + 1]));
+          @
+          @ decreases num_buckets - bucket;
+          @ 
+          @ measured_by end - begin;
+          @
+          @ assignable values[begin..end - 1];
+          @ assignable storage.*;
+          @*/
+        for (int bucket = 0; bucket < num_buckets; bucket += 1 + Constants.toInt(equal_buckets)) {
+            int inner_start = begin + bucket_starts[bucket];
+            int inner_end = begin + bucket_starts[bucket + 1];
+            if (inner_end - inner_start > 2 * Constants.BASE_CASE_SIZE) {
+                sample_sort(values, inner_start, inner_end, storage);
+            }
+        }
+
+        if (equal_buckets) {
+            int inner_start = begin + bucket_starts[num_buckets - 1];
+            int inner_end = begin + bucket_starts[num_buckets];
+            if (inner_end - inner_start > 2 * Constants.BASE_CASE_SIZE) {
+                sample_sort(values, inner_start, inner_end, storage);
+            }
+        }
+    }
+
+    /*@ public normal_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires end - begin > 2 * Constants.BASE_CASE_SIZE;
       @
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures Functions.isSortedSlice(values, begin, end);
       @
-      @ measured_by end - begin;
+      @ measured_by end - begin + 2;
       @ 
       @ assignable values[begin..end - 1];
       @ assignable storage.*;
@@ -196,44 +286,15 @@ public class Sorter {
           @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
           @ ensures (\forall int b; 0 <= b < num_buckets; Functions.isSortedSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1]));
           @ ensures (\forall int b; 0 <= b < num_buckets; Sorter.isBucketPartitioned(values, begin, end, bucket_starts[b], bucket_starts[b + 1]));
-          @
+          @ 
           @ assignable values[begin..end - 1];
           @ assignable storage.*;
+          @ 
+          @ measured_by end - begin + 2;
           @*/
         {
             if (end - begin > Constants.SINGLE_LEVEL_THRESHOLD) {
-                // For every bucket there exists another bucket that is not empty
-                // TODO does not parse
-                // @ assert (\forall int b; 0 <= b < num_buckets; (\exists int o; 0 <= o < num_buckets && b != o; bucket_starts[o + 1] - bucket_starts[o] > 0));
-
-                /*@ loop_invariant 0 <= bucket && bucket <= num_buckets;
-                  @ loop_invariant \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
-                  @ loop_invariant (\forall int b; 0 <= b < bucket; Functions.isSortedSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1]));
-                  @ // Stays partitioned
-                  @ loop_invariant (\forall int b; 0 <= b < num_buckets; Sorter.isBucketPartitioned(values, begin, end, bucket_starts[b], bucket_starts[b + 1]));
-                  @ // All subsequent buckets keep the sorting property
-                  @ loop_invariant (\forall int b; bucket <= b < num_buckets; Sorter.smallBucketIsSorted(values, begin, end, bucket_starts[b], bucket_starts[b + 1]));
-                  @
-                  @ decreases num_buckets - bucket;
-                  @
-                  @ assignable values[begin..end - 1];
-                  @ assignable storage.*;
-                  @*/
-                for (int bucket = 0; bucket < num_buckets; bucket += 1 + Constants.toInt(equal_buckets)) {
-                    int inner_start = begin + bucket_starts[bucket];
-                    int inner_end = begin + bucket_starts[bucket + 1];
-                    if (inner_end - inner_start > 2 * Constants.BASE_CASE_SIZE) {
-                        sample_sort(values, inner_start, inner_end, storage);
-                    }
-                }
-
-                if (equal_buckets) {
-                    int inner_start = begin + bucket_starts[num_buckets - 1];
-                    int inner_end = begin + bucket_starts[num_buckets];
-                    if (inner_end - inner_start > 2 * Constants.BASE_CASE_SIZE) {
-                        sample_sort(values, inner_start, inner_end, storage);
-                    }
-                }
+                sample_sort_recurse(values, begin, end, storage, bucket_starts, num_buckets, equal_buckets);
             }
         }
 
@@ -270,6 +331,8 @@ public class Sorter {
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures Functions.isSortedSlice(values, start, end);
       @
+      @ measured_by end - start + 3;
+      @ 
       @ assignable values[start..end - 1];
       @ assignable storage.*;
       @*/

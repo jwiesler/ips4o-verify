@@ -10,6 +10,7 @@ public class Constants {
 
     /*@ public model_behaviour
       @ requires n > 0;
+      @ accessible \nothing;
       @ static model boolean isLog2Of(int n, int log) {
       @     return log >= 0 &&
       @         log <= 30 &&
