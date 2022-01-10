@@ -63,7 +63,8 @@ public class Sorter {
       @ ensures isValidSampleResultForLen(\result, end - begin);
       @ ensures Functions.isSortedSlice(values, begin, begin + \result.num_samples);
       @ 
-      @ measured_by end - begin;
+      @ // Calls sort directly => +0
+      @ measured_by 4 * (end - begin);
       @
       @ assignable storage.*;
       @ assignable values[begin..end - 1];
@@ -135,7 +136,8 @@ public class Sorter {
       @     // At least two non empty buckets
       @     (\num_of int b; 0 <= b < \result.num_buckets; bucket_starts[b + 1] - bucket_starts[b] > 0) >= 2;
       @
-      @ measured_by end - begin + 1;
+      @ // Calls sample which has +0 => +1
+      @ measured_by 4 * (end - begin) + 1;
       @ 
       @ assignable values[begin..end - 1];
       @ assignable storage.*;
@@ -208,6 +210,9 @@ public class Sorter {
       @ // At least two non empty buckets
       @ requires (\num_of int b; 0 <= b < num_buckets; bucket_starts[b + 1] - bucket_starts[b] > 0) >= 2;
       @ 
+      @ // Lemma
+      @ requires Lemma.ascendingGeqFirst(bucket_starts, 0, num_buckets + 1);
+      @ 
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures (\forall int b; 0 <= b < num_buckets; Functions.isSortedSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1]));
       @ ensures (\forall int b; 0 <= b < num_buckets; Sorter.isBucketPartitioned(values, begin, end, bucket_starts[b], bucket_starts[b + 1]));
@@ -215,7 +220,8 @@ public class Sorter {
       @ assignable values[begin..end - 1];
       @ assignable storage.*;
       @ 
-      @ measured_by end - begin + 1;
+      @ // calls sample_sort directly => +0
+      @ measured_by 4 * (end - begin);
       @*/
     private static void sample_sort_recurse(int[] values, int begin, int end, Storage storage, int[] bucket_starts, int num_buckets, boolean equal_buckets) {
         // For every bucket there exists another bucket that is not empty
@@ -262,7 +268,8 @@ public class Sorter {
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures Functions.isSortedSlice(values, begin, end);
       @
-      @ measured_by end - begin + 2;
+      @ // partition has +1, sample_sort_recurse +0 => +2
+      @ measured_by 4 * (end - begin) + 2;
       @ 
       @ assignable values[begin..end - 1];
       @ assignable storage.*;
@@ -331,7 +338,9 @@ public class Sorter {
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures Functions.isSortedSlice(values, start, end);
       @
-      @ measured_by end - start + 3;
+      @ // sample_sort has +2 => +3
+      @ // this is the maximum => factor 4 needed
+      @ measured_by 4 * (end - start) + 3;
       @ 
       @ assignable values[start..end - 1];
       @ assignable storage.*;
