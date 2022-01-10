@@ -1,6 +1,33 @@
 package de.wiesler;
 
 public class Cleanup {
+    /*@ public normal_behaviour
+      @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets);
+      @ 
+      @ ensures (\forall int b; 0 <= b < num_buckets; b <= \result || bucket_starts[b + 1] - bucket_starts[b] <= Buffers.BUFFER_SIZE);
+      @ 
+      @ assignable \strictly_nothing;
+      @*/
+    private static int find_overflow_bucket(final int[] bucket_starts, final int num_buckets) {
+        int overflow_bucket = -1;
+        
+        /*@ loop_invariant 0 <= bucket && bucket <= num_buckets;
+          @ loop_invariant (\forall int b; bucket <= b < num_buckets; bucket_starts[b + 1] - bucket_starts[b] <= Buffers.BUFFER_SIZE);
+          @ 
+          @ assignable \strictly_nothing;
+          @ 
+          @ decreases bucket;
+          @*/
+        for (int bucket = num_buckets; bucket-- > 0; ) {
+            int bucket_size = bucket_starts[bucket + 1] - bucket_starts[bucket];
+            if (Buffers.BUFFER_SIZE < bucket_size) {
+                overflow_bucket = bucket;
+                break;
+            }
+        }
+        return overflow_bucket;
+    }
+
     /*@ // For all buckets:
       @ // * Permutation of: (\old(written blocks) + buffer content) <-> (full block content)
       @ // * Bucket pointers have exactly enough space for buffer content (+ overflow)
@@ -23,34 +50,22 @@ public class Cleanup {
             final int num_buckets,
             final int[] overflow
     ) {
-        int overflow_bucket = -1;
-        /*@ normal_behaviour
-          @ ensures (\forall int b; 0 <= b < num_buckets; b <= overflow_bucket || bucket_starts[b + 1] - bucket_starts[b] <= Buffers.BUFFER_SIZE);
-          @ 
-          @ assignable \strictly_nothing;
-          @*/
-        {
-            /*@ loop_invariant 0 <= bucket && bucket <= num_buckets;
-              @ loop_invariant (\forall int b; bucket <= b < num_buckets; bucket_starts[b + 1] - bucket_starts[b] <= Buffers.BUFFER_SIZE);
-              @ 
-              @ assignable \strictly_nothing;
-              @ 
-              @ decreases bucket;
-              @*/
-            for (int bucket = num_buckets; bucket-- > 0; ) {
-                int bucket_size = bucket_starts[bucket + 1] - bucket_starts[bucket];
-                if (Buffers.BUFFER_SIZE < bucket_size) {
-                    overflow_bucket = bucket;
-                    break;
-                }
-            }
-        }
+        final int overflow_bucket = find_overflow_bucket(bucket_starts, num_buckets);
 
         final boolean is_last_level = end - begin <= Constants.SINGLE_LEVEL_THRESHOLD;
         final int max_offset = Buffers.align_to_previous_block(end - begin);
 
         /*@ loop_invariant 0 <= bucket && bucket <= num_buckets;
+          @ // later values are unchanged
+          @ loop_invariant (\forall int i; begin + bucket_starts[bucket] <= i < end; values[i] == \old(values[i]));
+          @ 
+          @ loop_invariant (\forall int b; 0 <= b < num_buckets; 
+          @     bucket_pointers.write(bucket) <= bucket_starts[bucket + 1]
+          @ );
+          @ 
           @ assignable values[begin..end - 1];
+          @ 
+          @ decreases num_buckets - bucket;
           @*/
         for (int bucket = 0; bucket < num_buckets; ++bucket) {
             final int relative_start = bucket_starts[bucket];
@@ -87,7 +102,7 @@ public class Cleanup {
 
                     // Overflow buffer has been written => write pointer must be at end of bucket
                     // This gives stop <= write
-                    assert (Buffers.align_to_next_block(relative_stop) == relative_write);
+                    //@ assert (Buffers.align_to_next_block(relative_stop) == relative_write);
 
                     tail_start = write - Buffers.BUFFER_SIZE;
                     tail_stop = stop;
@@ -95,27 +110,27 @@ public class Cleanup {
                     int head_len = head_stop - head_start;
 
                     // There must be space for at least block size elements
-                    assert (Buffers.BUFFER_SIZE <= (tail_stop - tail_start) + head_len);
+                    //@ assert (Buffers.BUFFER_SIZE <= (tail_stop - tail_start) + head_len);
 
                     // Fill head: head.len() <= Buffers.BUFFER_SIZE
-                    assert (head_start + head_len <= head_stop);
+                    //@ assert (head_start + head_len <= head_stop);
                     Functions.copy(overflow, 0, values, head_start, head_len);
                     head_start = head_stop;
 
                     // Write remaining elements into tail
                     int tail_elements = Buffers.BUFFER_SIZE - head_len;
-                    assert (start <= tail_start && tail_start + tail_elements <= tail_stop);
+                    //@ assert (start <= tail_start && tail_start + tail_elements <= tail_stop);
                     Functions.copy(overflow, head_len, values, tail_start, tail_elements);
                     tail_start += tail_elements;
                 } else if (stop < write) {
                     if (Buffers.BUFFER_SIZE < stop - start) {
                         // Final block has been written
-                        assert (Buffers.align_to_next_block(relative_stop) == relative_write);
+                        //@ assert (Buffers.align_to_next_block(relative_stop) == relative_write);
 
                         int overflow_len = write - stop;
 
                         // Must fit, no other empty space left
-                        assert (overflow_len <= head_stop - head_start);
+                        //@ assert (overflow_len <= head_stop - head_start);
 
                         // Write overflow of last block to head
                         Functions.copy(values, stop, values, head_start, overflow_len);
