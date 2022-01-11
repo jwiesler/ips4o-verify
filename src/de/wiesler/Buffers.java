@@ -66,7 +66,7 @@ public class Buffers {
       @     return (\forall 
       @         int b; 
       @         Functions.isBetween(b, 0, this.buckets);
-      @         (\forall int i; 0 <= i < this.bufferAt(b).length; classifier.isClassified(this.bufferAt(b)[i], b))
+      @         (\forall int i; 0 <= i < this.bufferAt(b).length; classifier.isClassified((int)this.bufferAt(b)[i], b))
       @     );
       @ }
       @*/

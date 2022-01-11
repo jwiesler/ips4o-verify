@@ -64,7 +64,7 @@ public class Sorter {
       @ ensures Functions.isSortedSlice(values, begin, begin + \result.num_samples);
       @ 
       @ // Calls sort directly => +0
-      @ measured_by 4 * (end - begin);
+      @ measured_by end - begin, 0;
       @
       @ assignable storage.*;
       @ assignable values[begin..end - 1];
@@ -137,7 +137,7 @@ public class Sorter {
       @     (\num_of int b; 0 <= b < \result.num_buckets; bucket_starts[b + 1] - bucket_starts[b] > 0) >= 2;
       @
       @ // Calls sample which has +0 => +1
-      @ measured_by 4 * (end - begin) + 1;
+      @ measured_by end - begin, 1;
       @ 
       @ assignable values[begin..end - 1];
       @ assignable storage.*;
@@ -221,13 +221,11 @@ public class Sorter {
       @ assignable storage.*;
       @ 
       @ // calls sample_sort directly => +0
-      @ measured_by 4 * (end - begin);
+      @ measured_by end - begin, 0;
       @*/
     private static void sample_sort_recurse(int[] values, int begin, int end, Storage storage, int[] bucket_starts, int num_buckets, boolean equal_buckets) {
         // For every bucket there exists another bucket that is not empty
-        // TODO does not parse
         // @ assert (\forall int b; 0 <= b < num_buckets; (\exists int o; 0 <= o < num_buckets && b != o; bucket_starts[o + 1] - bucket_starts[o] > 0));
-        //@ assert Lemma.ascendingGeqFirst(bucket_starts, 0, num_buckets + 1);
 
         /*@ loop_invariant 0 <= bucket && bucket <= num_buckets;
           @ loop_invariant \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
@@ -238,8 +236,6 @@ public class Sorter {
           @ loop_invariant (\forall int b; bucket <= b < num_buckets; Sorter.smallBucketIsSorted(values, begin, end, bucket_starts[b], bucket_starts[b + 1]));
           @
           @ decreases num_buckets - bucket;
-          @ 
-          @ measured_by end - begin;
           @
           @ assignable values[begin..end - 1];
           @ assignable storage.*;
@@ -269,7 +265,7 @@ public class Sorter {
       @ ensures Functions.isSortedSlice(values, begin, end);
       @
       @ // partition has +1, sample_sort_recurse +0 => +2
-      @ measured_by 4 * (end - begin) + 2;
+      @ measured_by end - begin, 2;
       @ 
       @ assignable values[begin..end - 1];
       @ assignable storage.*;
@@ -297,7 +293,7 @@ public class Sorter {
           @ assignable values[begin..end - 1];
           @ assignable storage.*;
           @ 
-          @ measured_by end - begin + 2;
+          @ measured_by end - begin, 2;
           @*/
         {
             if (end - begin > Constants.SINGLE_LEVEL_THRESHOLD) {
@@ -340,7 +336,7 @@ public class Sorter {
       @
       @ // sample_sort has +2 => +3
       @ // this is the maximum => factor 4 needed
-      @ measured_by 4 * (end - start) + 3;
+      @ measured_by end - start, 3;
       @ 
       @ assignable values[start..end - 1];
       @ assignable storage.*;
