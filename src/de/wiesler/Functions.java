@@ -43,6 +43,9 @@ public class Functions {
     /*@
       @ public model_behaviour
       @ requires isValidSlice(values, begin, end);
+      @ 
+      @ ensures \result ==> isValidSlice(values, sub_begin, sub_end);
+      @ 
       @ accessible \nothing;
       @ static model boolean isValidSubSlice(int[] values, int begin, int end, int sub_begin, int sub_end) {
       @     return isBetweenInclusive(sub_begin, begin, end) &&
@@ -54,6 +57,9 @@ public class Functions {
     /*@
       @ public model_behaviour
       @ requires true;
+      @ 
+      @ ensures \result ==> Lemma.ascendingGeqFirst(values, begin, end);
+      @ 
       @ accessible values[begin..end - 1];
       @ static model boolean isSortedSlice(int[] values, int begin, int end) {
       @     return isValidSlice(values, begin, end) && 
@@ -64,6 +70,9 @@ public class Functions {
     /*@ public model_behaviour
       @ requires true;
       @ accessible bucket_starts[0..num_buckets];
+      @ 
+      @ ensures \result ==> Lemma.bucketIndexFromOffset(bucket_starts, num_buckets, bucket_starts[num_buckets]);
+      @ 
       @ static model boolean isValidBucketStarts(int[] bucket_starts, int num_buckets) {
       @     return isValidSlice(bucket_starts, 0, num_buckets + 1) &&
       @         2 <= num_buckets &&
