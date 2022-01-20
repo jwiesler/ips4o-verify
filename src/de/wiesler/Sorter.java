@@ -264,11 +264,9 @@ public class Sorter {
       @ requires bucket_end - bucket_start < end - begin;
       @ // Small bucket is sorted
       @ requires Sorter.smallBucketIsSorted(values, begin, end, bucket_start, bucket_end);
-      @ requires \invariant_for(storage);
       @ 
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures Functions.isSortedSlice(values, begin + bucket_start, begin + bucket_end);
-      @ ensures \invariant_for(storage);
       @ 
       @ assignable values[begin + bucket_start..begin + bucket_end - 1];
       @ assignable storage.*;
@@ -368,6 +366,12 @@ public class Sorter {
                 } else {
                     /*@ loop_invariant 0 <= bucket && bucket <= num_buckets;
                       @ loop_invariant \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+                      @ loop_invariant 0 <= bucket_starts[bucket] && bucket_starts[bucket] <= bucket_starts[bucket + 1] && bucket_starts[bucket + 1] <= end - begin;
+                      @ // Preceding buckets end before this one
+                      @ loop_invariant (\forall int b; 0 <= b < bucket; bucket_starts[b + 1] <= bucket_starts[bucket]);
+                      @ // Succeding buckets start after this one
+                      @ loop_invariant (\forall int b; bucket + 1 <= b < num_buckets; bucket_starts[bucket + 1] <= bucket_starts[b]);
+                      @ 
                       @ loop_invariant (\forall int b; 0 <= b < bucket; Functions.isSortedSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1]));
                       @ // Stays partitioned
                       @ loop_invariant (\forall int b; 0 <= b < num_buckets; Sorter.isBucketPartitioned(values, begin, end, bucket_starts[b], bucket_starts[b + 1]));
