@@ -323,6 +323,8 @@ public class Sorter {
           @     Functions.isValidSubSlice(values, begin, end, begin + bucket_starts[b], begin + bucket_starts[b + 1]) && 
           @     bucket_starts[b + 1] - bucket_starts[b] < end - begin
           @ );
+          @ // this is needed in many places and not automatically deduced
+          @ requires values != bucket_starts;
           @ 
           @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
           @ ensures (\forall int b; 0 <= b < num_buckets; Functions.isSortedSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1]));
@@ -366,7 +368,10 @@ public class Sorter {
                 } else {
                     /*@ loop_invariant 0 <= bucket && bucket <= num_buckets;
                       @ loop_invariant \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
-                      @ loop_invariant 0 <= bucket_starts[bucket] && bucket_starts[bucket] <= bucket_starts[bucket + 1] && bucket_starts[bucket + 1] <= end - begin;
+                      @ loop_invariant bucket < num_buckets ==>
+                      @     0 <= bucket_starts[bucket] && 
+                      @     bucket_starts[bucket] <= bucket_starts[bucket + 1] && 
+                      @     bucket_starts[bucket + 1] <= end - begin;
                       @ // Preceding buckets end before this one
                       @ loop_invariant (\forall int b; 0 <= b < bucket; bucket_starts[b + 1] <= bucket_starts[bucket]);
                       @ // Succeding buckets start after this one
