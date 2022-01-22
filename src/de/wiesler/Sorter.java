@@ -162,6 +162,16 @@ public class Sorter {
       @ }
       @*/
 
+    /*@ public model_behaviour
+      @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && len == bucket_starts[num_buckets];
+      @ 
+      @ accessible bucket_starts[0..num_buckets];
+      @
+      @ static model boolean notAllValuesInOneBucket(int[] bucket_starts, int num_buckets, int len) {
+      @     return (\forall int b; 0 <= b < num_buckets; bucket_starts[b + 1] - bucket_starts[b] < len);
+      @ }
+      @*/
+
     /*@ public normal_behaviour
       @ requires bucket_starts.length == Constants.MAX_BUCKETS + 1;
       @ requires (\forall int b; 0 <= b < bucket_starts.length; bucket_starts[b] == 0);
@@ -179,8 +189,7 @@ public class Sorter {
       @     Sorter.smallBucketsInRangeSorted(values, begin, end, bucket_starts, \result.num_buckets, 0, \result.num_buckets) &&
       @     // Equality buckets at odd indices except the last bucket
       @     (\result.equal_buckets ==> Sorter.equalityBucketsInRange(values, begin, end, bucket_starts, \result.num_buckets, 1, \result.num_buckets - 1)) &&
-      @     // At least two non empty buckets
-      @     (\num_of int b; 0 <= b < \result.num_buckets; bucket_starts[b + 1] - bucket_starts[b] > 0) >= 2;
+      @     Sorter.notAllValuesInOneBucket(bucket_starts, \result.num_buckets, end - begin);
       @
       @ // Calls sample which has +0 => +1
       @ measured_by end - begin, 1;
@@ -254,6 +263,7 @@ public class Sorter {
       @     (bucket % 2 == 0 || bucket == num_buckets - 1) && 
       @     // starting at the next bucket, ending before the last bucket
       @     Sorter.equalityBucketsInRange(values, begin, end, bucket_starts, num_buckets, bucket + 1, num_buckets - 1);
+      @ requires Sorter.notAllValuesInOneBucket(bucket_starts, num_buckets, end - begin);
       @ 
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ 
@@ -270,8 +280,7 @@ public class Sorter {
       @ assignable values[begin..end - 1];
       @ assignable storage.*;
       @ 
-      @ // calls sample_sort directly => +0
-      @ measured_by bucket_starts[bucket + 1] - bucket_starts[bucket], 0;
+      @ measured_by end - begin, 1;
       @*/
     private static void sample_sort_recurse_on(int[] values, int begin, int end, Storage storage, int[] bucket_starts, int num_buckets, boolean equal_buckets, int bucket) {
         int inner_start = begin + bucket_starts[bucket];
