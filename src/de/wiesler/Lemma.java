@@ -7,18 +7,10 @@ public class Lemma {
       @ requires bucket_starts[num_buckets] == end - begin;
       @ 
       @ // Buckets are partitioned
-      @ requires (\forall 
-      @     int b; 
-      @     0 <= b < num_buckets; 
-      @     Sorter.isBucketPartitioned(values, begin, end, bucket_starts[b], bucket_starts[b + 1])
-      @ );
+      @ requires Sorter.allBucketsPartitioned(values, begin, end, bucket_starts, num_buckets);
       @ 
       @ // Buckets are sorted
-      @ requires (\forall 
-      @     int b; 
-      @     0 <= b < num_buckets; 
-      @     Functions.isSortedSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1])
-      @ );
+      @ requires Sorter.allBucketsInRangeSorted(values, begin, end, bucket_starts, num_buckets, 0, num_buckets);
       @ 
       @ requires Lemma.bucketIndexFromOffset(bucket_starts, num_buckets, end - begin);
       @ 
@@ -50,8 +42,10 @@ public class Lemma {
       @ 
       @ accessible values[begin..end - 1];
       @ 
-      @ static model boolean ascendingGeqFirst(int[] values, int begin, int end) {
-      @     return (\forall int i; begin <= i < end; values[begin] <= values[i]);
+      @ static model boolean isSortedSliceTransitive(int[] values, int begin, int end) {
+      @     return 
+      @     (\forall int i; begin <= i < end; 
+      @         (\forall int j; i <= j < end; values[i] <= values[j]));
       @ }
       @*/
 

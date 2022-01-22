@@ -58,12 +58,11 @@ public class Functions {
       @ public model_behaviour
       @ requires true;
       @ 
-      @ ensures \result ==> Lemma.ascendingGeqFirst(values, begin, end);
+      @ ensures \result ==> Lemma.isSortedSliceTransitive(values, begin, end);
       @ 
       @ accessible values[begin..end - 1];
       @ static model boolean isSortedSlice(int[] values, int begin, int end) {
-      @     return isValidSlice(values, begin, end) && 
-      @         (\forall int i; begin <= i && i < end - 1; values[i] <= values[i + 1]);
+      @     return (\forall int i; begin <= i && i < end - 1; values[i] <= values[i + 1]);
       @ }
       @*/
     
