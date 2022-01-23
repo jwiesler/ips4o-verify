@@ -123,6 +123,15 @@ public class Sorter {
       @*/
 
     /*@ public model_behaviour
+      @ accessible values[begin..end - 1];
+      @
+      @ static model boolean isEqualityBucket(int[] values, int begin, int end) {
+      @     return 
+      @         (\forall int i; begin <= i < end - 1; values[i] == values[i + 1]);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires 0 <= lower && lower <= upper && upper <= num_buckets;
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && end - begin == bucket_starts[num_buckets];
@@ -131,10 +140,9 @@ public class Sorter {
       @
       @ static model boolean equalityBucketsInRange(int[] values, int begin, int end, int[] bucket_starts, int num_buckets, int lower, int upper) {
       @     return 
-      @         (\forall int b; lower <= b < upper && b % 2 == 1;
-      @             (\forall int i; 
-      @                 begin + bucket_starts[b] <= i < begin + bucket_starts[b + 1] - 1; 
-      @                 values[i] == values[i + 1]));
+      @         (\forall int b; 
+      @             lower <= b < upper && b % 2 == 1; 
+      @             Sorter.isEqualityBucket(values, begin + bucket_starts[b], begin + bucket_starts[b + 1]));
       @ }
       @*/
 
@@ -250,8 +258,9 @@ public class Sorter {
     }
 
     /*@ public normal_behaviour
+      @ requires Functions.isValidSlice(values, begin, end);
       @ requires 0 <= bucket && bucket < num_buckets;
-      @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets);
+      @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && bucket_starts[num_buckets] == end - begin;
       @ requires Sorter.allBucketsInRangeSorted(values, begin, end, bucket_starts, num_buckets, 0, bucket);
       @ 
       @ // Stays partitioned
@@ -287,6 +296,19 @@ public class Sorter {
         int inner_end = begin + bucket_starts[bucket + 1];
 
         if (inner_end - inner_start > 2 * Constants.BASE_CASE_SIZE) {
+            /*@ normal_behaviour
+              @ ensures 0 <= bucket_starts[bucket] <= bucket_starts[bucket + 1] <= bucket_starts[num_buckets];
+              @ ensures \disjoint(bucket_starts[*], values[*], storage.*);
+              @ ensures (\forall int b; 0 <= b < num_buckets && b != bucket; 
+              @     (b < bucket ==> 0 <= bucket_starts[b] <= bucket_starts[b + 1] <= bucket_starts[bucket]) &&
+              @     (b > bucket ==> bucket_starts[bucket + 1] <= bucket_starts[b] <= bucket_starts[b + 1] <= bucket_starts[num_buckets])
+              @ );
+              @ 
+              @ assignable \strictly_nothing;
+              @ 
+              @ measured_by end - begin, 1;
+              @*/
+            {;;}
             sample_sort(values, inner_start, inner_end, storage);
         }
     }

@@ -11,6 +11,7 @@ public class Classifier {
     /*@ public invariant Functions.isBetweenInclusive(this.num_buckets, 2, Constants.MAX_BUCKETS);
       @ public invariant this.num_buckets == (1 << (this.tree.log_buckets + Constants.toInt(this.equal_buckets)));
       @ invariant this.tree.num_buckets <= this.sorted_splitters.length;
+      @ invariant Functions.isValidSlice(this.sorted_splitters, 0, this.tree.num_buckets);
       @ invariant Functions.isSortedSlice(this.sorted_splitters, 0, this.tree.num_buckets);
       @ invariant this.sorted_splitters[this.tree.num_buckets - 1] == this.sorted_splitters[this.tree.num_buckets - 2];
       @*/
@@ -67,6 +68,7 @@ public class Classifier {
     /*@ public normal_behaviour
       @ requires tree != sorted_splitters;
       @ requires Functions.isBetweenInclusive(log_buckets, 1, Constants.LOG_MAX_BUCKETS);
+      @ requires Functions.isValidSlice(sorted_splitters, 0, 1 << log_buckets);
       @ requires Functions.isSortedSlice(sorted_splitters, 0, 1 << log_buckets);
       @ requires (1 << log_buckets) <= tree.length;
       @ requires sorted_splitters[(1 << log_buckets) - 1] == sorted_splitters[(1 << log_buckets) - 2];
@@ -89,6 +91,7 @@ public class Classifier {
     }
 
     /*@ public normal_behaviour
+      @ requires Functions.isValidSlice(splitters, 0, num_splitters);
       @ requires Functions.isSortedSlice(splitters, 0, num_splitters);
       @ requires splitters != tree;
       @
@@ -124,6 +127,7 @@ public class Classifier {
           @     splitters[j] == \old(splitters[j])
           @ );
           @ loop_invariant (\forall int j; num_splitters <= j < i; splitters[j] == splitters[num_splitters - 1]);
+          @ loop_invariant Functions.isValidSlice(splitters, 0, i);
           @ loop_invariant Functions.isSortedSlice(splitters, 0, i);
           @
           @ decreases actual_num_buckets - i;

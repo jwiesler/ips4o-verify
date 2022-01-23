@@ -34,9 +34,7 @@ public class Functions {
       @ accessible \nothing;
       @ static model boolean isValidSlice(int[] values, int begin, int end) {
       @     return values != null &&
-      @         isBetweenInclusive(begin, 0, values.length) &&
-      @         isBetweenInclusive(end, 0, values.length) &&
-      @         begin <= end;
+      @         0 <= begin <= end <= values.length;
       @ }
       @*/
 
@@ -48,9 +46,7 @@ public class Functions {
       @ 
       @ accessible \nothing;
       @ static model boolean isValidSubSlice(int[] values, int begin, int end, int sub_begin, int sub_end) {
-      @     return isBetweenInclusive(sub_begin, begin, end) &&
-      @         isBetweenInclusive(sub_end, begin, end) &&
-      @         sub_begin <= sub_end;
+      @     return begin <= sub_begin <= sub_end <= end;
       @ }
       @*/
 
@@ -58,11 +54,23 @@ public class Functions {
       @ public model_behaviour
       @ requires true;
       @ 
-      @ ensures \result ==> Lemma.isSortedSliceTransitive(values, begin, end);
+      @ ensures \result ==> Functions.isSortedSliceTransitive(values, begin, end);
       @ 
       @ accessible values[begin..end - 1];
       @ static model boolean isSortedSlice(int[] values, int begin, int end) {
       @     return (\forall int i; begin <= i && i < end - 1; values[i] <= values[i + 1]);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ ensures \result ==> Functions.isSortedSlice(values, begin, end);
+      @ 
+      @ accessible values[begin..end - 1];
+      @ 
+      @ static model boolean isSortedSliceTransitive(int[] values, int begin, int end) {
+      @     return 
+      @         (\forall int i; begin <= i < end; 
+      @             (\forall int j; i <= j < end; values[i] <= values[j]));
       @ }
       @*/
     
@@ -74,9 +82,9 @@ public class Functions {
       @ 
       @ static model boolean isValidBucketStarts(int[] bucket_starts, int num_buckets) {
       @     return isValidSlice(bucket_starts, 0, num_buckets + 1) &&
+      @         isSortedSliceTransitive(bucket_starts, 0, num_buckets + 1) &&
       @         2 <= num_buckets &&
-      @         bucket_starts[0] == 0 &&
-      @         isSortedSlice(bucket_starts, 0, num_buckets + 1);
+      @         bucket_starts[0] == 0;
       @ }
       @*/
 
@@ -175,6 +183,7 @@ public class Functions {
     }
 
     /*@ public normal_behaviour
+      @ requires Functions.isValidSlice(values, begin, end);
       @ requires Functions.isSortedSlice(values, begin, end);
       @ requires values != target;
       @

@@ -35,21 +35,6 @@ public class Lemma {
       @*/
 
     /*@ public model_behaviour
-      @ // Sorted
-      @ requires Functions.isSortedSlice(values, begin, end);
-      @ 
-      @ ensures \result;
-      @ 
-      @ accessible values[begin..end - 1];
-      @ 
-      @ static model boolean isSortedSliceTransitive(int[] values, int begin, int end) {
-      @     return 
-      @     (\forall int i; begin <= i < end; 
-      @         (\forall int j; i <= j < end; values[i] <= values[j]));
-      @ }
-      @*/
-
-    /*@ public model_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ // all positive
       @ requires (\forall int i; begin <= i < end; values[i] >= 0);
