@@ -282,6 +282,7 @@ public class Sorter {
       @     // starting at the next bucket, ending before the last bucket
       @     Sorter.equalityBucketsInRange(values, begin, end, bucket_starts, num_buckets, bucket + 1, num_buckets - 1);
       @ requires Sorter.notAllValuesInOneBucket(bucket_starts, num_buckets, end - begin);
+      @ requires \invariant_for(storage);
       @ 
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ 
@@ -294,6 +295,7 @@ public class Sorter {
       @ // Equality buckets at odd indices except the last bucket
       @ ensures equal_buckets ==>
       @     Sorter.equalityBucketsInRange(values, begin, end, bucket_starts, num_buckets, bucket + 1, num_buckets - 1);
+      @ ensures \invariant_for(storage);
       @ 
       @ assignable values[begin..end - 1];
       @ assignable storage.allArrays;
@@ -442,6 +444,7 @@ public class Sorter {
       @ requires Storage.brandOf(values) == Storage.VALUES;
       @ requires Functions.isValidSlice(values, start, end);
       @ requires \invariant_for(storage);
+      @ requires \disjoint(storage.allArrays, values);
       @
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures Functions.isSortedSlice(values, start, end);
@@ -469,6 +472,8 @@ public class Sorter {
       @*/
     public static void sort(int[] values) {
         Storage.brandArray(values, Storage.VALUES);
-        sort(values, 0, values.length, new Storage());
+        Storage storage = new Storage();
+        //@ assert \disjoint(storage.allArrays, values);
+        sort(values, 0, values.length, storage);
     }
 }

@@ -15,8 +15,23 @@ public class Storage {
 
     /*@ public normal_behaviour
       @ ensures_free brandOf(array) == type;
+      @ accessible \nothing;
+      @ assignable \strictly_nothing;
       @*/
     static void brandArray(int[] array, int type) {}
+
+    /*@ public normal_behaviour
+      @ requires length >= 0;
+      @ ensures brandOf(\result) == type;
+      @ ensures \result.length == length;
+      @ ensures \fresh(\result);
+      @ assignable \nothing;
+      @*/
+    static int[] createBrandedArray(int length, int type) {
+        int[] result = new int[length];
+        brandArray(result, type);
+        return result;
+    }
 
     /*@ public model_behaviour
       @ requires true;
@@ -35,25 +50,7 @@ public class Storage {
     final int[] swap_2;
     final int[] overflow;
 
-    /*@ public final model \locset allArrays;
-      @ represents allArrays =
-      @     tree[*],
-      @     splitters[*],
-      @     bucket_pointers[*],
-      @     buffers_buffer[*],
-      @     buffers_indices[*],
-      @     swap_1[*],
-      @     swap_2[*],
-      @     overflow[*];
-      @ accessible allArrays: tree[*],
-      @     splitters[*],
-      @     bucket_pointers[*],
-      @     buffers_buffer[*],
-      @     buffers_indices[*],
-      @     swap_1[*],
-      @     swap_2[*],
-      @     overflow[*];
-      @*/
+    //@ ghost \locset allArrays;
 
     /*@ public instance invariant this.tree.length == Classifier.STORAGE_SIZE &&
       @     this.splitters.length == Classifier.STORAGE_SIZE &&
@@ -74,29 +71,47 @@ public class Storage {
       @     brandOf(this.swap_2) == Storage.SWAP_2 &&
       @     brandOf(this.overflow) == Storage.OVERFLOW;
       @*/
+
+    /*@ public instance invariant this.allArrays == \set_union(
+      @     \set_union(
+      @         \set_union(
+      @             \all_fields(tree), 
+      @             \all_fields(splitters)
+      @         ), 
+      @         \set_union(
+      @             \all_fields(bucket_pointers), 
+      @             \all_fields(buffers_buffer)
+      @         )
+      @     ), 
+      @     \set_union(
+      @         \set_union(
+      @             \all_fields(buffers_indices),
+      @             \all_fields(swap_1)
+      @         ), 
+      @         \set_union(
+      @             \all_fields(swap_2),
+      @             \all_fields(overflow)
+      @         )
+      @     )
+      @ );
+      @*/
+
     //@ accessible \inv: this.*;
 
     /*@ public normal_behaviour
-      @ ensures true;
+      @ ensures \new_elems_fresh(this.allArrays);
       @ assignable \nothing;
       @*/
     Storage() {
-        this.tree = new int[Classifier.STORAGE_SIZE];
-        this.splitters = new int[Classifier.STORAGE_SIZE];
-        this.bucket_pointers = new int[2 * Constants.MAX_BUCKETS];
-        this.buffers_buffer = new int[2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS];
-        this.buffers_indices = new int[Constants.MAX_BUCKETS];
-        this.swap_1 = new int[Buffers.BUFFER_SIZE];
-        this.swap_2 = new int[Buffers.BUFFER_SIZE];
-        this.overflow = new int[Buffers.BUFFER_SIZE];
+        this.splitters = createBrandedArray(Classifier.STORAGE_SIZE, Storage.SPLITTERS);
+        this.tree = createBrandedArray(Classifier.STORAGE_SIZE, Storage.TREE);
+        this.bucket_pointers = createBrandedArray(2 * Constants.MAX_BUCKETS, Storage.BUCKET_POINTERS);
+        this.buffers_buffer = createBrandedArray(2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS, Storage.BUFFERS_BUFFER);
+        this.buffers_indices = createBrandedArray(Constants.MAX_BUCKETS, Storage.BUFFERS_INDICES);
+        this.swap_1 = createBrandedArray(Buffers.BUFFER_SIZE, Storage.SWAP_1);
+        this.swap_2 = createBrandedArray(Buffers.BUFFER_SIZE, Storage.SWAP_2);
+        this.overflow = createBrandedArray(Buffers.BUFFER_SIZE, Storage.OVERFLOW);
 
-        brandArray(this.splitters, Storage.SPLITTERS);
-        brandArray(this.tree, Storage.TREE);
-        brandArray(this.bucket_pointers, Storage.BUCKET_POINTERS);
-        brandArray(this.buffers_buffer, Storage.BUFFERS_BUFFER);
-        brandArray(this.buffers_indices, Storage.BUFFERS_INDICES);
-        brandArray(this.swap_1, Storage.SWAP_1);
-        brandArray(this.swap_2, Storage.SWAP_2);
-        brandArray(this.overflow, Storage.OVERFLOW);
+        //@ set this.allArrays = \set_union(\set_union(\set_union(\all_fields(tree), \all_fields(splitters)), \set_union(\all_fields(bucket_pointers), \all_fields(buffers_buffer))), \set_union(\set_union(\all_fields(buffers_indices), \all_fields(swap_1)), \set_union(\all_fields(swap_2), \all_fields(overflow))));
     }
 }
