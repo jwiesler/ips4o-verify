@@ -52,8 +52,6 @@ public class BucketPointers {
         //@ set self.bucket_starts = bucket_starts;
         //@ set self.first_empty_position = first_empty_position;
 
-        //@ assert Lemma.ascendingGeqFirst(bucket_starts, 0, num_buckets + 1);
-
         /*@
           @ loop_invariant 0 <= bucket && bucket <= this.num_buckets;
           @ loop_invariant (\forall int i; 0 <= i && i < bucket; this.isValidBucketPointerAt(i));

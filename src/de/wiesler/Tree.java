@@ -21,6 +21,7 @@ public class Tree {
 
     /*@ public normal_behaviour
       @ requires Functions.isBetweenInclusive(log_buckets, 1, Constants.LOG_MAX_BUCKETS);
+      @ requires Functions.isValidSlice(sorted_splitters, 0, (1 << log_buckets) - 1);
       @ requires Functions.isSortedSlice(sorted_splitters, 0, (1 << log_buckets) - 1);
       @ requires (1 << log_buckets) <= tree.length;
       @
