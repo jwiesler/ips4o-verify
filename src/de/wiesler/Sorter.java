@@ -188,7 +188,7 @@ public class Sorter {
     /*@ public normal_behaviour
       @ requires Storage.brandOf(values) == Storage.VALUES;
       @ requires Functions.isValidSlice(values, begin, end);
-      @ requires Storage.brandOf(values) == Storage.BUCKET_STARTS;
+      @ requires Storage.brandOf(bucket_starts) == Storage.BUCKET_STARTS;
       @ requires bucket_starts.length == Constants.MAX_BUCKETS + 1;
       @ requires (\forall int b; 0 <= b < bucket_starts.length; bucket_starts[b] == 0);
       @ requires end - begin >= Constants.BASE_CASE_SIZE;
@@ -267,6 +267,7 @@ public class Sorter {
     }
 
     /*@ public normal_behaviour
+      @ requires Storage.brandOf(values) == Storage.VALUES;
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires 0 <= bucket && bucket < num_buckets;
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && bucket_starts[num_buckets] == end - begin;
@@ -325,6 +326,7 @@ public class Sorter {
     }
 
     /*@ public normal_behaviour
+      @ requires Storage.brandOf(values) == Storage.VALUES;
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires end - begin > 2 * Constants.BASE_CASE_SIZE;
       @ requires \invariant_for(storage);
@@ -340,11 +342,12 @@ public class Sorter {
       @ assignable storage.allArrays;
       @*/
     private static void sample_sort(int[] values, int begin, int end, Storage storage) {
-        int[] bucket_starts = new int[Constants.MAX_BUCKETS + 1];
-        Storage.brandArray(bucket_starts, Storage.BUCKET_STARTS);
+        int[] bucket_starts = Storage.createBrandedArray(Constants.MAX_BUCKETS + 1, Storage.BUCKET_STARTS);
 
         /*@ normal_behaviour
           @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+          @ ensures \disjoint(\all_fields(values), \all_fields(bucket_starts), storage.allArrays);
+          @ ensures \disjoint(storage.*, storage.allArrays);
           @ 
           @ assignable \strictly_nothing;
           @ 
@@ -364,7 +367,7 @@ public class Sorter {
 
         /*@ normal_behaviour
           @ // this is needed in many places and not automatically deduced
-          @ requires values != bucket_starts;
+          @ requires \disjoint(\all_fields(values), \all_fields(bucket_starts), storage.allArrays);
           @ 
           @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
           @ ensures Sorter.allBucketsInRangeSorted(values, begin, end, bucket_starts, num_buckets, 0, num_buckets);
@@ -394,7 +397,7 @@ public class Sorter {
                   @ decreases num_buckets - bucket;
                   @
                   @ assignable values[begin..end - 1];
-                  @ assignable storage.*;
+                  @ assignable storage.allArrays;
                   @*/
                 for (int bucket = 0; bucket < num_buckets; bucket += 1 + Constants.toInt(equal_buckets)) {
                     sample_sort_recurse_on(values, begin, end, storage, bucket_starts, num_buckets, equal_buckets, bucket);

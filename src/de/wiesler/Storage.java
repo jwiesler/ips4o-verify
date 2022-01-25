@@ -25,6 +25,7 @@ public class Storage {
       @ ensures brandOf(\result) == type;
       @ ensures \result.length == length;
       @ ensures \fresh(\result);
+      @ ensures (\forall int i; 0 <= i < length; \result[i] == 0);
       @ assignable \nothing;
       @*/
     static int[] createBrandedArray(int length, int type) {
@@ -94,6 +95,9 @@ public class Storage {
       @         )
       @     )
       @ );
+      @*/
+
+    /*@ public instance invariant \disjoint(this.allArrays, \all_fields(this));
       @*/
 
     //@ accessible \inv: this.*;
