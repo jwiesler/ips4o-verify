@@ -103,7 +103,7 @@ public class Storage {
     //@ accessible \inv: this.*;
 
     /*@ public normal_behaviour
-      @ ensures \new_elems_fresh(this.allArrays);
+      @ ensures \fresh(this.allArrays);
       @ assignable \nothing;
       @*/
     Storage() {
