@@ -268,6 +268,7 @@ public class Sorter {
 
     /*@ public normal_behaviour
       @ requires Storage.brandOf(values) == Storage.VALUES;
+      @ requires Storage.brandOf(bucket_starts) == Storage.BUCKET_STARTS;
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires 0 <= bucket && bucket < num_buckets;
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && bucket_starts[num_buckets] == end - begin;
@@ -283,6 +284,7 @@ public class Sorter {
       @     // starting at the next bucket, ending before the last bucket
       @     Sorter.equalityBucketsInRange(values, begin, end, bucket_starts, num_buckets, bucket + 1, num_buckets - 1);
       @ requires Sorter.notAllValuesInOneBucket(bucket_starts, num_buckets, end - begin);
+      @ requires \disjoint(storage.allArrays, values[*]);
       @ requires \invariant_for(storage);
       @ 
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
@@ -330,6 +332,7 @@ public class Sorter {
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires end - begin > 2 * Constants.BASE_CASE_SIZE;
       @ requires \invariant_for(storage);
+      @ requires \disjoint(storage.allArrays, values[*]);
       @
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures Functions.isSortedSlice(values, begin, end);
@@ -366,8 +369,8 @@ public class Sorter {
         boolean equal_buckets = partition.equal_buckets;
 
         /*@ normal_behaviour
-          @ // this is needed in many places and not automatically deduced
-          @ requires \disjoint(\all_fields(values), \all_fields(bucket_starts), storage.allArrays);
+          @ // this is needed in many places and harder to deduce
+          @ requires \disjoint(\all_fields(values), \all_fields(bucket_starts), storage.allArrays, storage.*);
           @ 
           @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
           @ ensures Sorter.allBucketsInRangeSorted(values, begin, end, bucket_starts, num_buckets, 0, num_buckets);
@@ -447,7 +450,7 @@ public class Sorter {
       @ requires Storage.brandOf(values) == Storage.VALUES;
       @ requires Functions.isValidSlice(values, start, end);
       @ requires \invariant_for(storage);
-      @ requires \disjoint(storage.allArrays, values);
+      @ requires \disjoint(storage.allArrays, values[*]);
       @
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures Functions.isSortedSlice(values, start, end);

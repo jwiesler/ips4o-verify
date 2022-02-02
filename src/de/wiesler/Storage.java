@@ -51,7 +51,7 @@ public class Storage {
     final int[] swap_2;
     final int[] overflow;
 
-    //@ ghost \locset allArrays;
+    //@ ghost final \locset allArrays;
 
     /*@ public instance invariant this.tree.length == Classifier.STORAGE_SIZE &&
       @     this.splitters.length == Classifier.STORAGE_SIZE &&
