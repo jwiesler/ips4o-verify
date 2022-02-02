@@ -65,7 +65,7 @@ public class Sorter {
       @ requires \invariant_for(storage);
       @ requires \disjoint(storage.allArrays, values[*]);
       @
-      @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
       @ ensures isValidSampleResultForLen(\result, end - begin);
       @ ensures Functions.isSortedSlice(values, begin, begin + \result.num_samples);
       @ ensures \invariant_for(storage);
@@ -99,8 +99,6 @@ public class Sorter {
       @         (\forall
       @             int i;
       @             begin + bucket_begin <= i < begin + bucket_end;
-      @             // all previous elements are smaller
-      @             (\forall int j; begin <= j < begin + bucket_begin; values[j] < values[i]) &&
       @             // all subsequent elements are bigger
       @             (\forall int j; begin + bucket_end <= j < end; values[i] < values[j])
       @         );
@@ -197,7 +195,7 @@ public class Sorter {
       @ requires end - begin >= Constants.BASE_CASE_SIZE;
       @ requires \invariant_for(storage);
       @
-      @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
       @ ensures \result != null ==>
       @     \result.num_buckets % 2 == 0 &&
       @     Functions.isValidBucketStarts(bucket_starts, \result.num_buckets) &&
@@ -290,7 +288,7 @@ public class Sorter {
       @ requires \disjoint(storage.allArrays, values[*]);
       @ requires \invariant_for(storage);
       @ 
-      @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
       @ 
       @ // Previous stay sorted, current is now sorted
       @ ensures Sorter.allBucketsInRangeSorted(values, begin, end, bucket_starts, num_buckets, 0, bucket + 1);
@@ -337,7 +335,7 @@ public class Sorter {
       @ requires \invariant_for(storage);
       @ requires \disjoint(storage.allArrays, values[*]);
       @
-      @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
       @ ensures Functions.isSortedSlice(values, begin, end);
       @ ensures \invariant_for(storage);
       @
@@ -351,7 +349,7 @@ public class Sorter {
         int[] bucket_starts = Storage.createBrandedArray(Constants.MAX_BUCKETS + 1, Storage.BUCKET_STARTS);
 
         /*@ normal_behaviour
-          @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+          @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
           @ ensures \disjoint(\all_fields(values), \all_fields(bucket_starts), storage.allArrays);
           @ ensures \disjoint(storage.*, storage.allArrays);
           @ 
@@ -375,7 +373,7 @@ public class Sorter {
           @ // this is needed in many places and harder to deduce
           @ requires \disjoint(\all_fields(values), \all_fields(bucket_starts), storage.allArrays, storage.*);
           @ 
-          @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+          @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
           @ ensures Sorter.allBucketsInRangeSorted(values, begin, end, bucket_starts, num_buckets, 0, num_buckets);
           @ ensures Sorter.allBucketsPartitioned(values, begin, end, bucket_starts, num_buckets);
           @ 
@@ -388,7 +386,7 @@ public class Sorter {
             if (end - begin > Constants.SINGLE_LEVEL_THRESHOLD) {
                 /*@ loop_invariant 0 <= bucket && bucket <= num_buckets;
                   @ loop_invariant equal_buckets ==> bucket % 2 == 0;
-                  @ loop_invariant \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+                  @ loop_invariant \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
                   @ 
                   @ loop_invariant Sorter.allBucketsInRangeSorted(values, begin, end, bucket_starts, num_buckets, 0, bucket < num_buckets || !equal_buckets ? bucket : num_buckets - 1);
                   @ // Stays partitioned
@@ -428,7 +426,7 @@ public class Sorter {
     /*@ public normal_behaviour
       @ requires Functions.isValidSlice(values, start, end);
       @
-      @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @ ensures \dl_seqPerm(\dl_seq_def_workaround(start, end, values), \old(\dl_seq_def_workaround(start, end, values)));
       @ ensures Functions.isSortedSlice(values, start, end);
       @
       @ assignable values[start..end - 1];
@@ -440,7 +438,7 @@ public class Sorter {
     /*@ public normal_behaviour
       @ requires Functions.isValidSlice(values, start, end);
       @
-      @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @ ensures \dl_seqPerm(\dl_seq_def_workaround(start, end, values), \old(\dl_seq_def_workaround(start, end, values)));
       @ ensures Functions.isSortedSlice(values, start, end);
       @
       @ assignable values[start..end - 1];
@@ -455,7 +453,7 @@ public class Sorter {
       @ requires \invariant_for(storage);
       @ requires \disjoint(storage.allArrays, values[*]);
       @
-      @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @ ensures \dl_seqPerm(\dl_seq_def_workaround(start, end, values), \old(\dl_seq_def_workaround(start, end, values)));
       @ ensures Functions.isSortedSlice(values, start, end);
       @ ensures \invariant_for(storage);
       @
