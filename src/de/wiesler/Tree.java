@@ -1,12 +1,13 @@
 package de.wiesler;
 
 public class Tree {
-    private final int[] tree;
+    private /*@ spec_public @*/ final int[] tree;
     private /*@ spec_public @*/ final int log_buckets;
     //@ ghost int num_buckets;
 
     /*@ public model_behaviour
       @ requires true;
+      @ accessible \nothing;
       @ model boolean doesNotAlias(int[] array) {
       @     return array != this.tree;
       @ }
@@ -16,7 +17,7 @@ public class Tree {
       @ public invariant this.num_buckets == (1 << this.log_buckets);
       @ public invariant Functions.isBetweenInclusive(this.num_buckets, 2, tree.length);
       @
-      @ // accessible \inv, this.tree[*], this.log_buckets;
+      @ accessible \inv: this.tree[*], this.log_buckets;
       @*/
 
     /*@ public normal_behaviour

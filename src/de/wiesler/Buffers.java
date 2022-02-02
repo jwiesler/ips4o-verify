@@ -38,6 +38,7 @@ public class Buffers {
 
     /*@ public model_behaviour
       @ requires true;
+      @ accessible \nothing;
       @ model boolean doesNotAlias(int[] array) {
       @     return array != this.buffer && array != this.indices;
       @ }
@@ -45,15 +46,16 @@ public class Buffers {
 
     /*@ public model_behaviour
       @ requires true;
-      @ ensures (\forall int b; Functions.isBetween(b, 0, this.buckets); this.bufferAt(b) == \seq_empty);
+      @ ensures \result ==> (\forall int b; Functions.isBetween(b, 0, this.buckets); this.bufferAt(b) == \seq_empty);
+      @ ensures \result ==> this.count() == 0;
       @ model boolean isEmpty() {
-      @     return (\forall int b; Functions.isBetween(b, 0, this.buckets); this.indices[b] == \seq_empty);
+      @     return (\forall int b; Functions.isBetween(b, 0, this.buckets); this.bufferAt(b) == 0);
       @ }
       @*/
 
     /*@ public model_behaviour
       @ requires Functions.isBetween(bucket, 0, this.buckets);
-      @ accessible this.*;
+      @ accessible this.indices[bucket], this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1];
       @ model \seq bufferAt(int bucket) {
       @     return (\seq_def \bigint i; bucket * BUFFER_SIZE; bucket * BUFFER_SIZE + this.indices[bucket]; this.buffer[i]);
       @ }
@@ -61,12 +63,21 @@ public class Buffers {
 
     /*@ public model_behaviour
       @ requires true;
-      @ accessible this.*, classifier.*;
+      @ ensures \result == (\sum int b; Functions.isBetween(b, 0, this.buckets); this.bufferAt(b).length);
+      @ accessible this.indices[0..this.buckets - 1];
+      @ model int count() {
+      @     return (\sum int b; b <= 0 < this.buckets; this.indices[b]);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires true;
+      @ accessible this.indices[0..this.buckets - 1], this.buffer[0..Buffers.BUFFER_SIZE * this.buckets - 1], classifier.*;
       @ model boolean isClassifiedWith(Classifier classifier) {
       @     return (\forall 
       @         int b; 
       @         Functions.isBetween(b, 0, this.buckets);
-      @         (\forall int i; 0 <= i < this.bufferAt(b).length; classifier.isClassified((int)this.bufferAt(b)[i], b))
+      @         (\forall int i; 0 <= i < this.bufferAt(b).length; classifier.classOf((int)this.bufferAt(b)[i]) == b)
       @     );
       @ }
       @*/
@@ -78,7 +89,7 @@ public class Buffers {
       @ invariant Functions.isBetweenInclusive(this.buckets, 0, Constants.MAX_BUCKETS);
       @ invariant (\forall int i; 0 <= i && i < this.buckets; 0 <= this.indices[i] && this.indices[i] <= BUFFER_SIZE);
       @ 
-      @ accessible \inv: this.buffer, this.indices, this.buckets;
+      @ accessible \inv: this.buffer;
       @*/
 
     /*@ public normal_behaviour
@@ -104,48 +115,41 @@ public class Buffers {
 
     /*@ public normal_behaviour
       @ requires 0 <= bucket && bucket < this.buckets;
-      @ requires Functions.isValidSlice(values, write, end);
-      @ requires this.doesNotAlias(values);
-      @ 
-      @ requires this.bufferAt(bucket).length == BUFFER_SIZE;
-      @ requires end - write >= BUFFER_SIZE;
-      @ 
-      @ ensures \result;
-      @ ensures (\forall int i; 0 <= i && i < BUFFER_SIZE; values[write + i] == \old(this.buffer[bucket * BUFFER_SIZE + i]));
-      @ ensures this.bufferAt(bucket) == \seq_singleton(value);
-      @ ensures (\forall int b; 0 <= b < this.buckets && b != bucket; this.bufferAt(b) == \old(this.bufferAt(b)));
-      @
-      @ assignable this.indices[bucket];
-      @ assignable this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1];
-      @ assignable values[write..(write + BUFFER_SIZE) - 1];
-      @*/
-    /*@ public normal_behaviour
-      @ requires 0 <= bucket && bucket < this.buckets;
-      @ requires Functions.isValidSlice(values, write, end);
-      @ requires this.doesNotAlias(values);
       @ 
       @ requires this.bufferAt(bucket).length != BUFFER_SIZE;
       @ 
-      @ ensures !\result;
       @ ensures this.bufferAt(bucket) == \seq_concat(\old(this.bufferAt(bucket)), \seq_singleton(value));
       @ ensures (\forall int b; 0 <= b < this.buckets && b != bucket; this.bufferAt(b) == \old(this.bufferAt(b)));
+      @ ensures this.count() == \old(this.count()) + 1;
       @ 
       @ assignable this.indices[bucket];
       @ assignable this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1];
       @*/
-    public boolean push(int value, int bucket, int[] values, int write, int end) {
+    public void push(int bucket, int value) {
         int buffer_offset = bucket * BUFFER_SIZE;
         int index = this.indices[bucket];
-        boolean written = false;
-        if (index == BUFFER_SIZE) {
-            //@ assert write + BUFFER_SIZE <= end;
-            Functions.copy(buffer, buffer_offset, values, write, BUFFER_SIZE);
-            index = 0;
-            written = true;
-        }
         this.buffer[buffer_offset + index] = value;
         this.indices[bucket] = index + 1;
-        return written;
+    }
+
+    /*@ public normal_behaviour
+      @ requires 0 <= bucket < this.buckets;
+      @ requires this.bufferAt(bucket).length == BUFFER_SIZE;
+      @ requires Functions.isValidSlice(values, write, end);
+      @ requires end - write >= BUFFER_SIZE;
+      @ 
+      @ ensures this.bufferAt(bucket) == \seq_empty;
+      @ ensures (\forall int i; 0 <= i && i < BUFFER_SIZE; values[write + i] == \old(this.buffer[bucket * BUFFER_SIZE + i]));
+      @ ensures (\forall int b; 0 <= b < this.buckets && b != bucket; this.bufferAt(b) == \old(this.bufferAt(b)));
+      @ ensures this.count() == \old(this.count()) - BUFFER_SIZE;
+      @ 
+      @ assignable this.indices[bucket];
+      @ assignable values[write..write + BUFFER_SIZE - 1];
+      @*/
+    public void flush(int bucket, int[] values, int write, int end) {
+        int buffer_offset = bucket * BUFFER_SIZE;
+        Functions.copy(buffer, buffer_offset, values, write, BUFFER_SIZE);
+        this.indices[bucket] = 0;
     }
 
     /*@ public normal_behaviour
@@ -172,7 +176,12 @@ public class Buffers {
         Functions.copy(this.buffer, offset + head_len, values, tail_start, tail_len);
     }
 
-    public /*@ strictly_pure */ int len(int bucket) {
+    /*@ public normal_behaviour
+      @ requires 0 <= bucket < this.buckets;
+      @ ensures \result == this.bufferAt(bucket).length;
+      @ assignable \strictly_nothing;
+      @*/
+    public int len(int bucket) {
         return this.indices[bucket];
     }
 }
