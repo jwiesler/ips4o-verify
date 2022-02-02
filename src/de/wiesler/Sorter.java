@@ -28,9 +28,11 @@ public class Sorter {
       @ accessible r.*;
       @ static model boolean isValidSampleResultForLen(SampleResult r, int n) {
       @     return 
-      @         Functions.isBetweenInclusive(r.num_samples, 2, n / 2) &&
+      @         2 <= r.num_samples <= n / 2 &&
+      @         // This states the same as the previous line but is somehow hard to deduce
+      @         r.num_samples < n &&
       @         1 <= r.step &&
-      @         Functions.isBetweenInclusive(r.num_buckets, 2, 1 << Constants.LOG_MAX_BUCKETS) &&
+      @         2 <= r.num_buckets <= 1 << Constants.LOG_MAX_BUCKETS &&
       @         // there are enough samples to perform num_buckets selections with the given step size
       @         r.step * r.num_buckets - 1 <= r.num_samples;
       @ }
@@ -61,6 +63,7 @@ public class Sorter {
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires end - begin >= Constants.BASE_CASE_SIZE;
       @ requires \invariant_for(storage);
+      @ requires \disjoint(storage.allArrays, values[*]);
       @
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures isValidSampleResultForLen(\result, end - begin);
