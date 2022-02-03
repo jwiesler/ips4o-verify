@@ -46,15 +46,15 @@ public class Buffers {
 
     /*@ public model_behaviour
       @ requires true;
-      @ ensures \result ==> (\forall int b; Functions.isBetween(b, 0, this.buckets); this.bufferAt(b) == \seq_empty);
+      @ ensures \result ==> (\forall int b; 0 <= b < this.buckets; this.bufferAt(b) == \seq_empty);
       @ ensures \result ==> this.count() == 0;
       @ model boolean isEmpty() {
-      @     return (\forall int b; Functions.isBetween(b, 0, this.buckets); this.bufferAt(b) == 0);
+      @     return (\forall int b; 0 <= b < this.buckets; this.bufferAt(b) == 0);
       @ }
       @*/
 
     /*@ public model_behaviour
-      @ requires Functions.isBetween(bucket, 0, this.buckets);
+      @ requires 0 <= bucket < this.buckets;
       @ accessible this.indices[bucket], this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1];
       @ model \seq bufferAt(int bucket) {
       @     return (\seq_def \bigint i; bucket * BUFFER_SIZE; bucket * BUFFER_SIZE + this.indices[bucket]; this.buffer[i]);
@@ -63,7 +63,7 @@ public class Buffers {
 
     /*@ public model_behaviour
       @ requires true;
-      @ ensures \result == (\sum int b; Functions.isBetween(b, 0, this.buckets); this.bufferAt(b).length);
+      @ ensures \result == (\sum int b; 0 <= b < this.buckets; this.bufferAt(b).length);
       @ accessible this.indices[0..this.buckets - 1];
       @ model int count() {
       @     return (\sum int b; b <= 0 < this.buckets; this.indices[b]);
@@ -76,7 +76,7 @@ public class Buffers {
       @ model boolean isClassifiedWith(Classifier classifier) {
       @     return (\forall 
       @         int b; 
-      @         Functions.isBetween(b, 0, this.buckets);
+      @         0 <= b < this.buckets;
       @         (\forall int i; 0 <= i < this.bufferAt(b).length; classifier.classOf((int)this.bufferAt(b)[i]) == b)
       @     );
       @ }
@@ -86,7 +86,7 @@ public class Buffers {
       @ invariant this.buffer != this.indices;
       @ invariant this.buffer.length == 2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS;
       @ invariant this.indices.length == Constants.MAX_BUCKETS;
-      @ invariant Functions.isBetweenInclusive(this.buckets, 0, Constants.MAX_BUCKETS);
+      @ invariant 0 <= this.buckets <= Constants.MAX_BUCKETS;
       @ invariant (\forall int i; 0 <= i && i < this.buckets; 0 <= this.indices[i] && this.indices[i] <= BUFFER_SIZE);
       @ 
       @ accessible \inv: this.buffer;
@@ -96,7 +96,7 @@ public class Buffers {
       @ requires buffer != indices;
       @ requires buffer.length == 2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS;
       @ requires indices.length == Constants.MAX_BUCKETS;
-      @ requires Functions.isBetweenInclusive(num_buckets, 0, Constants.MAX_BUCKETS);
+      @ requires 0 <= num_buckets <= Constants.MAX_BUCKETS;
       @ 
       @ ensures this.buckets == num_buckets;
       @ ensures this.buffer == buffer;
@@ -139,7 +139,7 @@ public class Buffers {
       @ requires end - write >= BUFFER_SIZE;
       @ 
       @ ensures this.bufferAt(bucket) == \seq_empty;
-      @ ensures (\forall int i; 0 <= i && i < BUFFER_SIZE; values[write + i] == \old(this.buffer[bucket * BUFFER_SIZE + i]));
+      @ ensures (\forall int i; 0 <= i && i < BUFFER_SIZE; values[write + i] == \old(this.bufferAt(bucket)[i]));
       @ ensures (\forall int b; 0 <= b < this.buckets && b != bucket; this.bufferAt(b) == \old(this.bufferAt(b)));
       @ ensures this.count() == \old(this.count()) - BUFFER_SIZE;
       @ 
