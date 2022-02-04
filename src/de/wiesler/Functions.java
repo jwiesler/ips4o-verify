@@ -12,24 +12,6 @@ public class Functions {
 
     /*@
       @ public model_behaviour
-      @ requires lower <= upper;
-      @ accessible \nothing;
-      @ static model boolean isBetweenInclusive(int index, int lower, int upper) {
-      @     return lower <= index && index <= upper;
-      @ }
-      @*/
-
-    /*@
-      @ public model_behaviour
-      @ requires lower <= upper;
-      @ accessible \nothing;
-      @ static model boolean isBetween(int index, int lower, int upper) {
-      @     return lower <= index && index < upper;
-      @ }
-      @*/
-
-    /*@
-      @ public model_behaviour
       @ requires true;
       @ accessible \nothing;
       @ static model boolean isValidSlice(int[] values, int begin, int end) {
@@ -201,7 +183,7 @@ public class Functions {
       @     // It is unique in the target array (or: strictly ascending)
       @     (i > 0 ==> target[i - 1] < target[i])
       @ );
-      @ ensures Functions.isBetweenInclusive(\result, 1, count);
+      @ ensures 1 <= \result <= count;
       @
       @ assignable target[0..count - 1];
       @*/

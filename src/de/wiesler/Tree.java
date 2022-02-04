@@ -13,15 +13,15 @@ public class Tree {
       @ }
       @*/
 
-    /*@ public invariant Functions.isBetweenInclusive(this.log_buckets, 1, Constants.LOG_MAX_BUCKETS);
+    /*@ public invariant 1 <= this.log_buckets <= Constants.LOG_MAX_BUCKETS;
       @ public invariant this.num_buckets == (1 << this.log_buckets);
-      @ public invariant Functions.isBetweenInclusive(this.num_buckets, 2, tree.length);
+      @ public invariant 2 <= this.num_buckets <= tree.length;
       @
-      @ accessible \inv: this.tree[*], this.log_buckets;
+      @ accessible \inv: this.*, this.tree;
       @*/
 
     /*@ public normal_behaviour
-      @ requires Functions.isBetweenInclusive(log_buckets, 1, Constants.LOG_MAX_BUCKETS);
+      @ requires 1 <= log_buckets <= Constants.LOG_MAX_BUCKETS;
       @ requires Functions.isValidSlice(sorted_splitters, 0, (1 << log_buckets) - 1);
       @ requires Functions.isSortedSlice(sorted_splitters, 0, (1 << log_buckets) - 1);
       @ requires (1 << log_buckets) <= tree.length;
@@ -45,9 +45,9 @@ public class Tree {
 
     /*@ normal_behaviour
       @ requires this.tree != null;
-      @ requires Functions.isBetweenInclusive(this.log_buckets, 1, Constants.LOG_MAX_BUCKETS);
+      @ requires 1 <= this.log_buckets <= Constants.LOG_MAX_BUCKETS;
+      @ requires 2 <= this.num_buckets <= tree.length;
       @ requires this.num_buckets == (1 << this.log_buckets);
-      @ requires Functions.isBetweenInclusive(this.num_buckets, 2, tree.length);
       @
       @ requires 1 <= position && position < this.num_buckets;
       @ requires Functions.isValidSlice(sorted_splitters, begin, end);

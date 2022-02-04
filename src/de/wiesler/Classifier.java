@@ -4,7 +4,7 @@ public class Classifier {
     public static final int STORAGE_SIZE = (1 << Constants.LOG_MAX_BUCKETS);
 
     private final Tree tree;
-    private final int num_buckets;
+    private /*@ spec_public @*/ final int num_buckets;
     private final int[] sorted_splitters;
     private final boolean equal_buckets;
 
@@ -16,8 +16,8 @@ public class Classifier {
       @ invariant Functions.isValidSlice(this.sorted_splitters, 0, this.tree.num_buckets);
       @ invariant Functions.isSortedSlice(this.sorted_splitters, 0, this.tree.num_buckets);
       @ invariant this.sorted_splitters[this.tree.num_buckets - 1] == this.sorted_splitters[this.tree.num_buckets - 2];
-      @ invariant this.footprint == \set_union(this.sorted_splitters[*], this.tree.tree[*], this.num_buckets);
-      @ accessible \inv: this.sorted_splitters, this.tree.tree;
+      @ invariant this.footprint == \set_union(this.*, this.sorted_splitters[*], this.tree.*, this.tree.tree[*]);
+      @ accessible \inv: this.*, this.sorted_splitters[*], this.tree.*, this.tree.tree[*];
       @*/
 
     /*@ public model_behaviour
@@ -215,6 +215,8 @@ public class Classifier {
     public static final int BATCH_SIZE = 16;
 
     /*@ model_behaviour
+      @ requires \invariant_for(buffers) && \typeof(buffers) == \type(Buffers);
+      @ 
       @ requires bucket_starts.length >= this.num_buckets;
       @ requires buffers.buckets == this.num_buckets;
       @ requires Functions.isAlignedTo(write - begin, Buffers.BUFFER_SIZE);
@@ -233,6 +235,8 @@ public class Classifier {
       @*/
 
     /*@ model_behaviour
+      @ requires \invariant_for(buffers) && \typeof(buffers) == \type(Buffers);
+      @ 
       @ requires buffers.buckets == this.num_buckets;
       @ requires Functions.isAlignedTo(end - begin, Buffers.BUFFER_SIZE);
       @ requires buffers.isClassifiedWith(this);
@@ -253,12 +257,12 @@ public class Classifier {
       @*/
 
     /*@ public normal_behaviour
+      @ requires \invariant_for(buffers) && \typeof(buffers) == \type(Buffers);
+      @ requires \typeof(this) == \type(Classifier);
+      @ 
       @ requires bucket_starts.length >= this.num_buckets + 1;
       @ requires \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.footprint, indices[*]);
       @ requires buffers.buckets == this.num_buckets;
-      @ requires \invariant_for(buffers);
-      @ requires \typeof(buffers) == \type(Buffers);
-      @ requires \typeof(this) == \type(Classifier);
       @ 
       @ requires Functions.isValidSlice(values, begin, i + indices.length);
       @ 
@@ -334,14 +338,14 @@ public class Classifier {
     }
 
     /*@ public normal_behaviour
+      @ requires \invariant_for(buffers) && \typeof(buffers) == \type(Buffers);
+      @ 
       @ requires bucket_starts.length >= this.num_buckets + 1;
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires (\forall int i; 0 <= i < this.num_buckets; bucket_starts[i] == 0);
       @ requires buffers.isEmpty();
       @ requires \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.footprint);
       @ requires buffers.buckets == this.num_buckets;
-      @ requires \invariant_for(buffers);
-      @ requires \typeof(buffers) == \type(Buffers);
       @
       @ ensures \invariant_for(buffers);
       @ 
@@ -398,14 +402,14 @@ public class Classifier {
     }
 
     /*@ public normal_behaviour
+      @ requires \invariant_for(buffers) && \typeof(buffers) == \type(Buffers);
+      @ 
       @ requires bucket_starts.length >= this.num_buckets + 1;
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires (\forall int i; 0 <= i < this.num_buckets; bucket_starts[i] == 0);
       @ requires buffers.isEmpty();
       @ requires \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.footprint);
       @ requires buffers.buckets == this.num_buckets;
-      @ requires \invariant_for(buffers);
-      @ requires \typeof(buffers) == \type(Buffers);
       @
       @ ensures begin <= \result && \result <= end && Functions.isAlignedTo(\result - begin, Buffers.BUFFER_SIZE);
       @ ensures this.isClassifiedBlocksRange(values, begin, \result, Buffers.BUFFER_SIZE);

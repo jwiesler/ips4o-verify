@@ -89,8 +89,8 @@ public class Sorter {
     /*@ public model_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires bucket_begin <= bucket_end;
-      @ requires Functions.isBetweenInclusive(begin + bucket_begin, begin, end);
-      @ requires Functions.isBetweenInclusive(begin + bucket_end, begin, end);
+      @ requires begin <= begin + bucket_begin <= end;
+      @ requires begin <= begin + bucket_end <= end;
       @ 
       @ accessible values[begin..end - 1];
       @

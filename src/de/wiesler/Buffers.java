@@ -38,6 +38,7 @@ public class Buffers {
 
     /*@ public model_behaviour
       @ requires true;
+      @ 
       @ accessible \nothing;
       @ model boolean doesNotAlias(int[] array) {
       @     return array != this.buffer && array != this.indices;
@@ -46,10 +47,11 @@ public class Buffers {
 
     /*@ public model_behaviour
       @ requires true;
+      @ 
       @ ensures \result ==> (\forall int b; 0 <= b < this.buckets; this.bufferAt(b) == \seq_empty);
       @ ensures \result ==> this.count() == 0;
       @ model boolean isEmpty() {
-      @     return (\forall int b; 0 <= b < this.buckets; this.bufferAt(b) == 0);
+      @     return (\forall int b; 0 <= b < this.buckets; this.len(b) == 0);
       @ }
       @*/
 
@@ -63,22 +65,36 @@ public class Buffers {
 
     /*@ public model_behaviour
       @ requires true;
+      @ 
       @ ensures \result == (\sum int b; 0 <= b < this.buckets; this.bufferAt(b).length);
       @ accessible this.indices[0..this.buckets - 1];
       @ model int count() {
-      @     return (\sum int b; b <= 0 < this.buckets; this.indices[b]);
+      @     return (\sum int b; 0 <= b < this.buckets; this.indices[b]);
       @ }
       @*/
 
     /*@ public model_behaviour
-      @ requires true;
-      @ accessible this.indices[0..this.buckets - 1], this.buffer[0..Buffers.BUFFER_SIZE * this.buckets - 1], classifier.*;
+      @ requires \invariant_for(classifier) && \typeof(classifier) == \type(Classifier);
+      @ requires classifier.num_buckets == this.buckets;
+      @ 
+      @ accessible this.indices[0..this.buckets - 1], this.buffer[0..Buffers.BUFFER_SIZE * this.buckets - 1], classifier.footprint;
       @ model boolean isClassifiedWith(Classifier classifier) {
       @     return (\forall 
       @         int b; 
       @         0 <= b < this.buckets;
-      @         (\forall int i; 0 <= i < this.bufferAt(b).length; classifier.classOf((int)this.bufferAt(b)[i]) == b)
+      @         this.isBucketClassifiedWith(b, classifier)
       @     );
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires \invariant_for(classifier) && \typeof(classifier) == \type(Classifier);
+      @ 
+      @ requires classifier.num_buckets == this.buckets;
+      @ requires 0 <= bucket < this.buckets;
+      @ accessible this.indices[bucket], this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1], classifier.footprint;
+      @ model boolean isBucketClassifiedWith(int bucket, Classifier classifier) {
+      @     return (\forall int i; 0 <= i < this.bufferAt(bucket).length; classifier.classOf((int)this.bufferAt(bucket)[i]) == bucket);
       @ }
       @*/
 
@@ -89,7 +105,7 @@ public class Buffers {
       @ invariant 0 <= this.buckets <= Constants.MAX_BUCKETS;
       @ invariant (\forall int i; 0 <= i && i < this.buckets; 0 <= this.indices[i] && this.indices[i] <= BUFFER_SIZE);
       @ 
-      @ accessible \inv: this.buffer;
+      @ accessible \inv: this.*, this.indices[*];
       @*/
 
     /*@ public normal_behaviour

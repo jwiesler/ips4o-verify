@@ -13,8 +13,8 @@ public class BucketPointers {
       @ static model boolean isBaseInvariantFullfilled(int[] buffer, int[] bucket_starts, int num_buckets, int first_empty_position) {
       @     return buffer != bucket_starts &&
       @         Functions.isValidBucketStarts(bucket_starts, num_buckets) &&
-      @         Functions.isBetweenInclusive(2 * num_buckets, 0, buffer.length) &&
-      @         Functions.isBetweenInclusive(first_empty_position, 0, bucket_starts[num_buckets]) &&
+      @         0 <= 2 * num_buckets <= buffer.length &&
+      @         0 <= first_empty_position <= bucket_starts[num_buckets] &&
       @         Functions.isAlignedTo(first_empty_position, Buffers.BUFFER_SIZE);
       @ }
       @*/
@@ -70,8 +70,8 @@ public class BucketPointers {
     /*@ normal_behaviour
       @ requires isBaseInvariantFullfilled(this.buffer, this.bucket_starts, this.num_buckets, this.first_empty_position);
       @ 
-      @ requires Functions.isBetween(bucket, 0, this.num_buckets);
-      @ requires Functions.isBetweenInclusive(start, 0, stop) && first_empty_position == this.first_empty_position;
+      @ requires 0 <= bucket < this.num_buckets;
+      @ requires 0 <= start <= stop && first_empty_position == this.first_empty_position;
       @ requires Functions.isAlignedTo(start, Buffers.BUFFER_SIZE);
       @ requires Functions.isAlignedTo(stop, Buffers.BUFFER_SIZE);
       @
