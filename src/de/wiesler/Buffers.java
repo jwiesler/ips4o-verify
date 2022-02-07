@@ -34,7 +34,7 @@ public class Buffers {
 
     private /*@ spec_public @*/ final int[] buffer;
     private /*@ spec_public @*/ final int[] indices;
-    //@ ghost int buckets;
+    //@ ghost final int buckets;
 
     /*@ public model_behaviour
       @ requires true;
@@ -66,10 +66,9 @@ public class Buffers {
     /*@ public model_behaviour
       @ requires true;
       @ 
-      @ ensures \result == (\sum int b; 0 <= b < this.buckets; this.bufferAt(b).length);
       @ accessible this.indices[0..this.buckets - 1];
       @ model int count() {
-      @     return (\sum int b; 0 <= b < this.buckets; this.indices[b]);
+      @     return (\sum int b; 0 <= b < this.buckets; this.bufferAt(b).length);
       @ }
       @*/
 
@@ -195,6 +194,7 @@ public class Buffers {
     /*@ public normal_behaviour
       @ requires 0 <= bucket < this.buckets;
       @ ensures \result == this.bufferAt(bucket).length;
+      @ accessible this.indices[bucket];
       @ assignable \strictly_nothing;
       @*/
     public int len(int bucket) {

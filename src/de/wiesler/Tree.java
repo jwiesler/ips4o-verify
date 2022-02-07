@@ -3,7 +3,7 @@ package de.wiesler;
 public class Tree {
     private /*@ spec_public @*/ final int[] tree;
     private /*@ spec_public @*/ final int log_buckets;
-    //@ ghost int num_buckets;
+    //@ ghost final int num_buckets;
 
     /*@ public model_behaviour
       @ requires true;
@@ -17,7 +17,7 @@ public class Tree {
       @ public invariant this.num_buckets == (1 << this.log_buckets);
       @ public invariant 2 <= this.num_buckets <= tree.length;
       @
-      @ accessible \inv: this.*, this.tree;
+      @ accessible \inv: this.tree[*];
       @*/
 
     /*@ public normal_behaviour

@@ -4,9 +4,9 @@ public class BucketPointers {
     // 2 * n integer (read, write)
     private final int[] buffer;
 
-    //@ ghost int num_buckets;
-    //@ ghost int bucket_starts[];
-    //@ ghost int first_empty_position;
+    //@ ghost final int num_buckets;
+    //@ ghost final int bucket_starts[];
+    //@ ghost final int first_empty_position;
 
     /*@ model_behaviour
       @ requires true;
@@ -47,10 +47,9 @@ public class BucketPointers {
       @*/
     public BucketPointers(int[] bucket_starts, int num_buckets, int first_empty_position, int[] buffer) {
         this.buffer = buffer;
-        //@ ghost BucketPointers self = this;
-        //@ set self.num_buckets = num_buckets;
-        //@ set self.bucket_starts = bucket_starts;
-        //@ set self.first_empty_position = first_empty_position;
+        //@ set this.num_buckets = num_buckets;
+        //@ set this.bucket_starts = bucket_starts;
+        //@ set this.first_empty_position = first_empty_position;
 
         /*@
           @ loop_invariant 0 <= bucket && bucket <= this.num_buckets;

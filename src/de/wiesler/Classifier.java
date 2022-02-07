@@ -8,7 +8,7 @@ public class Classifier {
     private final int[] sorted_splitters;
     private final boolean equal_buckets;
 
-    //@ ghost \locset footprint;
+    //@ ghost final \locset footprint;
 
     /*@ public invariant 2 <= this.num_buckets <= Constants.MAX_BUCKETS;
       @ public invariant this.num_buckets == (1 << (this.tree.log_buckets + Constants.toInt(this.equal_buckets)));
@@ -16,8 +16,8 @@ public class Classifier {
       @ invariant Functions.isValidSlice(this.sorted_splitters, 0, this.tree.num_buckets);
       @ invariant Functions.isSortedSlice(this.sorted_splitters, 0, this.tree.num_buckets);
       @ invariant this.sorted_splitters[this.tree.num_buckets - 1] == this.sorted_splitters[this.tree.num_buckets - 2];
-      @ invariant this.footprint == \set_union(this.*, this.sorted_splitters[*], this.tree.*, this.tree.tree[*]);
-      @ accessible \inv: this.*, this.sorted_splitters[*], this.tree.*, this.tree.tree[*];
+      @ invariant this.footprint == \set_union(this.sorted_splitters[*], this.tree.tree[*]);
+      @ accessible \inv: this.sorted_splitters[*], this.tree.tree[*];
       @*/
 
     /*@ public model_behaviour
@@ -49,13 +49,13 @@ public class Classifier {
       @*/
 
     /*@ public model_behaviour
-      @ requires Functions.isAlignedTo(end - begin, block_size);
+      @ requires Functions.isAlignedTo(end - begin, Buffers.BUFFER_SIZE);
       @ accessible this.footprint, values[begin..end - 1];
-      @ model boolean isClassifiedBlocksRange(int[] values, int begin, int end, int block_size) {
+      @ model boolean isClassifiedBlocksRange(int[] values, int begin, int end) {
       @     return (\forall
       @         int block;
-      @         0 <= block && block < (end - begin) / block_size;
-      @         this.isClassifiedBlock(values, begin + block * block_size, begin + (block + 1) * block_size)
+      @         0 <= block && block < (end - begin) / Buffers.BUFFER_SIZE;
+      @         this.isClassifiedBlock(values, begin + block * Buffers.BUFFER_SIZE, begin + (block + 1) * Buffers.BUFFER_SIZE)
       @     );
       @ }
       @*/
@@ -228,7 +228,7 @@ public class Classifier {
       @     buffers.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1];
       @ model boolean isClassifiedUntil(int[] values, int begin, int write, int i, int[] bucket_starts, Buffers buffers) {
       @     return this.allElementsCounted(values, begin, write, bucket_starts)
-      @         && isClassifiedBlocksRange(values, begin, write, Buffers.BUFFER_SIZE)
+      @         && isClassifiedBlocksRange(values, begin, write)
       @         && buffers.isClassifiedWith(this)
       @         && buffers.count() == i - write;
       @ }
