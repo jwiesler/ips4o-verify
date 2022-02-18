@@ -1,6 +1,6 @@
 package de.wiesler;
 
-public class Tree {
+public final class Tree {
     private /*@ spec_public @*/ final int[] tree;
     private /*@ spec_public @*/ final int log_buckets;
     //@ ghost final int num_buckets;

@@ -1,6 +1,6 @@
 package de.wiesler;
 
-public class Functions {
+public final class Functions {
     /*@
       @ public model_behaviour
       @ requires index >= 1;
@@ -15,29 +15,28 @@ public class Functions {
       @ requires true;
       @ accessible \nothing;
       @ static model boolean isValidSlice(int[] values, int begin, int end) {
-      @     return values != null &&
-      @         0 <= begin <= end <= values.length;
+      @     return 0 <= begin <= end <= values.length;
       @ }
       @*/
 
     /*@
       @ public model_behaviour
       @ requires isValidSlice(values, begin, end);
-      @ 
+      @
       @ ensures \result ==> isValidSlice(values, sub_begin, sub_end);
-      @ 
+      @
       @ accessible \nothing;
       @ static model boolean isValidSubSlice(int[] values, int begin, int end, int sub_begin, int sub_end) {
-      @     return begin <= sub_begin <= sub_end <= end;
+      @     return 0 <= begin <= sub_begin <= sub_end <= end <= values.length;
       @ }
       @*/
 
     /*@
       @ public model_behaviour
       @ requires true;
-      @ 
+      @
       @ ensures \result ==> Functions.isSortedSliceTransitive(values, begin, end);
-      @ 
+      @
       @ accessible values[begin..end - 1];
       @ static model boolean isSortedSlice(int[] values, int begin, int end) {
       @     return (\forall int i; begin <= i && i < end - 1; values[i] <= values[i + 1]);
@@ -46,22 +45,22 @@ public class Functions {
 
     /*@ public model_behaviour
       @ ensures \result ==> Functions.isSortedSlice(values, begin, end);
-      @ 
+      @
       @ accessible values[begin..end - 1];
-      @ 
+      @
       @ static model boolean isSortedSliceTransitive(int[] values, int begin, int end) {
-      @     return 
-      @         (\forall int i; begin <= i < end; 
+      @     return
+      @         (\forall int i; begin <= i < end;
       @             (\forall int j; i <= j < end; values[i] <= values[j]));
       @ }
       @*/
-    
+
     /*@ public model_behaviour
       @ requires true;
       @ accessible bucket_starts[0..num_buckets];
-      @ 
+      @
       @ ensures \result ==> Lemma.bucketIndexFromOffset(bucket_starts, num_buckets, bucket_starts[num_buckets]);
-      @ 
+      @
       @ static model boolean isValidBucketStarts(int[] bucket_starts, int num_buckets) {
       @     return isValidSlice(bucket_starts, 0, num_buckets + 1) &&
       @         isSortedSliceTransitive(bucket_starts, 0, num_buckets + 1) &&
@@ -118,12 +117,14 @@ public class Functions {
       @ requires 0 <= length;
       @ requires 0 <= srcPos && srcPos + length <= src.length;
       @ requires 0 <= destPos && destPos + length <= dest.length;
+      @ requires \disjoint(src[srcPos..srcPos + length - 1], dest[destPos..destPos + length]);
       @
-      @ ensures (\forall int i; 0 <= i && i < length; dest[destPos + i] == \old(src[srcPos + i]));
+      @ ensures (\forall int i; 0 <= i && i < length; dest[destPos + i] == src[srcPos + i]);
+      @ ensures \dl_seq_def_workaround(destPos, destPos + length, dest) == \dl_seq_def_workaround(srcPos, srcPos + length, src);
       @
       @ assignable dest[destPos..destPos + length - 1];
       @*/
-    public static void copy(int[] src, int srcPos, int[] dest, int destPos, int length) {
+    public static void copy_nonoverlapping(int[] src, int srcPos, int[] dest, int destPos, int length) {
         System.arraycopy(src, srcPos, dest, destPos, length);
     }
 
@@ -145,23 +146,47 @@ public class Functions {
         }
     }
 
+    /*@ public normal_behaviour
+      @ requires Functions.isValidSubSlice(values, begin, end, from, from + Buffers.BUFFER_SIZE);
+      @ requires Buffers.isBlockAligned(from - begin);
+      @
+      @ requires buffer.length == Buffers.BUFFER_SIZE;
+      @ requires \disjoint(values[*], buffer[*]);
+      @
+      @ ensures (\forall int i; 0 <= i && i < Buffers.BUFFER_SIZE; buffer[i] == values[from + i]);
+      @
+      @ assignable buffer[*];
+      @*/
     public static void copy_block_to_buffer(int[] values, int begin, int end, int from, int[] buffer) {
-        assert (from + Buffers.BUFFER_SIZE <= end);
-        assert ((from - begin) % Buffers.BUFFER_SIZE == 0);
-        System.arraycopy(values, from, buffer, 0, Buffers.BUFFER_SIZE);
+        copy_nonoverlapping(values, from, buffer, 0, Buffers.BUFFER_SIZE);
     }
 
+    /*@ public normal_behaviour
+      @ requires Functions.isValidSubSlice(values, begin, end, to, to + Buffers.BUFFER_SIZE);
+      @ requires Buffers.isBlockAligned(to - begin);
+      @
+      @ requires buffer.length == Buffers.BUFFER_SIZE;
+      @ requires \disjoint(values[*], buffer[*]);
+      @
+      @ ensures (\forall int i; 0 <= i && i < Buffers.BUFFER_SIZE; values[to + i] == buffer[i]);
+      @
+      @ assignable values[to..to + Buffers.BUFFER_SIZE - 1];
+      @*/
     public static void copy_block_from_buffer(int[] values, int begin, int end, int[] buffer, int to) {
-        assert (to + Buffers.BUFFER_SIZE <= end);
-        assert ((to - begin) % Buffers.BUFFER_SIZE == 0);
-        assert (buffer.length == Buffers.BUFFER_SIZE);
-        System.arraycopy(buffer, 0, values, to, Buffers.BUFFER_SIZE);
+        copy_nonoverlapping(buffer, 0, values, to, Buffers.BUFFER_SIZE);
     }
 
+    /*@ public normal_behaviour
+      @ requires buffer.length == Buffers.BUFFER_SIZE;
+      @ requires to.length == Buffers.BUFFER_SIZE;
+      @ requires \disjoint(to[*], buffer[*]);
+      @
+      @ ensures (\forall int i; 0 <= i && i < Buffers.BUFFER_SIZE; buffer[i] == to[i]);
+      @
+      @ assignable to[*];
+      @*/
     public static void copy_buffer_to(int[] buffer, int[] to) {
-        assert (buffer.length == Buffers.BUFFER_SIZE);
-        assert (to.length == Buffers.BUFFER_SIZE);
-        System.arraycopy(buffer, 0, to, 0, Buffers.BUFFER_SIZE);
+        copy_nonoverlapping(buffer, 0, to, 0, Buffers.BUFFER_SIZE);
     }
 
     /*@ public normal_behaviour
@@ -181,7 +206,7 @@ public class Functions {
       @     // It is from the source array
       @     // (\exists int j; begin <= j < end; values[j] == target[i]) &&
       @     // It is unique in the target array (or: strictly ascending)
-      @     (i > 0 ==> target[i - 1] < target[i])
+      @     (i < \result - 1 ==> target[i] < target[i + 1])
       @ );
       @ ensures 1 <= \result <= count;
       @

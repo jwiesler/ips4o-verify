@@ -1,6 +1,6 @@
 package de.wiesler;
 
-public class Storage {
+public final class Storage {
     public static final int VALUES = 0;
     public static final int BUCKET_STARTS = 1;
 

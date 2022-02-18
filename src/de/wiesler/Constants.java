@@ -1,6 +1,6 @@
 package de.wiesler;
 
-public class Constants {
+public final class Constants {
     public static final int BASE_CASE_SIZE = 32;
     public static final int LOG_MAX_BUCKETS = 6;
     public static final int MAX_BUCKETS = 1 << (LOG_MAX_BUCKETS + 1);
