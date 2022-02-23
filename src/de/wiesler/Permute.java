@@ -221,7 +221,7 @@ public final class Permute {
       @ requires (\forall int b; 0 <= b < classifier.num_buckets;
       @     countBucketElementsInAllReadAreas(values, begin, end, b, bucket_pointers, classifier) <= bucket_pointers.remainingWriteCountOfBucket(b) &&
       @     classifier.isClassifiedBlocksRangeSeq(bucket_pointers.elementsToReadOfBucket(values, begin, b)) &&
-      @     bucket_pointers.writtenElementsOfBucket(values, begin, b) == \seq_empty
+      @     bucket_pointers.writtenCountOfBucket(b) == 0
       @ );
       @
       @ ensures (\forall int b; 0 <= b < classifier.num_buckets;

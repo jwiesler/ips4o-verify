@@ -1,42 +1,13 @@
 package de.wiesler;
 
 public final class Cleanup {
-    /*@ public normal_behaviour
-      @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets);
-      @
-      @ ensures (\forall int b; \result < b < num_buckets; bucket_starts[b + 1] - bucket_starts[b] <= Buffers.BUFFER_SIZE);
-      @
-      @ assignable \strictly_nothing;
-      @*/
-    private static int find_overflow_bucket(final int[] bucket_starts, final int num_buckets) {
-        int overflow_bucket = -1;
-
-        /*@ loop_invariant 0 <= bucket && bucket <= num_buckets;
-          @ loop_invariant (\forall int b; bucket <= b < num_buckets; bucket_starts[b + 1] - bucket_starts[b] <= Buffers.BUFFER_SIZE);
-          @
-          @ assignable \strictly_nothing;
-          @
-          @ decreases bucket;
-          @*/
-        for (int bucket = num_buckets; bucket-- > 0; ) {
-            int bucket_size = bucket_starts[bucket + 1] - bucket_starts[bucket];
-            if (Buffers.BUFFER_SIZE < bucket_size) {
-                overflow_bucket = bucket;
-                break;
-            }
-        }
-        return overflow_bucket;
-    }
-
     /*@ // For all buckets:
       @ // * Permutation of: (\old(written blocks) + buffer content) <-> (full block content)
-      @ // * Bucket pointers have exactly enough space for buffer content (+ overflow)
-      @ // Overflow happens <=> buffer is the last buffer with size >= 1 block and aligning this block leads to out of bounds
       @ public normal_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires Functions.isValidBucketStarts(bucket_starts, classifier.num_buckets);
       @ requires bucket_starts[classifier.num_buckets] == end - begin;
-      @ requires classifier.num_buckets == buffers.buckets && classifier.num_buckets == bucket_pointers.num_buckets;
+      @ requires classifier.num_buckets == buffers.num_buckets && classifier.num_buckets == bucket_pointers.num_buckets;
       @ requires \invariant_for(buffers) && \invariant_for(bucket_pointers) && \invariant_for(classifier);
       @
       @ requires \disjoint(values[*], bucket_starts[*], overflow[*], bucket_pointers.buffer[*], buffers.indices[*], buffers.buffer[*], classifier.footprint);
@@ -46,7 +17,7 @@ public final class Cleanup {
       @     // All elements are read
       @     bucket_pointers.toReadCountOfBucket(b) == 0 &&
       @     // All written elements are classified as b
-      @     classifier.isClassOfSeq(bucket_pointers.writtenElementsOfBucket(values, begin, b), b) &&
+      @     bucket_pointers.writtenElementsOfBucketClassified(classifier, values, begin, end, overflow, b) &&
       @     (int) bucket_pointers.aligned_bucket_starts[b] == Buffers.blockAligned(bucket_starts[b]) &&
       @     // Remaining elements: bucket size == buffer length + written elements
       @     bucket_starts[b + 1] - bucket_starts[b] == buffers.bufferAt(b).length + bucket_pointers.writtenCountOfBucket(b) &&
@@ -57,7 +28,7 @@ public final class Cleanup {
       @ );
       @
       @ ensures (\forall int b; 0 <= b < bucket_pointers.num_buckets;
-      @     classifier.isClassOfSeq(\dl_seq_def_workaround(begin + bucket_starts[b], begin + bucket_starts[b + 1], values), b) &&
+      @     classifier.isClassOfSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1], b) &&
       @     Sorter.smallBucketIsSorted(values, begin, end, bucket_starts[b], bucket_starts[b + 1])
       @ );
       @
@@ -74,19 +45,16 @@ public final class Cleanup {
             final int[] overflow
     ) {
         final int num_buckets = classifier.num_buckets();
-        final int overflow_bucket = find_overflow_bucket(bucket_starts, num_buckets);
-
         final boolean is_last_level = end - begin <= Constants.SINGLE_LEVEL_THRESHOLD;
-        final int max_offset = Buffers.align_to_previous_block(end - begin);
 
         /*@ loop_invariant 0 <= bucket <= num_buckets;
           @ loop_invariant (\forall int b; bucket <= b < bucket_pointers.num_buckets;
-          @     classifier.isClassOfSeq(bucket_pointers.writtenElementsOfBucket(values, begin, b), b)
+          @     bucket_pointers.writtenElementsOfBucketClassified(classifier, values, begin, end, overflow, b)
           @     // the remaining conditions are never changed
           @ );
           @
           @ loop_invariant (\forall int b; 0 <= b < bucket;
-          @     classifier.isClassOfSeq(\dl_seq_def_workaround(begin + bucket_starts[b], begin + bucket_starts[b + 1], values), b) &&
+          @     classifier.isClassOfSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1], b) &&
           @     Sorter.smallBucketIsSorted(values, begin, end, bucket_starts[b], bucket_starts[b + 1])
           @ );
           @ loop_invariant \invariant_for(classifier) && \invariant_for(bucket_pointers) && \invariant_for(buffers);
@@ -123,11 +91,11 @@ public final class Cleanup {
             /*@ normal_behaviour
               @ requires begin <= start <= stop <= end;
               @
-              @ ensures \invariant_for(classifier) && \invariant_for(bucket_pointers) && \invariant_for(buffers);
+              @ ensures \invariant_for(classifier) && \invariant_for(bucket_pointers);
               @
               @ ensures start <= head_start <= head_stop <= tail_start <= tail_stop <= stop <= end <= values.length;
               @ ensures tail_start - head_stop == bucket_pointers.writtenCountOfBucket(bucket);
-              @ ensures classifier.isClassOfSeq(\dl_seq_def_workaround(head_stop, tail_start, values), bucket);
+              @ ensures classifier.isClassOfSlice(values, head_stop, tail_start, bucket);
               @
               @ assignable values[start..stop - 1];
               @*/
@@ -174,13 +142,25 @@ public final class Cleanup {
 
                             // Fill tail
                             Functions.copy_nonoverlapping(overflow, 0, values, tail_start, tail_len);
-                            tail_start = tail_stop;
 
                             // Write remaining elements to end of head
                             int head_elements = Buffers.BUFFER_SIZE - tail_len;
                             head_stop -= head_elements;
                             Functions.copy_nonoverlapping(overflow, tail_len, values, head_stop, head_elements);
-                            // TODO classOfSeq
+
+                            //@ assert \invariant_for(classifier) && \invariant_for(bucket_pointers);
+
+                            // Follows from writtenElementsOfBucketClassified
+                            //@ assert classifier.isClassOfSlice(overflow, 0, Buffers.BUFFER_SIZE, bucket);
+
+                            //@ assert classifier.isClassOfSlice(values, head_stop + head_elements, tail_stop, bucket);
+                            //@ assert classifier.isClassOfSliceSplit(overflow, 0, tail_len, Buffers.BUFFER_SIZE, bucket);
+                            //@ assert classifier.isClassOfSliceCopy(overflow, 0, values, tail_stop, tail_len, bucket);
+                            //@ assert classifier.isClassOfSliceCopy(overflow, tail_len, values, head_stop, head_elements, bucket);
+                            //@ assert classifier.isClassOfSliceConcat(values, head_stop, head_stop + head_elements, tail_start, bucket);
+                            //@ assert classifier.isClassOfSliceConcat(values, head_stop, tail_start, tail_stop, bucket);
+
+                            tail_start = tail_stop;
                             // rest verified
                         } else {
                             // Normal overflow: write is in bounds and content is after the end of the bucket
@@ -199,22 +179,26 @@ public final class Cleanup {
 
                             Functions.copy_nonoverlapping(values, stop, values, head_stop, overflow_len);
 
+                            //@ assert \invariant_for(classifier) && \invariant_for(bucket_pointers);
+
+                            //@ assert classifier.isClassOfSlice(values, head_stop + overflow_len, write, bucket);
+                            //@ assert classifier.isClassOfSliceSplit(values, head_stop + overflow_len, stop, write, bucket);
+                            //@ assert classifier.isClassOfSliceCopy(values, stop, values, head_stop, overflow_len, bucket);
+                            //@ assert classifier.isClassOfSliceConcat(values, head_stop, head_stop + overflow_len, stop, bucket);
+
                             // Tail is empty
                             tail_start = tail_stop;
-                            // TODO classOfSeq
                             // rest verified (all the dependency contracts)
                         }
                     } else {
                         // No overflow, write <= stop
                         tail_start = write;
 
-                        // Valid: Just use definition of writtenElementsOfBucket
-                        //@ assert \dl_seq_def_workaround(head_stop, tail_start, values) == bucket_pointers.writtenElementsOfBucket(values, begin, bucket);
                         // verified: use equality, observer
                     }
                 }
 
-                //@ assert \invariant_for(classifier) && \invariant_for(bucket_pointers) && \invariant_for(buffers);
+                //@ assert \invariant_for(classifier) && \invariant_for(bucket_pointers);
             }
 
             // Write remaining elements from buffer to head and tail
@@ -228,9 +212,9 @@ public final class Cleanup {
             );
 
             /*@ normal_behaviour
-              @ requires classifier.isClassOfSeq(\dl_seq_def_workaround(begin + bucket_starts[bucket], begin + bucket_starts[bucket + 1], values), bucket);
+              @ requires classifier.isClassOfSlice(values, begin + bucket_starts[bucket], begin + bucket_starts[bucket + 1], bucket);
               @
-              @ ensures classifier.isClassOfSeq(\dl_seq_def_workaround(begin + bucket_starts[bucket], begin + bucket_starts[bucket + 1], values), bucket);
+              @ ensures classifier.isClassOfSlice(values, begin + bucket_starts[bucket], begin + bucket_starts[bucket + 1], bucket);
               @ ensures Sorter.smallBucketIsSorted(values, begin, end, bucket_starts[bucket], bucket_starts[bucket + 1]);
               @
               @ assignable values[start..stop - 1];
