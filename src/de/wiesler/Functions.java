@@ -31,6 +31,26 @@ public final class Functions {
       @ }
       @*/
 
+    /*@ public model_behaviour
+      @ requires 0 <= begin <= end <= values.length;
+      @
+      @ accessible values[begin..end - 1];
+      @
+      @ static model int countElement(int[] values, int begin, int end, int element) {
+      @     return (\num_of int i; begin <= i < end; values[i] == element);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires 0 <= begin <= mid <= end <= values.length;
+      @
+      @ ensures \result;
+      @
+      @ static model boolean countElementSplit(int[] values, int begin, int mid, int end) {
+      @     return (\forall int element; true; countElement(values, begin, end, element) == countElement(values, begin, mid, element) + countElement(values, mid, end, element));
+      @ }
+      @*/
+
     /*@
       @ public model_behaviour
       @ requires true;
@@ -52,6 +72,16 @@ public final class Functions {
       @     return
       @         (\forall int i; begin <= i < end;
       @             (\forall int j; i <= j < end; values[i] <= values[j]));
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ accessible \nothing;
+      @
+      @ static model boolean isSortedSeqTransitive(\seq values) {
+      @     return
+      @         (\forall int i; 0 <= i < values.length;
+      @             (\forall int j; i <= j < values.length; (int) values[i] <= (int) values[j]));
       @ }
       @*/
 
@@ -117,7 +147,7 @@ public final class Functions {
       @ requires 0 <= length;
       @ requires 0 <= srcPos && srcPos + length <= src.length;
       @ requires 0 <= destPos && destPos + length <= dest.length;
-      @ requires \disjoint(src[srcPos..srcPos + length - 1], dest[destPos..destPos + length]);
+      @ requires \disjoint(src[srcPos..srcPos + length - 1], dest[destPos..destPos + length - 1]);
       @
       @ ensures (\forall int i; 0 <= i && i < length; dest[destPos + i] == src[srcPos + i]);
       @ ensures \dl_seq_def_workaround(destPos, destPos + length, dest) == \dl_seq_def_workaround(srcPos, srcPos + length, src);
@@ -125,7 +155,17 @@ public final class Functions {
       @ assignable dest[destPos..destPos + length - 1];
       @*/
     public static void copy_nonoverlapping(int[] src, int srcPos, int[] dest, int destPos, int length) {
-        System.arraycopy(src, srcPos, dest, destPos, length);
+        /*@ loop_invariant 0 <= i <= length;
+          @ loop_invariant (\forall int j; 0 <= j < i; dest[destPos + j] == src[srcPos + j]);
+          @
+          @ decreases length - i;
+          @
+          @ assignable dest[destPos..destPos + length - 1];
+          @*/
+        for (int i = 0; i < length; ++i) {
+            dest[destPos + i] = src[srcPos + i];
+        }
+        // System.arraycopy(src, srcPos, dest, destPos, length);
     }
 
     public static int isSorted(int[] values, int begin, int end) {
