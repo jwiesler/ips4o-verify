@@ -116,8 +116,8 @@ public final class Buffers {
       @ requires 0 <= bucket < this.num_buckets;
       @
       @ accessible this.indices[bucket], this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1];
-      @ model int countElementInBucket(int element, int bucket) {
-      @     return (\num_of int i; 0 <= i < this.bufferAt(bucket).length; (int) this.bufferAt(bucket)[i] == element);
+      @ model int countElementInBucket(int bucket, int element) {
+      @     return (\num_of int i; bucket * BUFFER_SIZE <= i < bucket * BUFFER_SIZE + this.indices[bucket]; (int) this.buffer[i] == element);
       @ }
       @*/
 
@@ -126,7 +126,7 @@ public final class Buffers {
       @
       @ accessible this.indices[0..this.num_buckets - 1], this.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1];
       @ model int countElement(int element) {
-      @     return (\sum int b; 0 <= b < this.num_buckets; this.countElementInBucket(element, b));
+      @     return (\sum int b; 0 <= b < this.num_buckets; this.countElementInBucket(b, element));
       @ }
       @*/
 
@@ -182,7 +182,7 @@ public final class Buffers {
         this.indices[bucket] = index + 1;
         //@ assert this.bufferAt(bucket) == \seq_concat(\old(this.bufferAt(bucket)), \seq_singleton(value));
         //@ assert (\forall int b; 0 <= b < this.num_buckets && b != bucket; this.bufferAt(b) == \old(this.bufferAt(b)));
-        //@ assert (\forall int element; true; this.countElementInBucket(element, bucket) == \old(countElementInBucket(element, bucket)) + (element == value ? 1 : 0));
+        //@ assert (\forall int element; true; this.countElementInBucket(bucket, element) == \old(countElementInBucket(bucket, element)) + (element == value ? 1 : 0));
     }
 
     /*@ public normal_behaviour
@@ -210,7 +210,7 @@ public final class Buffers {
         Functions.copy_nonoverlapping(this.buffer, buffer_offset, values, write, BUFFER_SIZE);
         this.indices[bucket] = 0;
         //@ assert this.bufferAt(bucket) == \seq_empty;
-        //@ assert (\forall int element; true; \old(this.countElementInBucket(element, bucket)) == Functions.countElement(values, write, write + BUFFER_SIZE, element));
+        //@ assert (\forall int element; true; \old(this.countElementInBucket(bucket, element)) == Functions.countElement(values, write, write + BUFFER_SIZE, element));
     }
 
     /*@ public normal_behaviour
@@ -222,10 +222,16 @@ public final class Buffers {
       @
       @ requires head_len + tail_len == this.bufferAt(bucket).length;
       @ // Don't overlap
-      @ requires head_start + head_len <= tail_start;
+      @ requires \disjoint(values[head_start..(head_start + head_len - 1)], values[tail_start..(tail_start + tail_len - 1)]);
       @
-      @ ensures (\forall int i; 0 <= i && i < head_len; values[head_start + i] == this.bufferAt(bucket)[i]);
-      @ ensures (\forall int i; 0 <= i && i < tail_len; values[tail_start + i] == this.bufferAt(bucket)[head_len + i]);
+      @ ensures (\forall int i; 0 <= i && i < head_len; values[head_start + i] == \old(this.bufferAt(bucket)[i]));
+      @ ensures (\forall int i; 0 <= i && i < tail_len; values[tail_start + i] == \old(this.bufferAt(bucket)[head_len + i]));
+      @
+      @ ensures (\forall int element; true;
+      @     Functions.countElement(values, head_start, head_start + head_len, element) +
+      @         Functions.countElement(values, tail_start, tail_start + tail_len, element) ==
+      @     \old(this.countElementInBucket(bucket, element))
+      @ );
       @
       @ assignable values[head_start..(head_start + head_len - 1)];
       @ assignable values[tail_start..(tail_start + tail_len - 1)];
@@ -233,6 +239,7 @@ public final class Buffers {
     public void distribute(int bucket, int[] values, int head_start, int head_len, int tail_start, int tail_len) {
         //@ assert head_len + tail_len == this.indices[bucket];
         int offset = bucket * BUFFER_SIZE;
+        //@ assert Functions.countElementSplit(this.buffer, offset, offset + head_len, offset + head_len + tail_len);
         Functions.copy_nonoverlapping(this.buffer, offset, values, head_start, head_len);
         Functions.copy_nonoverlapping(this.buffer, offset + head_len, values, tail_start, tail_len);
     }

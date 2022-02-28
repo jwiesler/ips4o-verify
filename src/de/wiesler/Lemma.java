@@ -34,6 +34,7 @@ public final class Lemma {
       @ }
       @*/
 
+    // Unused
     /*@ public model_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ // all positive
@@ -47,6 +48,7 @@ public final class Lemma {
       @ }
       @*/
 
+    // Unused
     /*@ public model_behaviour
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets);
       @ requires 0 <= bucket < num_buckets;

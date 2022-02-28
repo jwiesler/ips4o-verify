@@ -103,7 +103,7 @@ public final class Functions {
       @ requires isValidSlice(values, begin, end);
       @ requires 1 <= num_samples && num_samples <= end - begin;
       @
-      @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
+      @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
       @
       @ assignable values[begin..end - 1];
       @*/
@@ -151,6 +151,9 @@ public final class Functions {
       @
       @ ensures (\forall int i; 0 <= i && i < length; dest[destPos + i] == src[srcPos + i]);
       @ ensures \dl_seq_def_workaround(destPos, destPos + length, dest) == \dl_seq_def_workaround(srcPos, srcPos + length, src);
+      @ ensures (\forall int element; true;
+      @     countElement(dest, destPos, destPos + length, element) == countElement(src, srcPos, srcPos + length, element)
+      @ );
       @
       @ assignable dest[destPos..destPos + length - 1];
       @*/
@@ -232,7 +235,7 @@ public final class Functions {
     /*@ public normal_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires Functions.isSortedSlice(values, begin, end);
-      @ requires values != target;
+      @ requires \disjoint(target[*], values[*]);
       @
       @ requires target.length >= count;
       @
@@ -244,7 +247,13 @@ public final class Functions {
       @     int i;
       @     0 <= i < \result;
       @     // It is from the source array
-      @     // (\exists int j; begin <= j < end; values[j] == target[i]) &&
+      @     (\exists int j; begin <= j < end; values[j] == target[i])
+      @ );
+      @ ensures (\forall
+      @     int i;
+      @     0 <= i < \result;
+      @     // It is from the source array
+      @     (\exists int j; begin <= j < end; values[j] == target[i]) &&
       @     // It is unique in the target array (or: strictly ascending)
       @     (i < \result - 1 ==> target[i] < target[i + 1])
       @ );
@@ -261,6 +270,7 @@ public final class Functions {
             int[] target
     ) {
         int offset = begin + step - 1;
+        //@ assert offset < end;
         target[0] = values[offset];
         int target_offset = 1;
         offset += step;
@@ -273,12 +283,12 @@ public final class Functions {
           @ loop_invariant offset == begin + (step * (i + 1)) - 1;
           @ loop_invariant i < count ==> offset < end;
           @
-          @ // loop_invariant (\forall
-          @ //     int j;
-          @ //     0 <= j < target_offset;
-          @ //     // It is from the source array
-          @ //     (\exists int k; begin <= k < end; values[k] == target[j])
-          @ // );
+          @ loop_invariant (\forall
+          @     int j;
+          @     0 <= j < target_offset;
+          @     // It is from the source array
+          @     (\exists int k; begin <= k < end; values[k] == target[j])
+          @ );
           @ loop_invariant (\forall
           @     int j;
           @     0 <= j < target_offset - 1;
@@ -290,6 +300,8 @@ public final class Functions {
           @ assignable target[1..count - 1];
           @*/
         for (int i = 1; i < count; ++i) {
+            // multiply both sides by step, this can't be proven automatically
+            //@ assert i + 2 <= count ==> (i + 2) * step <= count * step;
             if (Constants.cmp(target[target_offset - 1], values[offset])) {
                 target[target_offset] = values[offset];
                 target_offset += 1;

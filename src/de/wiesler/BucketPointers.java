@@ -21,7 +21,7 @@ public final class BucketPointers {
       @ model boolean isValidBucketPointer(int bucket) {
       @     return this.bucketStart(bucket) <= this.buffer[2 * bucket] <= this.bucketStart(bucket + 1) &&
       @         this.bucketStart(bucket) <= this.buffer[2 * bucket + 1] <= this.bucketStart(bucket + 1) &&
-      @         this.buffer[2 * bucket] <= this.first_empty_position &&
+      @         (this.bucketStart(bucket) == this.buffer[2 * bucket] || this.buffer[2 * bucket] <= this.first_empty_position) &&
       @         Buffers.isBlockAligned(this.buffer[2 * bucket]) &&
       @         Buffers.isBlockAligned(this.buffer[2 * bucket + 1]);
       @ }
@@ -119,13 +119,28 @@ public final class BucketPointers {
     /*@ public model_behaviour
       @ requires 0 <= bucket < this.num_buckets;
       @ requires overflow.length == Buffers.BUFFER_SIZE;
+      @ requires Buffers.blockAligned(end - begin) == this.aligned_bucket_starts[this.num_buckets];
       @
       @ accessible values[begin + this.bucketStart(bucket) .. begin + this.nextWriteOf(bucket) - 1], overflow[*], this.buffer[2 * bucket + 1], classifier.footprint;
       @ model boolean writtenElementsOfBucketClassified(Classifier classifier, int[] values, int begin, int end, int[] overflow, int bucket) {
-      @     return end < begin + this.nextWriteOf(bucket) && this.writtenCountOfBucket(bucket) >= Buffers.BUFFER_SIZE ?
+      @     return end - begin < this.nextWriteOf(bucket) && Buffers.BUFFER_SIZE <= this.writtenCountOfBucket(bucket) ?
       @         classifier.isClassOfSlice(values, begin + this.bucketStart(bucket), begin + this.nextWriteOf(bucket) - Buffers.BUFFER_SIZE, bucket) &&
       @             classifier.isClassOfSlice(overflow, 0, Buffers.BUFFER_SIZE, bucket) :
       @         classifier.isClassOfSlice(values, begin + this.bucketStart(bucket), begin + this.nextWriteOf(bucket), bucket);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires 0 <= bucket < this.num_buckets;
+      @ requires overflow.length == Buffers.BUFFER_SIZE;
+      @ requires Buffers.blockAligned(end - begin) == this.aligned_bucket_starts[this.num_buckets];
+      @
+      @ accessible values[begin + this.bucketStart(bucket) .. begin + this.nextWriteOf(bucket) - 1], overflow[*], this.buffer[2 * bucket + 1];
+      @ model int writtenElementsOfBucketCountElement(int[] values, int begin, int end, int[] overflow, int bucket, int element) {
+      @     return end - begin < this.nextWriteOf(bucket) && Buffers.BUFFER_SIZE <= this.writtenCountOfBucket(bucket) ?
+      @         Functions.countElement(values, begin + this.bucketStart(bucket), begin + this.nextWriteOf(bucket) - Buffers.BUFFER_SIZE, element) +
+      @             Functions.countElement(overflow, 0, Buffers.BUFFER_SIZE, element) :
+      @         Functions.countElement(values, begin + this.bucketStart(bucket), begin + this.nextWriteOf(bucket), element);
       @ }
       @*/
 
@@ -157,7 +172,7 @@ public final class BucketPointers {
         // set this.aligned_bucket_starts = createAlignedBucketStarts(bucket_starts, num_buckets);
 
         /*@ loop_invariant 0 <= bucket && bucket <= num_buckets;
-          @ loop_invariant (\forall int b; 0 <= b < bucket; this.isValidBucketPointer(b));
+          @ loop_invariant (\forall int b; 0 <= b < bucket; this.isValidBucketPointer(b) && this.writtenCountOfBucket(b) == 0);
           @
           @ decreases num_buckets - bucket;
           @
@@ -166,14 +181,23 @@ public final class BucketPointers {
         for (int bucket = 0; bucket < num_buckets; ++bucket) {
             int start = Buffers.align_to_next_block(bucket_starts[bucket]);
             int stop = Buffers.align_to_next_block(bucket_starts[bucket + 1]);
-            //@ assert start == this.bucketStart(bucket) && stop == this.bucketStart(bucket + 1);
+            //@ assert start == this.bucketStart(bucket) && stop == this.bucketStart(bucket + 1) && start <= stop;
             int read;
-            if (first_empty_position <= start) {
-                read = start;
-            } else if (stop <= first_empty_position) {
-                read = stop;
-            } else {
-                read = first_empty_position;
+            /*@ normal_behaviour
+              @ ensures start <= read <= stop;
+              @ ensures Buffers.isBlockAligned(read);
+              @ ensures (start == read || read <= first_empty_position);
+              @
+              @ assignable \strictly_nothing;
+              @*/
+            {
+                if (first_empty_position <= start) {
+                    read = start;
+                } else if (stop <= first_empty_position) {
+                    read = stop;
+                } else {
+                    read = first_empty_position;
+                }
             }
 
             this.buffer[2 * bucket] = read;

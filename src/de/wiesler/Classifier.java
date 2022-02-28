@@ -21,14 +21,6 @@ public final class Classifier {
       @*/
 
     /*@ public model_behaviour
-      @ requires array != this.sorted_splitters && this.tree.doesNotAlias(array);
-      @ accessible \nothing;
-      @ model boolean doesNotAlias(int[] array) {
-      @     return true;
-      @ }
-      @*/
-
-    /*@ public model_behaviour
       @ ensures 0 <= \result < this.num_buckets;
       @ accessible this.footprint;
       @ model int classOf(int value) {
@@ -58,13 +50,13 @@ public final class Classifier {
 
     /*@ public model_behaviour
       @ requires begin <= mid <= end;
-      @ requires this.isClassOfSlice(values, begin, end, bucket);
       @
       @ ensures \result;
       @
       @ // Verified
       @ model boolean isClassOfSliceSplit(int[] values, int begin, int mid, int end, int bucket) {
-      @     return this.isClassOfSlice(values, begin, mid, bucket) && this.isClassOfSlice(values, mid, end, bucket);
+      @     return this.isClassOfSlice(values, begin, end, bucket) <==>
+      @         this.isClassOfSlice(values, begin, mid, bucket) && this.isClassOfSlice(values, mid, end, bucket);
       @ }
       @*/
 
@@ -105,10 +97,11 @@ public final class Classifier {
     /*@ public model_behaviour
       @ accessible this.footprint, values[begin..end - 1];
       @ model boolean isClassifiedBlock(int[] values, int begin, int end) {
-      @     return (\exists int bucket; 0 <= bucket < this.num_buckets; this.isClassOfSeq(\dl_seq_def_workaround(begin, end, values), bucket));
+      @     return (\exists int bucket; 0 <= bucket < this.num_buckets; this.isClassOfSlice(values, begin, end, bucket));
       @ }
       @*/
 
+    // Unused
     /*@ public model_behaviour
       @ accessible this.footprint;
       @ model boolean isClassifiedBlockSeq(\seq values) {
@@ -465,7 +458,7 @@ public final class Classifier {
 
                     bucket_starts[bucket] += Buffers.BUFFER_SIZE;
                     //@ assert \invariant_for(this) && \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.footprint, indices[*]);
-                    //@ assert this.isClassOfSeq(\dl_seq_def_workaround(write - Buffers.BUFFER_SIZE, write, values), bucket);
+                    //@ assert this.isClassOfSlice(values, write - Buffers.BUFFER_SIZE, write, bucket);
                 }
             }
             buffers.push(bucket, value);

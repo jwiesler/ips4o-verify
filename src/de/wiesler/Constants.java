@@ -78,6 +78,7 @@ public final class Constants {
     }
 
     public static /*@ strictly_pure */ int oversampling_factor(int n) {
+        // log2(n) * log2(n / BASE_CASE_SIZE) < n
         return log2(n) / 5;
     }
 }

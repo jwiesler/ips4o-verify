@@ -5,14 +5,6 @@ public final class Tree {
     private /*@ spec_public @*/ final int log_buckets;
     //@ ghost final int num_buckets;
 
-    /*@ public model_behaviour
-      @ requires true;
-      @ accessible \nothing;
-      @ model boolean doesNotAlias(int[] array) {
-      @     return array != this.tree;
-      @ }
-      @*/
-
     /*@ public invariant 1 <= this.log_buckets <= Constants.LOG_MAX_BUCKETS;
       @ public invariant this.num_buckets == (1 << this.log_buckets);
       @ public invariant 2 <= this.num_buckets <= tree.length;
@@ -28,7 +20,7 @@ public final class Tree {
       @
       @ ensures this.log_buckets == log_buckets;
       @ ensures this.tree == tree;
-      @ 
+      @
       @ assignable tree[*];
       @*/
     public Tree(int[] sorted_splitters, int[] tree, int log_buckets) {
@@ -54,7 +46,7 @@ public final class Tree {
       @ requires end - begin == this.num_buckets - position;
       @
       @ measured_by end - begin;
-      @ 
+      @
       @ assignable this.tree[position..(1 << this.log_buckets)];
       @*/
     /*@ helper */ void build(int position, int[] sorted_splitters, int begin, int end) {
