@@ -297,7 +297,7 @@ public final class Cleanup {
               @ assignable values[start..stop - 1];
               @*/
             {
-                if (stop - start <= 2 * Constants.BASE_CASE_SIZE || is_last_level) {
+                if (stop - start <= Constants.ACTUAL_BASE_CASE_SIZE || is_last_level) {
                     // seqPerm(seq, seq2)
                     // forall i in seq2; f(i) ==> forall i in seq; f(i)
                     Sorter.fallback_sort(values, start, stop);

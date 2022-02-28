@@ -28,7 +28,7 @@ public final class Sorter {
       @ accessible \nothing;
       @ static model boolean isValidSampleResultForLen(SampleResult r, int n) {
       @     return
-      @         2 <= r.num_samples <= n / 2 &&
+      @         3 <= r.num_samples <= n / 2 &&
       @         // This states the same as the previous line but is somehow hard to deduce
       @         r.num_samples < n &&
       @         1 <= r.step &&
@@ -40,7 +40,7 @@ public final class Sorter {
       @*/
 
     /*@ public normal_behaviour
-      @ requires n >= Constants.BASE_CASE_SIZE;
+      @ requires n > Constants.ACTUAL_BASE_CASE_SIZE;
       @
       @ ensures isValidSampleResultForLen(\result, n);
       @ ensures \fresh(\result);
@@ -50,11 +50,8 @@ public final class Sorter {
     private static SampleResult sample_parameters(int n) {
         int log_buckets = Constants.log_buckets(n);
         int num_buckets = 1 << log_buckets;
-        //@ assert num_buckets * Constants.BASE_CASE_SIZE <= n;
         int step = Functions.max(1, Constants.oversampling_factor(n));
-        //@ assert (1 << step) <= n / 5;
-        //@ assert 0 < step * num_buckets - 1 && step * num_buckets - 1 <= n / 2;
-        int num_samples = Functions.min(step * num_buckets - 1, n / 2);
+        int num_samples = step * num_buckets - 1;
 
         return new SampleResult(num_samples, num_buckets, step);
     }
@@ -62,7 +59,7 @@ public final class Sorter {
     /*@ public normal_behaviour
       @ requires Storage.brandOf(values) == Storage.VALUES;
       @ requires Functions.isValidSlice(values, begin, end);
-      @ requires end - begin >= Constants.BASE_CASE_SIZE;
+      @ requires end - begin > Constants.ACTUAL_BASE_CASE_SIZE;
       @ requires \invariant_for(storage);
       @ requires \disjoint(storage.allArrays, values[*]);
       @
@@ -179,7 +176,7 @@ public final class Sorter {
       @ accessible values[begin + bucket_begin..begin + bucket_end - 1];
       @
       @ static model boolean smallBucketIsSorted(int[] values, int begin, int end, int bucket_begin, int bucket_end) {
-      @     return bucket_end - bucket_begin <= 2 * Constants.BASE_CASE_SIZE || end - begin <= Constants.SINGLE_LEVEL_THRESHOLD ==>
+      @     return bucket_end - bucket_begin <= Constants.ACTUAL_BASE_CASE_SIZE || end - begin <= Constants.SINGLE_LEVEL_THRESHOLD ==>
       @             Functions.isSortedSlice(values, begin + bucket_begin, begin + bucket_end);
       @ }
       @*/
@@ -212,7 +209,7 @@ public final class Sorter {
       @ requires Storage.brandOf(bucket_starts) == Storage.BUCKET_STARTS;
       @ requires bucket_starts.length == Constants.MAX_BUCKETS + 1;
       @ requires (\forall int b; 0 <= b < bucket_starts.length; bucket_starts[b] == 0);
-      @ requires end - begin >= Constants.BASE_CASE_SIZE;
+      @ requires end - begin > Constants.ACTUAL_BASE_CASE_SIZE;
       @ requires \invariant_for(storage);
       @
       @ requires \disjoint(values[*], bucket_starts[*], storage.allArrays);
@@ -352,7 +349,7 @@ public final class Sorter {
         int inner_start = begin + bucket_starts[bucket];
         int inner_end = begin + bucket_starts[bucket + 1];
 
-        if (inner_end - inner_start > 2 * Constants.BASE_CASE_SIZE) {
+        if (inner_end - inner_start > Constants.ACTUAL_BASE_CASE_SIZE) {
             /*@ normal_behaviour
               @ ensures \disjoint(bucket_starts[*], values[*], storage.*);
               @
@@ -374,7 +371,7 @@ public final class Sorter {
     /*@ public normal_behaviour
       @ requires Storage.brandOf(values) == Storage.VALUES;
       @ requires Functions.isValidSlice(values, begin, end);
-      @ requires end - begin > 2 * Constants.BASE_CASE_SIZE;
+      @ requires end - begin > Constants.ACTUAL_BASE_CASE_SIZE;
       @ requires \invariant_for(storage);
       @ requires \disjoint(storage.allArrays, values[*]);
       @
@@ -507,7 +504,7 @@ public final class Sorter {
       @ assignable storage.allArrays;
       @*/
     public static void sort(int[] values, int start, int end, Storage storage) {
-        if (end - start <= 2 * Constants.BASE_CASE_SIZE) {
+        if (end - start <= Constants.ACTUAL_BASE_CASE_SIZE) {
             base_case_sort(values, start, end);
         } else {
             sample_sort(values, start, end, storage);
