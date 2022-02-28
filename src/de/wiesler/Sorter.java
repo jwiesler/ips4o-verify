@@ -5,7 +5,7 @@ public final class Sorter {
         public final int num_buckets;
         public final boolean equal_buckets;
 
-        public PartitionResult(int num_buckets, boolean equal_buckets) {
+        public /*@ strictly_pure */ PartitionResult(int num_buckets, boolean equal_buckets) {
             this.num_buckets = num_buckets;
             this.equal_buckets = equal_buckets;
         }
@@ -79,12 +79,31 @@ public final class Sorter {
       @ assignable values[begin..end - 1];
       @*/
     private static SampleResult sample(int[] values, int begin, int end, Storage storage) {
-        SampleResult result = sample_parameters(end - begin);
+        SampleResult parameters = sample_parameters(end - begin);
+        /*@ normal_behaviour
+          @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
+          @ measured_by end - begin, 0;
+          @ assignable \strictly_nothing;
+          @*/
+        {;;}
 
-        Functions.select_n(values, begin, end, result.num_samples);
-        sort(values, begin, begin + result.num_samples, storage);
+        Functions.select_n(values, begin, end, parameters.num_samples);
+        /*@ normal_behaviour
+          @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
+          @ measured_by end - begin, 0;
+          @ assignable \strictly_nothing;
+          @*/
+        {;;}
+        //@ ghost \seq before_sort = \dl_seq_def_workaround(begin, end, values);
+        sort(values, begin, begin + parameters.num_samples, storage);
+        /*@ normal_behaviour
+          @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), before_sort);
+          @ measured_by end - begin, 0;
+          @ assignable \strictly_nothing;
+          @*/
+        {;;}
 
-        return result;
+        return parameters;
     }
 
     /*@ public model_behaviour
@@ -143,7 +162,7 @@ public final class Sorter {
       @ requires 0 <= lower && lower <= upper && upper <= num_buckets;
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && end - begin == bucket_starts[num_buckets];
       @
-      @ accessible values[begin..end - 1];
+      @ accessible values[begin..end - 1], bucket_starts[lower..upper - 1];
       @
       @ static model boolean equalityBucketsInRange(int[] values, int begin, int end, int[] bucket_starts, int num_buckets, int lower, int upper) {
       @     return
