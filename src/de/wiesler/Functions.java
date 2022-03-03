@@ -4,8 +4,7 @@ public final class Functions {
     /*@
       @ public model_behaviour
       @ requires index >= 1;
-      @ accessible \nothing;
-      @ static model boolean isAlignedTo(int index, int alignment) {
+      @ static no_state model boolean isAlignedTo(int index, int alignment) {
       @     return index % alignment == 0;
       @ }
       @*/
@@ -13,8 +12,7 @@ public final class Functions {
     /*@
       @ public model_behaviour
       @ requires true;
-      @ accessible \nothing;
-      @ static model boolean isValidSlice(int[] values, int begin, int end) {
+      @ static no_state model boolean isValidSlice(int[] values, int begin, int end) {
       @     return 0 <= begin <= end <= values.length;
       @ }
       @*/
@@ -25,8 +23,7 @@ public final class Functions {
       @
       @ ensures \result ==> isValidSlice(values, sub_begin, sub_end);
       @
-      @ accessible \nothing;
-      @ static model boolean isValidSubSlice(int[] values, int begin, int end, int sub_begin, int sub_end) {
+      @ static no_state model boolean isValidSubSlice(int[] values, int begin, int end, int sub_begin, int sub_end) {
       @     return 0 <= begin <= sub_begin <= sub_end <= end <= values.length;
       @ }
       @*/
@@ -76,9 +73,8 @@ public final class Functions {
       @*/
 
     /*@ public model_behaviour
-      @ accessible \nothing;
-      @
-      @ static model boolean isSortedSeqTransitive(\seq values) {
+      @ requires true;
+      @ static no_state model boolean isSortedSeqTransitive(\seq values) {
       @     return
       @         (\forall int i; 0 <= i < values.length;
       @             (\forall int j; i <= j < values.length; (int) values[i] <= (int) values[j]));

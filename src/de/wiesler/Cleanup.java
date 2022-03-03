@@ -25,7 +25,7 @@ public final class Cleanup {
       @ requires overflow.length == Buffers.BUFFER_SIZE;
       @
       @ requires (\forall int b; 0 <= b <= classifier.num_buckets;
-      @     (int) bucket_pointers.aligned_bucket_starts[b] == Buffers.blockAligned(bucket_starts[b])
+      @     bucket_pointers.bucketStart(b) == Buffers.blockAligned(bucket_starts[b])
       @ );
       @ requires (\forall int b; 0 <= b < classifier.num_buckets;
       @     // All elements are read
@@ -116,10 +116,10 @@ public final class Cleanup {
               @*/
             {
                 /*@ assert relative_write == \old(bucket_pointers.nextWriteOf(bucket)) &&
-                  @     \old(Buffers.blockAligned(bucket_starts[bucket])) == \old(bucket_pointers.bucketStart(bucket)) &&
-                  @     \old(Buffers.blockAligned(bucket_starts[bucket + 1])) == \old(bucket_pointers.bucketStart(bucket + 1));
+                  @     Buffers.blockAligned(bucket_starts[bucket]) == bucket_pointers.bucketStart(bucket) &&
+                  @     Buffers.blockAligned(bucket_starts[bucket + 1]) == bucket_pointers.bucketStart(bucket + 1);
                   @*/
-                //@ assert \old(Buffers.blockAligned(bucket_starts[bucket])) <= relative_write <= \old(Buffers.blockAligned(bucket_starts[bucket + 1]));
+                //@ assert Buffers.blockAligned(bucket_starts[bucket]) <= relative_write <= Buffers.blockAligned(bucket_starts[bucket + 1]);
 
                 final int head_start = start;
                 int head_stop;
@@ -159,8 +159,8 @@ public final class Cleanup {
                         // verified
                     } else {
                         final int aligned_relative_start = Buffers.align_to_next_block(relative_start);
-                        //@ assert aligned_relative_start == \old(Buffers.blockAligned(relative_start));
-                        //@ assert aligned_relative_start == (int) bucket_pointers.aligned_bucket_starts[bucket];
+                        //@ assert aligned_relative_start == Buffers.blockAligned(relative_start);
+                        //@ assert aligned_relative_start == bucket_pointers.bucketStart(bucket);
                         head_stop = begin + aligned_relative_start;
 
                         // Valid: use precondition and observer dependency
@@ -171,7 +171,7 @@ public final class Cleanup {
                             // Write pointer must be at aligned end of bucket
 
                             // Valid: use contract from nextWrite and blockAlign
-                            //@ assert relative_write == \old(Buffers.blockAligned(relative_stop));
+                            //@ assert relative_write == Buffers.blockAligned(relative_stop);
 
                             if (end < write) {
                                 // Overflow: write is out of bounds, content is in overflow
@@ -250,7 +250,7 @@ public final class Cleanup {
 
                                 /*@ assert (\forall int element; true;
                                   @     \old(bucket_pointers.writtenElementsOfBucketCountElement(values, begin, end, overflow, bucket, element)) ==
-                                  @         Functions.countElement(values, begin + \old(bucket_pointers.bucketStart(bucket)), begin + \old(bucket_pointers.nextWriteOf(bucket)), element)
+                                  @         Functions.countElement(values, begin + bucket_pointers.bucketStart(bucket), begin + \old(bucket_pointers.nextWriteOf(bucket)), element)
                                   @ );
                                   @*/
                                 //@ assert Functions.countElementSplit(values, head_stop + overflow_len, stop, write);

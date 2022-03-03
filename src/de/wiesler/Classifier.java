@@ -3,9 +3,9 @@ package de.wiesler;
 public final class Classifier {
     public static final int STORAGE_SIZE = (1 << Constants.LOG_MAX_BUCKETS);
 
-    private final Tree tree;
+    private /*@ spec_public @*/ final Tree tree;
     private /*@ spec_public @*/ final int num_buckets;
-    private final int[] sorted_splitters;
+    private /*@ spec_public @*/ final int[] sorted_splitters;
     private final boolean equal_buckets;
 
     //@ ghost final \locset footprint;

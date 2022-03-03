@@ -11,8 +11,7 @@ public final class Constants {
 
     /*@ public model_behaviour
       @ requires n > 0;
-      @ accessible \nothing;
-      @ static model boolean isLog2Of(int n, int log) {
+      @ static no_state model boolean isLog2Of(int n, int log) {
       @     return log >= 0 &&
       @         log <= 30 &&
       @         (1 << log) <= n &&
@@ -54,31 +53,5 @@ public final class Constants {
 
     public static /*@ strictly_pure */ boolean cmp(int a, int b) {
         return a < b;
-    }
-
-    /*@ public normal_behaviour
-      @ requires n >= BASE_CASE_SIZE;
-      @ ensures 1 <= \result && \result <= LOG_MAX_BUCKETS;
-      @ // Only the lower log bound holds since the function might yield a smaller result
-      @ ensures (1 << \result) * BASE_CASE_SIZE <= n;
-      @
-      @ assignable \strictly_nothing;
-      @*/
-    public static int log_buckets(int n) {
-        if (n <= SINGLE_LEVEL_THRESHOLD) {
-            // Only one more level until the base case, reduce the number of buckets
-            return Functions.max(1, log2(n / BASE_CASE_SIZE));
-        } else if (n <= TWO_LEVEL_THRESHOLD) {
-            // Only two more levels until we reach the base case, split the buckets
-            // evenly
-            return Functions.max(1, (log2(n / BASE_CASE_SIZE) + 1) / 2);
-        } else {
-            // Use the maximum number of buckets
-            return LOG_MAX_BUCKETS;
-        }
-    }
-
-    public static /*@ strictly_pure */ int oversampling_factor(int n) {
-        return log2(n) / 5;
     }
 }

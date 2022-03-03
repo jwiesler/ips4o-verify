@@ -10,19 +10,15 @@ public final class Buffers {
       @ ensures \result >= value;
       @ ensures \result - value < BUFFER_SIZE;
       @
-      @ accessible \nothing;
-      @
-      @ static model int blockAligned(int value) {
-      @     return align_to_next_block(value);
+      @ static no_state model int blockAligned(int value) {
+      @     return (value + BUFFER_SIZE - 1) & (-BUFFER_SIZE);
       @ }
       @*/
 
     /*@ public model_behaviour
       @ requires value >= 0;
       @
-      @ accessible \nothing;
-      @
-      @ static model boolean isBlockAligned(int value) {
+      @ static no_state model boolean isBlockAligned(int value) {
       @     return value % BUFFER_SIZE == 0;
       @ }
       @*/

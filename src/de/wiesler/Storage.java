@@ -36,8 +36,7 @@ public final class Storage {
 
     /*@ public model_behaviour
       @ requires true;
-      @ accessible \nothing;
-      @ static model int brandOf(int[] array) {
+      @ static no_state model int brandOf(int[] array) {
       @     return \dl_A(array);
       @ }
       @*/
@@ -76,19 +75,19 @@ public final class Storage {
     /*@ public instance invariant this.allArrays == \set_union(
       @     \set_union(
       @         \set_union(
-      @             \all_fields(tree), 
+      @             \all_fields(tree),
       @             \all_fields(splitters)
-      @         ), 
+      @         ),
       @         \set_union(
-      @             \all_fields(bucket_pointers), 
+      @             \all_fields(bucket_pointers),
       @             \all_fields(buffers_buffer)
       @         )
-      @     ), 
+      @     ),
       @     \set_union(
       @         \set_union(
       @             \all_fields(buffers_indices),
       @             \all_fields(swap_1)
-      @         ), 
+      @         ),
       @         \set_union(
       @             \all_fields(swap_2),
       @             \all_fields(overflow)

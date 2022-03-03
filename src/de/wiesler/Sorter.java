@@ -11,51 +11,6 @@ public final class Sorter {
         }
     }
 
-    private static class SampleResult {
-        public final int num_samples;
-        public final int num_buckets;
-        public final int step;
-
-        public /*@ strictly_pure */ SampleResult(int num_samples, int num_buckets, int step) {
-            this.num_samples = num_samples;
-            this.num_buckets = num_buckets;
-            this.step = step;
-        }
-    }
-
-    /*@ public model_behaviour
-      @ requires n >= 1;
-      @ accessible \nothing;
-      @ static model boolean isValidSampleResultForLen(SampleResult r, int n) {
-      @     return
-      @         3 <= r.num_samples <= n / 2 &&
-      @         // This states the same as the previous line but is somehow hard to deduce
-      @         r.num_samples < n &&
-      @         1 <= r.step &&
-      @         2 <= r.num_buckets <= 1 << Constants.LOG_MAX_BUCKETS &&
-      @         r.num_buckets % 2 == 0 &&
-      @         // there are enough samples to perform num_buckets selections with the given step size
-      @         r.step * r.num_buckets - 1 <= r.num_samples;
-      @ }
-      @*/
-
-    /*@ public normal_behaviour
-      @ requires n > Constants.ACTUAL_BASE_CASE_SIZE;
-      @
-      @ ensures isValidSampleResultForLen(\result, n);
-      @ ensures \fresh(\result);
-      @
-      @ assignable \nothing;
-      @*/
-    private static SampleResult sample_parameters(int n) {
-        int log_buckets = Constants.log_buckets(n);
-        int num_buckets = 1 << log_buckets;
-        int step = Functions.max(1, Constants.oversampling_factor(n));
-        int num_samples = step * num_buckets - 1;
-
-        return new SampleResult(num_samples, num_buckets, step);
-    }
-
     /*@ public normal_behaviour
       @ requires Storage.brandOf(values) == Storage.VALUES;
       @ requires Functions.isValidSlice(values, begin, end);
@@ -64,7 +19,7 @@ public final class Sorter {
       @ requires \disjoint(storage.allArrays, values[*]);
       @
       @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
-      @ ensures isValidSampleResultForLen(\result, end - begin);
+      @ ensures \result.isValidForLen(end - begin);
       @ ensures Functions.isSortedSlice(values, begin, begin + \result.num_samples);
       @ ensures \invariant_for(storage);
       @ ensures \fresh(\result);
@@ -75,8 +30,8 @@ public final class Sorter {
       @ assignable storage.allArrays;
       @ assignable values[begin..end - 1];
       @*/
-    private static SampleResult sample(int[] values, int begin, int end, Storage storage) {
-        SampleResult parameters = sample_parameters(end - begin);
+    private static SampleParameters sample(int[] values, int begin, int end, Storage storage) {
+        SampleParameters parameters = new SampleParameters(end - begin);
         /*@ normal_behaviour
           @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
           @ measured_by end - begin, 0;
@@ -264,7 +219,7 @@ public final class Sorter {
 
         Classifier classifier;
         {
-            SampleResult sample = sample(values, begin, end, storage);
+            SampleParameters sample = sample(values, begin, end, storage);
             final int num_samples = sample.num_samples;
             final int num_buckets = sample.num_buckets;
             final int step = sample.step;
@@ -288,7 +243,8 @@ public final class Sorter {
                 bucket_starts,
                 classifier.num_buckets(),
                 first_empty_position - begin,
-                storage.bucket_pointers
+                storage.bucket_pointers,
+                values, begin, end
         );
 
         int[] overflow = storage.overflow;
