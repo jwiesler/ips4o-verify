@@ -124,15 +124,17 @@ public final class Functions {
     }
 
     /*@ public normal_behaviour
-      @ ensures (\forall int i; begin <= i && i < end; values[i] == value);
+      @ requires 0 <= begin <= end <= values.length;
+      @
+      @ ensures (\forall int i; begin <= i < end; values[i] == value);
+      @
       @ assignable values[begin..end - 1];
       @*/
     public static void fill(int[] values, int begin, int end, int value) {
-        /*@
-          @ loop_invariant 0 <= begin && i <= end;
-          @ loop_invariant (\forall int j; begin <= j && j < i; values[j] == value);
+        /*@ loop_invariant begin <= i <= end;
+          @ loop_invariant (\forall int j; begin <= j < i; values[j] == value);
           @ assignable values[begin..end - 1];
-          @ decreases end - begin;
+          @ decreases end - i;
           @*/
         for (int i = begin; i < end; i++) {
             values[i] = value;

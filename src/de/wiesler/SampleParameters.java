@@ -33,7 +33,7 @@ public final class SampleParameters {
 
     /*@ public model_behaviour
       @ requires n >= 1;
-      @ no_state model boolean isValidForLen(int n) {
+      @ model no_state boolean isValidForLen(int n) {
       @     return
       @         3 <= this.num_samples <= n / 2 &&
       @         // This states the same as the previous line but is somehow hard to deduce

@@ -82,7 +82,7 @@ public final class BucketPointers {
       @ ensures bucket < this.num_buckets ==> \result <= this.bucketStart(bucket + 1);
       @ ensures 0 < bucket <= this.num_buckets ==> this.bucketStart(bucket - 1) <= \result;
       @
-      @ model no_state int bucketStart(int bucket) {
+      @ model int bucketStart(int bucket) {
       @     return Buffers.blockAligned((int) this.bucket_starts[bucket]);
       @ }
       @*/
@@ -95,7 +95,7 @@ public final class BucketPointers {
       @
       @ accessible this.buffer[2 * bucket], this.buffer[2 * bucket + 1];
       @ model int toReadCountOfBucket(int bucket) {
-      @     return this.lastReadOf(bucket) - this.nextWriteOf(bucket) >= 0 ? this.lastReadOf(bucket) - this.nextWriteOf(bucket) : 0;
+      @     return this.nextWriteOf(bucket) < this.lastReadOf(bucket) ? this.lastReadOf(bucket) - this.nextWriteOf(bucket) : 0;
       @ }
       @*/
 
@@ -133,9 +133,9 @@ public final class BucketPointers {
       @ requires 0 <= bucket < this.num_buckets;
       @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
       @
-      @ accessible values[begin + this.bucketStart(bucket) .. begin + this.lastReadOf(bucket) - 1], this.buffer[2 * bucket], classifier.footprint;
+      @ accessible values[begin + this.nextWriteOf(bucket) .. begin + this.lastReadOf(bucket) - 1], this.buffer[2 * bucket], classifier.footprint;
       @ model boolean elementsToReadOfBucketBlockClassified(Classifier classifier, int[] values, int begin, int end, int bucket) {
-      @     return classifier.isClassifiedBlocksRange(values, begin + this.bucketStart(bucket), begin + this.lastReadOf(bucket));
+      @     return this.nextWriteOf(bucket) < this.lastReadOf(bucket) ==> classifier.isClassifiedBlocksRange(values, begin + this.nextWriteOf(bucket), begin + this.lastReadOf(bucket));
       @ }
       @*/
 
@@ -159,7 +159,7 @@ public final class BucketPointers {
       @
       @ accessible values[begin + this.bucketStart(bucket) .. begin + this.lastReadOf(bucket) - 1], this.buffer[2 * bucket];
       @ model int elementsToReadOfBucketCountElement(int[] values, int begin, int end, int bucket, int element) {
-      @     return Functions.countElement(values, begin + this.bucketStart(bucket), begin + this.lastReadOf(bucket), element);
+      @     return Functions.countElement(values, begin + this.nextWriteOf(bucket), begin + this.lastReadOf(bucket), element);
       @ }
       @*/
 
@@ -173,53 +173,145 @@ public final class BucketPointers {
       @ }
       @*/
 
-    /*@ model_behaviour
-      @ requires 0 <= num_buckets <= bucket_starts.length;
+    /*@ public model_behaviour
+      @ requires 0 <= bucket < this.num_buckets;
+      @ requires this.num_buckets == classifier.num_buckets;
+      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ ensures \result >= 0;
+      @ model int elementsToReadOfBucketCountClassEq(Classifier classifier, int[] values, int begin, int end, int bucket, int cls) {
+      @     return classifier.countClassOfSliceEq(values, begin + this.nextWriteOf(bucket), begin + this.lastReadOf(bucket), cls);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires 0 <= bucket < this.num_buckets;
+      @ requires this.num_buckets == classifier.num_buckets;
+      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ ensures \result >= 0;
+      @ model int elementsToReadCountClassEq(Classifier classifier, int[] values, int begin, int end, int bucket) {
+      @     return (\sum int b; 0 <= b < this.num_buckets;
+      @         this.elementsToReadOfBucketCountClassEq(classifier, values, begin, end, b, bucket)
+      @     );
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires start <= read <= stop;
+      @ static model no_state boolean readIsMaximal(int start, int read, int stop, int first_empty_position) {
+      @     return read == (first_empty_position <= start ? start : (stop <= first_empty_position ? stop : first_empty_position));
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires 0 <= bucket < this.num_buckets;
       @
-      @ static model \seq createAlignedBucketStarts(int[] bucket_starts, int num_buckets) {
-      @     return (\seq_def \bigint b; 0; num_buckets + 1; Buffers.blockAligned(bucket_starts[b]));
+      @ accessible this.buffer[2 * bucket..2 * bucket + 1];
+      @ model boolean isAtInitialBucketState(int bucket) {
+      @     return this.writtenCountOfBucket(bucket) == 0 &&
+      @         BucketPointers.readIsMaximal(this.bucketStart(bucket), this.lastReadOf(bucket), this.bucketStart(bucket + 1), this.first_empty_position);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires 0 <= begin <= end <= values.length;
+      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ requires (\forall int b; 0 <= b < this.num_buckets;
+      @     this.isAtInitialBucketState(b)
+      @ );
+      @ requires classifier.isClassifiedBlocksRange(values, begin, begin + this.first_empty_position);
+      @
+      @ ensures \result;
+      @
+      @ model boolean initialReadAreasBlockClassified(Classifier classifier, int[] values, int begin, int end) {
+      @     return (\forall int b; 0 <= b < this.num_buckets; this.elementsToReadOfBucketBlockClassified(classifier, values, begin, end, b));
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires 0 <= begin <= end <= values.length;
+      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ requires (\forall int b; 0 <= b < this.num_buckets;
+      @     this.isAtInitialBucketState(b)
+      @ );
+      @
+      @ ensures \result;
+      @
+      @ model boolean initialReadAreasCount(int[] values, int begin, int end) {
+      @     return (\forall int element; true;
+      @         (\forall int bucket; 0 <= bucket < this.num_buckets;
+      @             Functions.countElement(values, begin, begin + (this.bucketStart(bucket) <= first_empty_position ? this.bucketStart(bucket) : first_empty_position), element) ==
+      @                 (\sum int b; 0 <= b < bucket; this.elementsToReadOfBucketCountElement(values, begin, end, b, element))
+      @         )
+      @     );
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires 0 <= begin <= end <= values.length;
+      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ requires (\forall int b; 0 <= b < this.num_buckets;
+      @     this.isAtInitialBucketState(b)
+      @ );
+      @
+      @ ensures \result;
+      @
+      @ model boolean initialReadAreasCountBucketElements(Classifier classifier, int[] values, int begin, int end) {
+      @     return (\forall int bucket; 0 <= bucket < this.num_buckets;
+      @         (\forall int cls; 0 <= cls < this.num_buckets;
+      @             classifier.countClassOfSliceEq(values, begin, begin + (this.bucketStart(bucket) <= first_empty_position ? this.bucketStart(bucket) : first_empty_position), cls) ==
+      @                 (\sum int b; 0 <= b < bucket; this.elementsToReadOfBucketCountClassEq(classifier, values, begin, end, b, cls))
+      @         )
+      @     );
       @ }
       @*/
 
     /*@ public normal_behaviour
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets);
-      @ requires 0 <= begin <= end <= values.length;
       @ requires 0 <= 2 * num_buckets <= buffer.length;
       @ requires 0 <= first_empty_position <= bucket_starts[num_buckets];
       @ requires Buffers.isBlockAligned(first_empty_position);
-      @ requires \disjoint(bucket_starts[*], buffer[*], values[*]);
+      @ requires \disjoint(bucket_starts[*], buffer[*]);
       @
       @ ensures this.num_buckets == num_buckets && this.buffer == buffer && this.first_empty_position == first_empty_position;
-      @ ensures (\forall int b; 0 <= b < num_buckets; this.writtenCountOfBucket(b) == 0);
-      @ ensures (\forall int b; 0 <= b < num_buckets; this.bucketStart(b) == Buffers.blockAligned(bucket_starts[b]));
-      @ ensures (\forall int element; true;
-      @         Functions.countElement(values, begin, first_empty_position, element) ==
-      @             this.elementsToReadCountElement(values, begin, end, element)
+      @ ensures (\forall int b; 0 <= b < num_buckets;
+      @     this.isAtInitialBucketState(b) &&
+      @     bucket_starts[b + 1] - bucket_starts[b] <= this.remainingWriteCountOfBucket(b) + Buffers.BUFFER_SIZE
       @ );
+      @ ensures (\forall int b; 0 <= b <= num_buckets; this.bucketStart(b) == Buffers.blockAligned(bucket_starts[b]));
+      @ // ensures (\forall int element; true;
+      @ //         Functions.countElement(values, begin, first_empty_position, element) ==
+      @ //             this.elementsToReadCountElement(values, begin, end, element)
+      @ // );
       @
       @ assignable buffer[0..2 * num_buckets - 1];
       @*/
-    public BucketPointers(final int[] bucket_starts, final int num_buckets, final int first_empty_position, final int[] buffer, /* ghosts */ int[] values, int begin, int end) {
+    public BucketPointers(final int[] bucket_starts, final int num_buckets, final int first_empty_position, final int[] buffer) {
         this.buffer = buffer;
         //@ set this.num_buckets = num_buckets;
         //@ set this.first_empty_position = first_empty_position;
-        //@ set this.bucket_starts = \dl_seq_def_workaround(0, num_buckets, bucket_starts);
+        //@ set this.bucket_starts = \dl_seq_def_workaround(0, num_buckets + 1, bucket_starts);
 
-        //@ assert (\forall int b; 0 <= b < num_buckets; this.bucketStart(b) == Buffers.blockAligned(bucket_starts[b]));
+        //@ assert (\forall int b; 0 <= b <= num_buckets; this.bucketStart(b) == Buffers.blockAligned(bucket_starts[b]));
 
         /*@ loop_invariant 0 <= bucket && bucket <= num_buckets;
-          @ loop_invariant (\forall int b; 0 <= b < bucket; this.isValidBucketPointer(b) && this.writtenCountOfBucket(b) == 0);
-          @ loop_invariant (\forall int element; true;
-          @     Functions.countElement(values, begin, this.bucketStart(bucket) <= first_empty_position ? this.bucketStart(bucket) : first_empty_position, element) ==
-          @         (\sum int b; 0 <= b < bucket;
-          @             this.elementsToReadOfBucketCountElement(values, begin, end, b, element))
+          @ loop_invariant (\forall int b; 0 <= b < bucket;
+          @     this.isValidBucketPointer(b) &&
+          @     this.isAtInitialBucketState(b) &&
+          @     // use dependency contract of blockAligned
+          @     bucket_starts[b + 1] - bucket_starts[b] <= this.remainingWriteCountOfBucket(b) + Buffers.BUFFER_SIZE
           @ );
+          @ // loop_invariant (\forall int element; true;
+          @ //     Functions.countElement(values, begin, this.bucketStart(bucket) <= first_empty_position ? this.bucketStart(bucket) : first_empty_position, element) ==
+          @ //         (\sum int b; 0 <= b < bucket;
+          @ //             this.elementsToReadOfBucketCountElement(values, begin, end, b, element))
+          @ // );
           @
           @ decreases num_buckets - bucket;
           @
           @ assignable this.buffer[0..2 * num_buckets - 1];
           @*/
         for (int bucket = 0; bucket < num_buckets; ++bucket) {
+            //@ assert 0 <= bucket_starts[bucket] <= bucket_starts[bucket + 1];
             int start = Buffers.align_to_next_block(bucket_starts[bucket]);
             int stop = Buffers.align_to_next_block(bucket_starts[bucket + 1]);
             //@ assert start == this.bucketStart(bucket) && stop == this.bucketStart(bucket + 1) && start <= stop;
@@ -227,7 +319,7 @@ public final class BucketPointers {
             /*@ normal_behaviour
               @ ensures start <= read <= stop;
               @ ensures Buffers.isBlockAligned(read);
-              @ ensures (start == read || read <= first_empty_position);
+              @ ensures BucketPointers.readIsMaximal(start, read, stop, this.first_empty_position);
               @
               @ assignable \strictly_nothing;
               @*/

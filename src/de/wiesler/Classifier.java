@@ -86,11 +86,11 @@ public final class Classifier {
 
     /*@ public model_behaviour
       @ accessible this.footprint;
-      @ model int countClassOfSeqEq(\seq values, int bucket) {
+      @ model int countClassOfSliceEq(int[] values, int begin, int end, int bucket) {
       @     return (\num_of
       @              int i;
-      @              0 <= i < values.length;
-      @              this.classOf((int) values[i]) == bucket);
+      @              begin <= i < end;
+      @              this.classOf(values[i]) == bucket);
       @ }
       @*/
 

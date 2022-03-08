@@ -243,8 +243,7 @@ public final class Sorter {
                 bucket_starts,
                 classifier.num_buckets(),
                 first_empty_position - begin,
-                storage.bucket_pointers,
-                values, begin, end
+                storage.bucket_pointers
         );
 
         int[] overflow = storage.overflow;
