@@ -83,14 +83,14 @@ public final class Functions {
 
     /*@ public model_behaviour
       @ requires true;
-      @ accessible bucket_starts[0..num_buckets];
       @
       @ ensures \result ==> Lemma.bucketIndexFromOffset(bucket_starts, num_buckets, bucket_starts[num_buckets]);
       @
+      @ accessible bucket_starts[0..num_buckets];
       @ static model boolean isValidBucketStarts(int[] bucket_starts, int num_buckets) {
-      @     return isValidSlice(bucket_starts, 0, num_buckets + 1) &&
+      @     return 2 <= num_buckets &&
+      @         num_buckets + 1 <= bucket_starts.length &&
       @         isSortedSliceTransitive(bucket_starts, 0, num_buckets + 1) &&
-      @         2 <= num_buckets &&
       @         bucket_starts[0] == 0;
       @ }
       @*/
@@ -148,7 +148,7 @@ public final class Functions {
       @ requires \disjoint(src[srcPos..srcPos + length - 1], dest[destPos..destPos + length - 1]);
       @
       @ ensures (\forall int i; 0 <= i && i < length; dest[destPos + i] == src[srcPos + i]);
-      @ ensures \dl_seq_def_workaround(destPos, destPos + length, dest) == \dl_seq_def_workaround(srcPos, srcPos + length, src);
+      @ // ensures \dl_seq_def_workaround(destPos, destPos + length, dest) == \dl_seq_def_workaround(srcPos, srcPos + length, src);
       @ ensures (\forall int element; true;
       @     countElement(dest, destPos, destPos + length, element) == countElement(src, srcPos, srcPos + length, element)
       @ );

@@ -1,16 +1,6 @@
 package de.wiesler;
 
 public final class Sorter {
-    private static class PartitionResult {
-        public final int num_buckets;
-        public final boolean equal_buckets;
-
-        public /*@ strictly_pure */ PartitionResult(int num_buckets, boolean equal_buckets) {
-            this.num_buckets = num_buckets;
-            this.equal_buckets = equal_buckets;
-        }
-    }
-
     /*@ public normal_behaviour
       @ requires Storage.brandOf(values) == Storage.VALUES;
       @ requires Functions.isValidSlice(values, begin, end);
@@ -160,7 +150,7 @@ public final class Sorter {
 
     /*@ public normal_behaviour
       @ requires Storage.brandOf(values) == Storage.VALUES;
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires Storage.brandOf(bucket_starts) == Storage.BUCKET_STARTS;
       @ requires bucket_starts.length == Constants.MAX_BUCKETS + 1;
       @ requires (\forall int b; 0 <= b < bucket_starts.length; bucket_starts[b] == 0);
@@ -217,48 +207,56 @@ public final class Sorter {
           @*/
         {;;}
 
-        Classifier classifier;
-        {
-            SampleParameters sample = sample(values, begin, end, storage);
-            final int num_samples = sample.num_samples;
-            final int num_buckets = sample.num_buckets;
-            final int step = sample.step;
-            final int[] splitters = storage.splitters;
+        final SampleParameters sample = sample(values, begin, end, storage);
+        final int num_samples = sample.num_samples;
+        final int num_buckets = sample.num_buckets;
+        final int step = sample.step;
+        final int[] splitters = storage.splitters;
 
-            // Select num_buckets - 1 splitters
-            int num_splitters = Functions.copy_unique(values, begin, begin + num_samples, num_buckets - 1, step, splitters);
+        //@ ghost \seq before_copy_unique = \dl_seq_def_workaround(begin, end, values);
 
-            if (num_splitters <= 1) {
-                return null;
-            }
+        // Select num_buckets - 1 splitters
+        final int num_splitters = Functions.copy_unique(values, begin, begin + num_samples, num_buckets - 1, step, splitters);
 
-            // >= 2 unique splitters, therefore >= 3 buckets and >= 2 nonempty buckets
-            classifier = Classifier.from_sorted_samples(splitters, storage.tree, num_splitters, num_buckets);
+        //@ ghost \seq before_from_sorted_samples = \dl_seq_def_workaround(begin, end, values);
+        /*@ normal_behaviour
+          @ ensures before_from_sorted_samples == before_copy_unique;
+          @ assignable \strictly_nothing;
+          @ measured_by end - begin, 1;
+          @*/
+        {;;}
+        /*@ normal_behaviour
+          @ ensures \dl_seqPerm(before_from_sorted_samples, \old(\dl_seq_def_workaround(begin, end, values)));
+          @ assignable \strictly_nothing;
+          @ measured_by end - begin, 1;
+          @*/
+        {;;}
+
+        if (num_splitters <= 1) {
+            return null;
         }
 
-        Buffers buffers = new Buffers(storage.buffers_buffer, storage.buffers_indices, classifier.num_buckets());
-        int first_empty_position = classifier.classify_locally(values, begin, end, bucket_starts, buffers);
+        // >= 2 unique splitters, therefore >= 3 buckets and >= 2 nonempty buckets
+        final Classifier classifier = Classifier.from_sorted_samples(splitters, storage.tree, num_splitters, num_buckets);
 
-        BucketPointers bucket_pointers = new BucketPointers(
-                bucket_starts,
-                classifier.num_buckets(),
-                first_empty_position - begin,
-                storage.bucket_pointers
-        );
+        // Create this first, classifier is immutable and this removes heap mutations after partition
+        final PartitionResult r = new PartitionResult(classifier.num_buckets(), classifier.equal_buckets());
 
-        int[] overflow = storage.overflow;
-        Permute.permute(values, begin, end, classifier, bucket_pointers, storage.swap_1, storage.swap_2, overflow);
+        /*@ normal_behaviour
+          @ ensures before_from_sorted_samples == \dl_seq_def_workaround(begin, end, values);
+          @ assignable \strictly_nothing;
+          @ measured_by end - begin, 1;
+          @*/
+        {;;}
+        /*@ normal_behaviour
+          @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
+          @ assignable \strictly_nothing;
+          @ measured_by end - begin, 1;
+          @*/
+        {;;}
+        Partition.partition(values, begin, end, bucket_starts, classifier, storage);
 
-        Cleanup.cleanup(values,
-                begin,
-                end,
-                buffers,
-                bucket_starts,
-                bucket_pointers,
-                classifier,
-                overflow);
-
-        return new PartitionResult(classifier.num_buckets(), classifier.equal_buckets());
+        return r;
     }
 
     /*@ public normal_behaviour

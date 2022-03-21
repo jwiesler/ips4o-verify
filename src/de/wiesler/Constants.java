@@ -15,7 +15,7 @@ public final class Constants {
       @     return log >= 0 &&
       @         log <= 30 &&
       @         (1 << log) <= n &&
-      @         (log != 31 ==> n <= (1 << (log + 1)));
+      @         (log != 30 ==> n < (1 << (log + 1)));
       @ }
       @*/
 

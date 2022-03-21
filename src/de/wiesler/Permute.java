@@ -42,11 +42,10 @@ public final class Permute {
       @ );
       @
       @ ensures (\forall int b; 0 <= b < classifier.num_buckets;
-      @     countBucketElementsEverywhere(values, begin, end, b, bucket_pointers, classifier) ==
+      @     countBucketElementsEverywhere(values, begin, end, b, bucket_pointers, classifier) +
+      @         (b == \result ? Buffers.BUFFER_SIZE : 0) ==
       @         (\old(countBucketElementsEverywhere(values, begin, end, b, bucket_pointers, classifier)) +
-      @             (b == target_bucket ? Buffers.BUFFER_SIZE : 0) -
-      @             (b == \result ? Buffers.BUFFER_SIZE : 0)
-      @         ) &&
+      @             (b == target_bucket ? Buffers.BUFFER_SIZE : 0)) &&
       @     // All written elements are classified as b
       @     bucket_pointers.writtenElementsOfBucketClassified(classifier, values, begin, end, overflow, b) &&
       @     bucket_pointers.elementsToReadOfBucketBlockClassified(classifier, values, begin, end, b) &&
@@ -54,7 +53,11 @@ public final class Permute {
       @     bucket_pointers.toReadCountOfBucket(b) <= \old(bucket_pointers.toReadCountOfBucket(b))
       @ );
       @
-      @ ensures \result != -1 ==> classifier.isClassOfSlice(other_swap, 0, Buffers.BUFFER_SIZE, \result);
+      @ ensures bucket_pointers.remainingWriteCountOfBucket(target_bucket) < \old(bucket_pointers.remainingWriteCountOfBucket(target_bucket));
+      @
+      @ ensures \result != -1 ==>
+      @     classifier.isClassOfSlice(other_swap, 0, Buffers.BUFFER_SIZE, \result) &&
+      @     0 <= \result < classifier.num_buckets;
       @
       @ ensures \invariant_for(bucket_pointers) && \invariant_for(classifier);
       @
@@ -73,24 +76,27 @@ public final class Permute {
             int[] other_swap,
             int[] overflow
     ) {
-        // Todo: invariant for all buckets needed?
         /*@ loop_invariant (\forall int b; 0 <= b < classifier.num_buckets;
           @     bucket_pointers.elementsToReadCountClassEq(classifier, values, begin, end, b) +
           @         (b == target_bucket ? Buffers.BUFFER_SIZE : 0)
           @         <= bucket_pointers.remainingWriteCountOfBucket(b) &&
-          @     bucket_pointers.elementsToReadOfBucketBlockClassified(classifier, values, begin, end, b) &&
-          @     // All written elements are classified as b
-          @     bucket_pointers.writtenElementsOfBucketClassified(classifier, values, begin, end, overflow, b) &&
-          @     bucket_pointers.toReadCountOfBucket(b) <= \old(bucket_pointers.toReadCountOfBucket(b))
+          @     countBucketElementsEverywhere(values, begin, end, b, bucket_pointers, classifier) ==
+          @         \old(countBucketElementsEverywhere(values, begin, end, b, bucket_pointers, classifier))
           @ );
+          @
+          @ loop_invariant bucket_pointers.elementsToReadOfBucketBlockClassified(classifier, values, begin, end, target_bucket);
+          @ // All written elements are classified as b
+          @ loop_invariant bucket_pointers.writtenElementsOfBucketClassified(classifier, values, begin, end, overflow, target_bucket);
+          @ loop_invariant bucket_pointers.toReadCountOfBucket(target_bucket) <= \old(bucket_pointers.toReadCountOfBucket(target_bucket));
           @
           @ loop_invariant \invariant_for(bucket_pointers) && \invariant_for(classifier);
           @
           @ assignable bucket_pointers.buffer[2 * target_bucket + 1];
           @
-          @ decreases bucket_pointers.toReadCountOfBucket(target_bucket);
+          @ decreases bucket_pointers.remainingWriteCountOfBucket(target_bucket);
           @*/
         while (true) {
+            // write count > 0 follows from loop invariant
             BucketPointers.Increment increment = bucket_pointers.increment_write(target_bucket);
             boolean occupied = increment.occupied;
             int write = begin + increment.position;
@@ -102,13 +108,11 @@ public final class Permute {
                 //@ assert write + Buffers.BUFFER_SIZE <= end;
                 int new_target = classifier.classify(values[write]);
                 //@ assert classifier.isClassifiedBlocksRange(values, write, begin + bucket_pointers.lastReadOf(target_bucket));
-                //@ assert classifier.isClassOfSlice(values, write, write + Buffers.BUFFER_SIZE, new_target);
+                //@ assert classifier.classOfClassifiedBlockFromFirst(values, write, write + Buffers.BUFFER_SIZE, new_target);
                 //@ assert classifier.isClassifiedBlocksRange(values, write + Buffers.BUFFER_SIZE, begin + bucket_pointers.lastReadOf(target_bucket));
-                /*@ assert (\forall int b; 0 <= b < classifier.num_buckets;
-                  @     bucket_pointers.toReadCountOfBucket(b) <= \old(bucket_pointers.toReadCountOfBucket(b)) &&
-                  @     bucket_pointers.elementsToReadOfBucketBlockClassified(classifier, values, begin, end, b)
-                  @ );
-                  @*/
+
+                //@ assert bucket_pointers.toReadCountOfBucket(target_bucket) <= \old(bucket_pointers.toReadCountOfBucket(target_bucket));
+                //@ assert bucket_pointers.elementsToReadOfBucketBlockClassified(classifier, values, begin, end, target_bucket);
 
                 // Todo disjointness of the ranges
                 // Write area is disjoint from all other read and write areas
@@ -147,18 +151,41 @@ public final class Permute {
                 {}
             } else {
                 // Destination block is empty
-                // elementsToReadOfBucketBlockClassified is true
+                // Read area is empty
+                //@ assert bucket_pointers.elementsToReadOfBucketBlockClassified(classifier, values, begin, end, target_bucket);
+                //@ assert write <= end;
 
-                if (end < write + Buffers.BUFFER_SIZE) {
-                    // Out-of-bounds; write to overflow buffer instead
-                    Functions.copy_nonoverlapping(current_swap, 0, overflow, 0, Buffers.BUFFER_SIZE);
-                    //@ assert classifier.isClassOfSliceCopy(current_swap, 0, overflow, 0, Buffers.BUFFER_SIZE, target_bucket);
-                    // TODO show that this can't be happening for all other buckets (by disjointness)
-                    {}
-                } else {
-                    // Write block
-                    Functions.copy_nonoverlapping(current_swap, 0, values, write, Buffers.BUFFER_SIZE);
-                    //@ assert classifier.isClassOfSliceCopy(current_swap, 0, values, write, Buffers.BUFFER_SIZE, target_bucket);
+                /*@ normal_behaviour
+                  @ ensures (\forall int b; 0 <= b < classifier.num_buckets;
+                  @     bucket_pointers.writtenElementsOfBucketClassified(classifier, values, begin, end, overflow, b)
+                  @ );
+                  @ ensures \invariant_for(classifier);
+                  @ assignable values[write..write + Buffers.BUFFER_SIZE - 1], overflow[*];
+                  @*/
+                {
+                    if (end < write + Buffers.BUFFER_SIZE) {
+                        //@ assert write + Buffers.BUFFER_SIZE == begin + Buffers.blockAligned(end - begin);
+                        // Out-of-bounds; write to overflow buffer instead
+                        Functions.copy_nonoverlapping(current_swap, 0, overflow, 0, Buffers.BUFFER_SIZE);
+                        //@ assert \invariant_for(classifier);
+                        // writtenCount >= 256 follows from increment_write
+                        //@ assert classifier.isClassOfSliceCopy(current_swap, 0, overflow, 0, Buffers.BUFFER_SIZE, target_bucket);
+                        // TODO show that this can't be happening for all other buckets (by disjointness)
+                        {}
+                    } else {
+                        // Write block
+                        Functions.copy_nonoverlapping(current_swap, 0, values, write, Buffers.BUFFER_SIZE);
+                        //@ assert \invariant_for(classifier);
+                        //@ assert classifier.isClassOfSliceCopy(current_swap, 0, values, write, Buffers.BUFFER_SIZE, target_bucket);
+                        /*@ assert classifier.isClassOfSliceSplit(
+                          @     values,
+                          @     begin + bucket_pointers.bucketStart(target_bucket),
+                          @     write,
+                          @     write + Buffers.BUFFER_SIZE,
+                          @     target_bucket
+                          @ );
+                          @*/
+                    }
                 }
 
                 return -1;
@@ -171,9 +198,11 @@ public final class Permute {
       @ requires \invariant_for(classifier);
       @ requires classifier.num_buckets == bucket_pointers.num_buckets;
       @ requires swap_1.length == Buffers.BUFFER_SIZE && swap_2.length == Buffers.BUFFER_SIZE && overflow.length == Buffers.BUFFER_SIZE;
+      @ requires \disjoint(values[*], swap_1[*], swap_2[*], overflow[*], bucket_pointers.buffer[*], classifier.sorted_splitters[*], classifier.tree.tree[*]);
       @
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires 0 <= target_bucket < classifier.num_buckets;
+      @ requires (int) bucket_pointers.bucket_starts[classifier.num_buckets] == end - begin;
       @
       @ // swap_1 is classified as target_bucket
       @ requires classifier.isClassOfSlice(swap_1, 0, Buffers.BUFFER_SIZE, target_bucket);
@@ -198,6 +227,13 @@ public final class Permute {
       @ // only decreases elements to read
       @ ensures (\forall int b; 0 <= b < classifier.num_buckets; bucket_pointers.toReadCountOfBucket(b) <= \old(bucket_pointers.toReadCountOfBucket(b)));
       @
+      @ ensures (\forall int element; true;
+      @     bucket_pointers.countElement(values, begin, end, overflow, element) ==
+      @         \old(
+      @             bucket_pointers.countElement(values, begin, end, overflow, element) +
+      @             Functions.countElement(swap_1, 0, Buffers.BUFFER_SIZE, element))
+      @ );
+      @
       @ ensures \invariant_for(bucket_pointers) && \invariant_for(classifier);
       @
       @ assignable values[begin..end - 1];
@@ -215,12 +251,16 @@ public final class Permute {
             final int[] swap_2,
             final int[] overflow
     ) {
+        //@ ghost int first_target_bucket = target_bucket;
         boolean first_is_current_swap = true;
 
         /*@ loop_invariant (\forall int b; 0 <= b < classifier.num_buckets;
-          @     (countBucketElementsEverywhere(values, begin, end, b, bucket_pointers, classifier) ==
+          @     // The old countBucketElementsEverywhere is missing the BUFFER_SIZE elements of first_target_bucket that were in swap_1
+          @     // The current countBucketElementsEverywhere is missing the BUFFER_SIZE elements of target_bucket that are in swap_1
+          @     countBucketElementsEverywhere(values, begin, end, b, bucket_pointers, classifier) +
+          @         (b == target_bucket ? Buffers.BUFFER_SIZE : 0) ==
           @         (\old(countBucketElementsEverywhere(values, begin, end, b, bucket_pointers, classifier)) +
-          @         b == target_bucket ? Buffers.BUFFER_SIZE : 0)) &&
+          @         (b == first_target_bucket ? Buffers.BUFFER_SIZE : 0)) &&
           @     bucket_pointers.elementsToReadCountClassEq(classifier, values, begin, end, b) +
           @         (b == target_bucket ? Buffers.BUFFER_SIZE : 0)
           @         <= bucket_pointers.remainingWriteCountOfBucket(b) &&
@@ -228,8 +268,9 @@ public final class Permute {
           @     // All written elements are classified as b
           @     bucket_pointers.writtenElementsOfBucketClassified(classifier, values, begin, end, overflow, b)
           @ );
+          @ loop_invariant 0 <= target_bucket < classifier.num_buckets;
           @ // The buffer is classified as target_bucket
-          @ loop_invariant classifier.isClassOfSeq(\dl_seq_def_workaround(0, Buffers.BUFFER_SIZE, first_is_current_swap ? swap_1 : swap_2), target_bucket);
+          @ loop_invariant classifier.isClassOfSlice(first_is_current_swap ? swap_1 : swap_2, 0, Buffers.BUFFER_SIZE, target_bucket);
           @ // only decreases elements to read
           @ loop_invariant (\forall int b; 0 <= b < classifier.num_buckets; bucket_pointers.toReadCountOfBucket(b) <= \old(bucket_pointers.toReadCountOfBucket(b)));
           @ loop_invariant \invariant_for(bucket_pointers) && \invariant_for(classifier);
@@ -237,6 +278,8 @@ public final class Permute {
           @ assignable values[begin..end - 1];
           @ assignable bucket_pointers.buffer[*];
           @ assignable swap_1[*], swap_2[*], overflow[*];
+          @
+          @ decreases (\sum int b; 0 <= b < classifier.num_buckets; bucket_pointers.remainingWriteCountOfBucket(b));
           @*/
         while (true) {
             int new_target = swap_block(
@@ -250,7 +293,7 @@ public final class Permute {
                     first_is_current_swap ? swap_2 : swap_1,
                     overflow
             );
-            if (new_target < 0) {
+            if (new_target == -1) {
                 break;
             }
             first_is_current_swap = !first_is_current_swap;
@@ -266,24 +309,18 @@ public final class Permute {
       @ }
       @*/
 
-    /*@ model_behaviour
-      @ requires 0 <= bucket < bucket_pointers.num_buckets;
-      @ requires bucket_pointers.num_buckets == classifier.num_buckets;
-      @ static model boolean readAreaBlockClassified(int[] values, int begin, int end, int bucket, BucketPointers bucket_pointers, Classifier classifier) {
-      @     return classifier.isClassifiedBlocksRangeSeq(bucket_pointers.elementsToReadOfBucket(values, begin, bucket));
-      @ }
-      @*/
-
     /*@ public normal_behaviour
       @ requires \invariant_for(bucket_pointers);
       @ requires \invariant_for(classifier);
       @ requires classifier.num_buckets == bucket_pointers.num_buckets;
       @ requires swap_1.length == Buffers.BUFFER_SIZE && swap_2.length == Buffers.BUFFER_SIZE && overflow.length == Buffers.BUFFER_SIZE;
-      @ requires \disjoint(values[*], swap_1[*], swap_2[*], overflow[*], classifier.footprint, bucket_pointers.buffer[*]);
+      @ requires \disjoint(values[*], swap_1[*], swap_2[*], overflow[*], classifier.sorted_splitters[*], classifier.tree.tree[*], bucket_pointers.buffer[*]);
       @
       @ // requires (int) bucket_pointers.aligned_bucket_starts[0] == 0 && (int) bucket_pointers.aligned_bucket_starts[classifier.num_buckets] == Buffers.blockAligned(end - begin);
       @
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
+      @ requires (int) bucket_pointers.bucket_starts[classifier.num_buckets] == end - begin;
+      @ requires bucket_pointers.first_empty_position <= end - begin;
       @ requires (\forall int b; 0 <= b < classifier.num_buckets;
       @     bucket_pointers.elementsToReadCountClassEq(classifier, values, begin, end, b) <= bucket_pointers.remainingWriteCountOfBucket(b) &&
       @     bucket_pointers.elementsToReadOfBucketBlockClassified(classifier, values, begin, end, b) &&
@@ -292,12 +329,18 @@ public final class Permute {
       @
       @ ensures (\forall int b; 0 <= b < classifier.num_buckets;
       @     // Blocks are maintained
-      @          countBucketElementsEverywhere(values, begin, end, b, bucket_pointers, classifier) ==
-      @     \old(countBucketElementsEverywhere(values, begin, end, b, bucket_pointers, classifier)) &&
+      @          bucket_pointers.writtenCountOfBucket(b) ==
+      @     \old(bucket_pointers.elementsToReadCountClassEq(classifier, values, begin, end, b)) &&
       @     // All elements are read
       @     bucket_pointers.toReadCountOfBucket(b) == 0 &&
       @     // All written elements are classified as b
       @     bucket_pointers.writtenElementsOfBucketClassified(classifier, values, begin, end, overflow, b)
+      @ );
+      @
+      @ ensures (\forall int element; true;
+      @     (\sum int b; 0 <= b < classifier.num_buckets;
+      @         bucket_pointers.writtenElementsOfBucketCountElement(values, begin, end, overflow, b, element)) ==
+      @     \old(bucket_pointers.elementsToReadCountElement(values, begin, end, element))
       @ );
       @
       @ ensures \invariant_for(bucket_pointers) && \invariant_for(classifier);
@@ -316,6 +359,7 @@ public final class Permute {
             final int[] swap_2,
             final int[] overflow
     ) {
+        //@ assert bucket_pointers.bucketStart(classifier.num_buckets) == Buffers.blockAligned(end - begin);
         final int num_buckets = classifier.num_buckets();
 
         /*@ loop_invariant 0 <= bucket <= num_buckets;
@@ -332,12 +376,16 @@ public final class Permute {
           @     // All written elements are classified as b
           @     bucket_pointers.writtenElementsOfBucketClassified(classifier, values, begin, end, overflow, b)
           @ );
+          @ loop_invariant (\forall int element; true;
+          @     bucket_pointers.countElement(values, begin, end, overflow, element) ==
+          @         \old(bucket_pointers.countElement(values, begin, end, overflow, element))
+          @ );
           @
           @ assignable values[begin..end - 1];
           @ assignable bucket_pointers.buffer[*];
           @ assignable swap_1[*], swap_2[*], overflow[*];
           @
-          @ decreases (\sum int b; 0 <= b < classifier.num_buckets; bucket_pointers.toReadCountOfBucket(b));
+          @ decreases num_buckets - bucket;
           @*/
         for (int bucket = 0; bucket < num_buckets; ++bucket) {
             /*@ loop_invariant \invariant_for(bucket_pointers) && \invariant_for(classifier);
@@ -352,6 +400,10 @@ public final class Permute {
               @     // All written elements are classified as b
               @     bucket_pointers.writtenElementsOfBucketClassified(classifier, values, begin, end, overflow, b)
               @ );
+              @ loop_invariant (\forall int element; true;
+              @     bucket_pointers.countElement(values, begin, end, overflow, element) ==
+              @         \old(bucket_pointers.countElement(values, begin, end, overflow, element))
+              @ );
               @
               @ assignable values[begin..end - 1];
               @ assignable bucket_pointers.buffer[*];
@@ -359,19 +411,61 @@ public final class Permute {
               @
               @ decreases bucket_pointers.toReadCountOfBucket(bucket);
               @*/
-            while (true) {
-                //@ ghost final int old_last_read = bucket_pointers.toReadCountOfBucket(bucket);
+            while (bucket_pointers.hasRemainingRead(bucket)) {
+                //@ ghost \dl_Heap heapAtLoopBegin = \dl_heap();
+
+                /*@ assert
+                  @     (\forall int b; 0 <= b < classifier.num_buckets;
+                  @         bucket_pointers.elementsToReadCountClassEqSplitBucket(classifier, values, begin, begin + bucket_pointers.lastReadOf(bucket) - Buffers.BUFFER_SIZE, end, bucket, b, false)
+                  @     ) &&
+                  @     bucket_pointers.elementsToReadCountElementSplitBucket(values, begin, begin + bucket_pointers.lastReadOf(bucket) - Buffers.BUFFER_SIZE, end, bucket, false);
+                  @*/
                 int read = bucket_pointers.decrement_read(bucket);
-                //@ assert old_last_read == 0 <==> read < 0;
-                if (read < 0) {
-                    break;
-                }
 
                 //@ assert begin + read + Buffers.BUFFER_SIZE <= end;
 
-                Functions.copy_block_to_buffer(values, begin, end, begin + read, swap_1);
+                Functions.copy_nonoverlapping(values, begin + read, swap_1, 0, Buffers.BUFFER_SIZE);
+                //@ assert \invariant_for(classifier) && \invariant_for(bucket_pointers);
+                /*@ assert
+                  @     bucket_pointers.lastReadOf(bucket) == read &&
+                  @     bucket_pointers.nextWriteOf(bucket) == \at(bucket_pointers.nextWriteOf(bucket), heapAtLoopBegin) &&
+                  @     Buffers.isBlockAlignedLemma();
+                  @*/
+                /*@ assert bucket_pointers.nextWriteOf(bucket) <= read &&
+                  @     bucket_pointers.toReadCountOfBucket(bucket) < \at(bucket_pointers.toReadCountOfBucket(bucket), heapAtLoopBegin);
+                  @*/
+                //@ assert Buffers.isBlockAligned(read - bucket_pointers.nextWriteOf(bucket));
+                //@ assert Buffers.isBlockAligned(read + Buffers.BUFFER_SIZE - bucket_pointers.nextWriteOf(bucket));
+
+                //@ assert classifier.isClassifiedBlocksRange(values, begin + bucket_pointers.nextWriteOf(bucket), begin + read + Buffers.BUFFER_SIZE);
+                //@ assert classifier.isClassifiedBlocksRangeSplit(values, begin + bucket_pointers.nextWriteOf(bucket), begin + read, begin + read + Buffers.BUFFER_SIZE);
+                //@ assert classifier.isClassifiedBlock(values, begin + read, begin + read + Buffers.BUFFER_SIZE);
                 int first_value = swap_1[0];
                 int target_bucket = classifier.classify(first_value);
+                //@ assert classifier.classOfClassifiedBlockFromFirst(values, begin + read, begin + read + Buffers.BUFFER_SIZE, target_bucket);
+                /*@ assert
+                  @     classifier.isClassOfSlice(values, begin + read, begin + read + Buffers.BUFFER_SIZE, target_bucket) &&
+                  @     classifier.isClassOfSliceCopy(values, begin + read, swap_1, 0, Buffers.BUFFER_SIZE, target_bucket);
+                  @*/
+                //@ assert classifier.countClassOfSliceEqLemma(values, begin + read, begin + read + Buffers.BUFFER_SIZE, target_bucket);
+
+                /*@ assert (\forall int b; 0 <= b < classifier.num_buckets;
+                  @     bucket_pointers.elementsToReadCountClassEq(classifier, values, begin, end, b) + (b == target_bucket ? Buffers.BUFFER_SIZE : 0) ==
+                  @         \at(bucket_pointers.elementsToReadCountClassEq(classifier, values, begin, end, b), heapAtLoopBegin) &&
+                  @     bucket_pointers.writtenCountOfBucket(b) == \at(bucket_pointers.writtenCountOfBucket(b), heapAtLoopBegin)
+                  @ );
+                  @*/
+                /*@ assert (\forall int element; true;
+                  @     bucket_pointers.elementsToReadCountElement(values, begin, end, element) +
+                  @         Functions.countElement(swap_1, 0, Buffers.BUFFER_SIZE, element) ==
+                  @         \at(bucket_pointers.elementsToReadCountElement(values, begin, end, element), heapAtLoopBegin)
+                  @ );
+                  @*/
+                /*@ assert (\forall int element; true;
+                  @     bucket_pointers.writtenElementsCountElement(values, begin, end, overflow, element) ==
+                  @         \at(bucket_pointers.writtenElementsCountElement(values, begin, end, overflow, element), heapAtLoopBegin)
+                  @ );
+                  @*/
 
                 place_block(
                     target_bucket,

@@ -4,7 +4,7 @@ public final class Cleanup {
     /*@ public model_behaviour
       @ requires 0 <= begin <= begin + bucket_begin <= begin + bucket_end <= end <= values.length;
       @
-      @ accessible values[begin + bucket_begin..begin + bucket_end - 1], classifier.footprint;
+      @ accessible values[begin + bucket_begin..begin + bucket_end - 1], classifier.sorted_splitters[*], classifier.tree.tree[*];
       @
       @ static model boolean cleanedUpSlice(int[] values, int begin, int end, int bucket_begin, int bucket_end, Classifier classifier, int bucket) {
       @     return classifier.isClassOfSlice(values, begin + bucket_begin, begin + bucket_end, bucket) &&
@@ -21,7 +21,7 @@ public final class Cleanup {
       @ requires classifier.num_buckets == buffers.num_buckets && classifier.num_buckets == bucket_pointers.num_buckets;
       @ requires \invariant_for(buffers) && \invariant_for(bucket_pointers) && \invariant_for(classifier);
       @
-      @ requires \disjoint(values[*], bucket_starts[*], overflow[*], bucket_pointers.buffer[*], buffers.indices[*], buffers.buffer[*], classifier.footprint);
+      @ requires \disjoint(values[*], bucket_starts[*], overflow[*], bucket_pointers.buffer[*], buffers.indices[*], buffers.buffer[*], classifier.sorted_splitters[*], classifier.tree.tree[*]);
       @ requires overflow.length == Buffers.BUFFER_SIZE;
       @
       @ requires (\forall int b; 0 <= b <= classifier.num_buckets;
@@ -34,10 +34,7 @@ public final class Cleanup {
       @     bucket_pointers.writtenElementsOfBucketClassified(classifier, values, begin, end, overflow, b) &&
       @     // Remaining elements: bucket size == buffer length + written elements
       @     bucket_starts[b + 1] - bucket_starts[b] == buffers.bufferAt(b).length + bucket_pointers.writtenCountOfBucket(b) &&
-      @     // Buffer length, just a remainder modulo BUFFER_SIZE that is never 0 for nonempty buckets
-      @     buffers.bufferAt(b).length ==
-      @         ((bucket_starts[b + 1] - bucket_starts[b] >= Buffers.BUFFER_SIZE && (bucket_starts[b + 1] - bucket_starts[b]) % Buffers.BUFFER_SIZE == 0) ?
-      @             Buffers.BUFFER_SIZE : ((bucket_starts[b + 1] - bucket_starts[b]) % Buffers.BUFFER_SIZE))
+      @     buffers.bufferAt(b).length == Buffers.bufferSizeForBucketLen(bucket_starts[b + 1] - bucket_starts[b])
       @ );
       @
       @ ensures (\forall int b; 0 <= b < classifier.num_buckets;

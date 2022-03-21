@@ -4,9 +4,21 @@ public final class Buffers {
     public static final int BUFFER_SIZE = 1024 / 4;
 
     /*@ public model_behaviour
+      @ requires 0 <= len;
+      @
+      @ ensures 0 <= \result <= BUFFER_SIZE;
+      @
+      @ // A remainder modulo BUFFER_SIZE that is never 0 for nonempty buckets
+      @ static no_state model int bufferSizeForBucketLen(int len) {
+      @     return (len >= Buffers.BUFFER_SIZE && len % Buffers.BUFFER_SIZE == 0) ?
+      @         Buffers.BUFFER_SIZE : (len % Buffers.BUFFER_SIZE);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
       @ requires value >= 0;
       @
-      @ ensures \result % BUFFER_SIZE == 0;
+      @ ensures Buffers.isBlockAligned(\result);
       @ ensures \result >= value;
       @ ensures \result - value < BUFFER_SIZE;
       @
@@ -20,6 +32,17 @@ public final class Buffers {
       @
       @ static no_state model boolean isBlockAligned(int value) {
       @     return value % BUFFER_SIZE == 0;
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ ensures \result;
+      @
+      @ static no_state model boolean isBlockAlignedLemma() {
+      @     return (\forall int i; 0 <= i && isBlockAligned(i);
+      @         (\forall int j; isBlockAligned(j); isBlockAligned(i + j)) &&
+      @         (\forall int j; j <= i && isBlockAligned(j); isBlockAligned(i - j))
+      @     );
       @ }
       @*/
 
@@ -69,6 +92,7 @@ public final class Buffers {
 
     /*@ public model_behaviour
       @ requires 0 <= bucket < this.num_buckets;
+      @ ensures \result.length <= BUFFER_SIZE;
       @ accessible this.indices[bucket], this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1];
       @ model \seq bufferAt(int bucket) {
       @     return (\seq_def \bigint i; bucket * BUFFER_SIZE; bucket * BUFFER_SIZE + this.indices[bucket]; this.buffer[i]);
@@ -88,7 +112,7 @@ public final class Buffers {
       @ requires \invariant_for(classifier);
       @ requires classifier.num_buckets == this.num_buckets;
       @
-      @ accessible this.indices[0..this.num_buckets - 1], this.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1], classifier.footprint;
+      @ accessible this.indices[0..this.num_buckets - 1], this.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1], classifier.sorted_splitters[*], classifier.tree.tree[*];
       @ model boolean isClassifiedWith(Classifier classifier) {
       @     return (\forall
       @         int b;
@@ -102,7 +126,7 @@ public final class Buffers {
       @ requires classifier.num_buckets == this.num_buckets;
       @ requires 0 <= bucket < this.num_buckets;
       @
-      @ accessible this.indices[bucket], this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1], classifier.footprint;
+      @ accessible this.indices[bucket], this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1], classifier.sorted_splitters[*], classifier.tree.tree[*];
       @ model boolean isBucketClassifiedWith(int bucket, Classifier classifier) {
       @     return (\forall int i; 0 <= i < this.bufferAt(bucket).length; classifier.classOf((int)this.bufferAt(bucket)[i]) == bucket);
       @ }

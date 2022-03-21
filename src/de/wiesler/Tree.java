@@ -4,12 +4,35 @@ public final class Tree {
     private /*@ spec_public @*/ final int[] tree;
     private /*@ spec_public @*/ final int log_buckets;
     //@ ghost final int num_buckets;
+    //@ ghost final int[] sorted_splitters;
+
+    /*@ public model_behaviour
+      @ requires 1 <= log_length <= 29;
+      @ requires 0 <= index < (1 << log_length);
+      @
+      @ ensures \result ==> 2 * index + 1 < (1 << log_length);
+      @
+      @ static model no_state boolean hasChildren(int log_length, int index) {
+      @     return 2 * index < (1 << log_length);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires (1 << log_length) <= tree.length;
+      @ static model boolean heapProperty(int[] tree, int log_length) {
+      @     return (\forall int i; 0 <= i < (1 << log_length);
+      @         Tree.hasChildren(log_length, i) ==> tree[i] < tree[i * 2 + 1]
+      @     );
+      @ }
+      @*/
 
     /*@ public invariant 1 <= this.log_buckets <= Constants.LOG_MAX_BUCKETS;
       @ public invariant this.num_buckets == (1 << this.log_buckets);
-      @ public invariant 2 <= this.num_buckets <= tree.length;
+      @ public invariant 2 <= this.num_buckets <= this.tree.length;
+      @ public invariant this.num_buckets <= this.sorted_splitters.length;
+      @ public invariant Functions.isSortedSlice(this.sorted_splitters, 0, this.num_buckets);
       @
-      @ accessible \inv: this.tree[*];
+      @ accessible \inv: this.tree[*], this.sorted_splitters[*];
       @*/
 
     /*@ public normal_behaviour
@@ -20,6 +43,7 @@ public final class Tree {
       @
       @ ensures this.log_buckets == log_buckets;
       @ ensures this.tree == tree;
+      @ ensures this.sorted_splitters == sorted_splitters;
       @
       @ assignable tree[*];
       @*/
@@ -59,10 +83,14 @@ public final class Tree {
     }
 
     /*@ normal_behaviour
-      @ ensures this.num_buckets <= \result;
-      @ ensures \result < 2 * this.num_buckets;
+      @ ensures this.num_buckets <= \result < 2 * this.num_buckets;
+      @
+      @ ensures this.num_buckets < \result ==> this.sorted_splitters[\result - this.num_buckets - 1] <= value;
+      @ ensures \result < 2 * this.num_buckets - 1 ==> value < this.sorted_splitters[\result - this.num_buckets];
       @
       @ assignable \strictly_nothing;
+      @
+      @ accessible this.tree[*], this.sorted_splitters[*];
       @*/
     int classify(int value) {
         int b = 1;
