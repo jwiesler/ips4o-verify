@@ -59,6 +59,13 @@ public final class Permute {
       @     classifier.isClassOfSlice(other_swap, 0, Buffers.BUFFER_SIZE, \result) &&
       @     0 <= \result < classifier.num_buckets;
       @
+      @ ensures (\forall int element; true;
+      @     bucket_pointers.countElement(values, begin, end, overflow, element) +
+      @         (\result != -1 ? Functions.countElement(other_swap, 0, Buffers.BUFFER_SIZE, element) : 0) ==
+      @         \old(bucket_pointers.countElement(values, begin, end, overflow, element)) +
+      @         \old(Functions.countElement(current_swap, 0, Buffers.BUFFER_SIZE, element))
+      @ );
+      @
       @ ensures \invariant_for(bucket_pointers) && \invariant_for(classifier);
       @
       @ assignable values[begin..end - 1];
@@ -261,6 +268,7 @@ public final class Permute {
           @         (b == target_bucket ? Buffers.BUFFER_SIZE : 0) ==
           @         (\old(countBucketElementsEverywhere(values, begin, end, b, bucket_pointers, classifier)) +
           @         (b == first_target_bucket ? Buffers.BUFFER_SIZE : 0)) &&
+          @     // To show this unpack all remainingWriteCountOfBucket
           @     bucket_pointers.elementsToReadCountClassEq(classifier, values, begin, end, b) +
           @         (b == target_bucket ? Buffers.BUFFER_SIZE : 0)
           @         <= bucket_pointers.remainingWriteCountOfBucket(b) &&
@@ -274,6 +282,13 @@ public final class Permute {
           @ // only decreases elements to read
           @ loop_invariant (\forall int b; 0 <= b < classifier.num_buckets; bucket_pointers.toReadCountOfBucket(b) <= \old(bucket_pointers.toReadCountOfBucket(b)));
           @ loop_invariant \invariant_for(bucket_pointers) && \invariant_for(classifier);
+          @
+          @ loop_invariant (\forall int element; true;
+          @     bucket_pointers.countElement(values, begin, end, overflow, element) +
+          @         Functions.countElement(first_is_current_swap ? swap_1 : swap_2, 0, Buffers.BUFFER_SIZE, element) ==
+          @         \old(bucket_pointers.countElement(values, begin, end, overflow, element)) +
+          @         \old(Functions.countElement(swap_1, 0, Buffers.BUFFER_SIZE, element))
+          @ );
           @
           @ assignable values[begin..end - 1];
           @ assignable bucket_pointers.buffer[*];
