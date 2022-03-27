@@ -1,0 +1,13 @@
+de.wiesler.Buffers[de.wiesler.Buffers::isBlockAligned(int)].JML model_behavior operation contract.0
+
+de.wiesler.Buffers[de.wiesler.Buffers::blockAligned(int)].JML model_behavior operation contract.0
+
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::bucketStart(int)].JML model_behavior operation contract.0
+
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::bucketSize(int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::nextWriteOf(int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::lastReadOf(int)].JML model_behavior operation contract.0
+
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::writtenCountOfBucket(int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::remainingWriteCountOfBucket(int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::toReadCountOfBucket(int)].JML model_behavior operation contract.0

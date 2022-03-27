@@ -2,7 +2,6 @@ package de.wiesler;
 
 public final class Sorter {
     /*@ public normal_behaviour
-      @ requires Storage.brandOf(values) == Storage.VALUES;
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires end - begin > Constants.ACTUAL_BASE_CASE_SIZE;
       @ requires \invariant_for(storage);
@@ -149,9 +148,7 @@ public final class Sorter {
       @*/
 
     /*@ public normal_behaviour
-      @ requires Storage.brandOf(values) == Storage.VALUES;
       @ requires 0 <= begin <= end <= values.length;
-      @ requires Storage.brandOf(bucket_starts) == Storage.BUCKET_STARTS;
       @ requires bucket_starts.length == Constants.MAX_BUCKETS + 1;
       @ requires (\forall int b; 0 <= b < bucket_starts.length; bucket_starts[b] == 0);
       @ requires end - begin > Constants.ACTUAL_BASE_CASE_SIZE;
@@ -260,8 +257,6 @@ public final class Sorter {
     }
 
     /*@ public normal_behaviour
-      @ requires Storage.brandOf(values) == Storage.VALUES;
-      @ requires Storage.brandOf(bucket_starts) == Storage.BUCKET_STARTS;
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires 0 <= bucket && bucket < num_buckets;
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && bucket_starts[num_buckets] == end - begin;
@@ -277,7 +272,7 @@ public final class Sorter {
       @     // starting at the next bucket, ending before the last bucket
       @     Sorter.equalityBucketsInRange(values, begin, end, bucket_starts, num_buckets, bucket + 1, num_buckets - 1);
       @ requires Sorter.notAllValuesInOneBucket(bucket_starts, num_buckets, end - begin);
-      @ requires \disjoint(storage.allArrays, values[*]);
+      @ requires \disjoint(storage.allArrays, values[*], bucket_starts[*]);
       @ requires \invariant_for(storage);
       @
       @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
@@ -322,7 +317,6 @@ public final class Sorter {
     }
 
     /*@ public normal_behaviour
-      @ requires Storage.brandOf(values) == Storage.VALUES;
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires end - begin > Constants.ACTUAL_BASE_CASE_SIZE;
       @ requires \invariant_for(storage);
@@ -339,7 +333,7 @@ public final class Sorter {
       @ assignable storage.allArrays;
       @*/
     private static void sample_sort(int[] values, int begin, int end, Storage storage) {
-        int[] bucket_starts = Storage.createBrandedArray(Constants.MAX_BUCKETS + 1, Storage.BUCKET_STARTS);
+        int[] bucket_starts = Storage.createArray(Constants.MAX_BUCKETS + 1);
 
         /*@ normal_behaviour
           @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
@@ -441,7 +435,6 @@ public final class Sorter {
     }
 
     /*@ public normal_behaviour
-      @ requires Storage.brandOf(values) == Storage.VALUES;
       @ requires Functions.isValidSlice(values, start, end);
       @ requires \invariant_for(storage);
       @ requires \disjoint(storage.allArrays, values[*]);
@@ -471,7 +464,6 @@ public final class Sorter {
       @ assignable values[*];
       @*/
     public static void sort(int[] values) {
-        Storage.brandArray(values, Storage.VALUES);
         Storage storage = new Storage();
         //@ assert \disjoint(storage.allArrays, values);
         sort(values, 0, values.length, storage);

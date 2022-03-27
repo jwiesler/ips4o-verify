@@ -265,17 +265,17 @@ public final class Classifier {
       @ ensures 0 <= \result < this.num_buckets;
       @ ensures this.classOf(value) == \result;
       @
-      @ ensures this.equal_buckets ==> (
-      @     (\result % 2 == 0 || \result == this.num_buckets - 1) ?
-      @         (0 < \result ==> this.sorted_splitters[\result / 2 - 1] <= value) &&
-      @         (\result < this.num_buckets - 1 ==> value < this.sorted_splitters[\result / 2]) :
-      @         this.sorted_splitters[(\result - 1) / 2] == value
-      @ );
+      @ // ensures this.equal_buckets ==> (
+      @ //     (\result % 2 == 0 || \result == this.num_buckets - 1) ?
+      @ //         (0 < \result ==> this.sorted_splitters[\result / 2 - 1] <= value) &&
+      @ //         (\result < this.num_buckets - 1 ==> value < this.sorted_splitters[\result / 2]) :
+      @ //         this.sorted_splitters[(\result - 1) / 2] == value
+      @ // );
       @
-      @ ensures !this.equal_buckets ==> (
-      @     (0 < \result ==> this.sorted_splitters[\result - 1] <= value) &&
-      @     (\result < this.num_buckets - 1 ==> value < this.sorted_splitters[\result])
-      @ );
+      @ // ensures !this.equal_buckets ==> (
+      @ //     (0 < \result ==> this.sorted_splitters[\result - 1] <= value) &&
+      @ //     (\result < this.num_buckets - 1 ==> value < this.sorted_splitters[\result])
+      @ // );
       @
       @ assignable \strictly_nothing;
       @
