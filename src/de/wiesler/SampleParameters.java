@@ -47,6 +47,16 @@ public final class SampleParameters {
       @ }
       @*/
 
+    private static boolean isValidForLen(SampleParameters p, int n) {
+        return
+            3 <= p.num_samples && p.num_samples <= n / 2 &&
+            p.num_samples < n &&
+            1 <= p.step &&
+            2 <= p.num_buckets && p.num_buckets <= 1 << Constants.LOG_MAX_BUCKETS &&
+            p.num_buckets % 2 == 0 &&
+            p.step * p.num_buckets - 1 <= p.num_samples;
+    }
+
     /*@ public normal_behaviour
       @ requires n >= Constants.ACTUAL_BASE_CASE_SIZE;
       @ ensures this.isValidForLen(n);
@@ -57,5 +67,11 @@ public final class SampleParameters {
         this.num_buckets = 1 << log_buckets;
         this.step = Functions.max(1, oversampling_factor(n));
         this.num_samples = step * num_buckets - 1;
+    }
+
+    public static void testContracts(int i) {
+        if (i >= Constants.ACTUAL_BASE_CASE_SIZE && !isValidForLen(new SampleParameters(i), i)) {
+            throw new Error("SampleParameters contract fails for " + i);
+        }
     }
 }

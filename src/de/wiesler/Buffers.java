@@ -16,7 +16,7 @@ public final class Buffers {
       @*/
 
     /*@ public model_behaviour
-      @ requires value >= 0;
+      @ requires 0 <= value <= Integer.MAX_VALUE - Buffers.BUFFER_SIZE + 1;
       @
       @ ensures Buffers.isBlockAligned(\result);
       @ ensures \result >= value;
@@ -26,6 +26,13 @@ public final class Buffers {
       @     return (value + BUFFER_SIZE - 1) & (-BUFFER_SIZE);
       @ }
       @*/
+
+    private static boolean testBlockAlignedContract(int value, int result) {
+        return
+            result % BUFFER_SIZE == 0 &&
+                result >= value &&
+                result - value < BUFFER_SIZE;
+    }
 
     /*@ public model_behaviour
       @ requires value >= 0;
@@ -47,7 +54,7 @@ public final class Buffers {
       @*/
 
     /*@ public normal_behaviour
-      @ requires offset >= 0;
+      @ requires 0 <= offset <= Integer.MAX_VALUE - Buffers.BUFFER_SIZE + 1;
       @
       @ ensures \result == blockAligned(offset);
       @
@@ -58,21 +65,9 @@ public final class Buffers {
         return (offset + BUFFER_SIZE - 1) & (-BUFFER_SIZE);
     }
 
-    /*@ public normal_behaviour
-      @ requires offset >= 0;
-      @
-      @ ensures \result <= offset && Functions.isAlignedTo(\result, BUFFER_SIZE);
-      @ ensures offset - \result < BUFFER_SIZE;
-      @
-      @ assignable \strictly_nothing;
-      @ accessible \nothing;
-      @*/
-    public static int align_to_previous_block(int offset) {
-        int aligned_offset = Buffers.align_to_next_block(offset);
-        if (offset == aligned_offset) {
-            return aligned_offset;
-        } else {
-            return aligned_offset - Buffers.BUFFER_SIZE;
+    public static void testContracts(int i) {
+        if (0 <= i && i <= Integer.MAX_VALUE - Buffers.BUFFER_SIZE + 1 && !testBlockAlignedContract(i, align_to_next_block(i))) {
+            throw new Error("blockAligned contract fails for " + i);
         }
     }
 

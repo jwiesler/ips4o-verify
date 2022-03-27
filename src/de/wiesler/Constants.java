@@ -47,6 +47,19 @@ public final class Constants {
         return log + (n >>> 1);
     }
 
+    private static boolean testLogContract(int n, int log) {
+        return log >= 0 &&
+            log <= 30 &&
+            (1 << log) <= n &&
+            (log == 30 || n < (1 << (log + 1)));
+    }
+
+    public static void testContracts(int i) {
+        if (i > 0 && !testLogContract(i, log2(i))) {
+            throw new Error("log2 contract fails for " + i);
+        }
+    }
+
     public static /*@ strictly_pure */ int toInt(boolean b) {
         return b ? 1 : 0;
     }
