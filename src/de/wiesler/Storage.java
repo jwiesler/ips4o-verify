@@ -69,7 +69,16 @@ public final class Storage {
       @ );
       @*/
 
-    /*@ public instance invariant \disjoint(this.allArrays, \all_fields(this));
+    /*@ public instance invariant \disjoint(
+      @     \all_fields(tree),
+      @     \all_fields(splitters),
+      @     \all_fields(bucket_pointers),
+      @     \all_fields(buffers_buffer),
+      @     \all_fields(buffers_indices),
+      @     \all_fields(swap_1),
+      @     \all_fields(swap_2),
+      @     \all_fields(overflow)
+      @ );
       @*/
 
     //@ accessible \inv: this.*;

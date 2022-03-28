@@ -9,7 +9,7 @@ public final class BucketPointers {
     //@ ghost final int first_empty_position;
 
     //@ public instance invariant 0 <= 2 * this.num_buckets <= this.buffer.length;
-    //@ public instance invariant 0 <= this.first_empty_position <= (int) this.bucket_starts[num_buckets] && Buffers.isBlockAligned(this.first_empty_position);
+    //@ public instance invariant 0 <= this.first_empty_position <= (int) this.bucket_starts[num_buckets] <= Buffers.MAX_LEN && Buffers.isBlockAligned(this.first_empty_position);
     //@ public instance invariant this.bucket_starts.length == this.num_buckets + 1;
     //@ public instance invariant (int) this.bucket_starts[0] == 0 && Functions.isSortedSeqTransitive(this.bucket_starts);
     //@ public instance invariant (\forall int b; 0 <= b < this.num_buckets; this.isValidBucketPointer(b));
@@ -92,7 +92,7 @@ public final class BucketPointers {
       @ requires 0 <= bucket <= this.num_buckets;
       @ requires \invariant_for(this);
       @
-      @ ensures 0 <= \result <= this.bucketStart(this.num_buckets);
+      @ ensures 0 <= \result <= this.bucketStart(this.num_buckets) <= Buffers.MAX_LEN;
       @ ensures Buffers.isBlockAligned(\result);
       @ ensures bucket < this.num_buckets ==> \result <= this.bucketStart(bucket + 1);
       @ ensures 0 < bucket <= this.num_buckets ==> this.bucketStart(bucket - 1) <= \result;
@@ -146,7 +146,7 @@ public final class BucketPointers {
     /*@ public model_behaviour
       @ requires 0 <= bucket < this.num_buckets;
       @ requires overflow.length == Buffers.BUFFER_SIZE;
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ requires \invariant_for(classifier);
       @
       @ accessible values[begin + this.bucketStart(bucket) .. begin + this.nextWriteOf(bucket) - 1], overflow[*], this.buffer[2 * bucket + 1], classifier.sorted_splitters[*], classifier.tree.tree[*];
       @ model boolean writtenElementsOfBucketClassified(Classifier classifier, int[] values, int begin, int end, int[] overflow, int bucket) {
@@ -159,9 +159,9 @@ public final class BucketPointers {
 
     /*@ public model_behaviour
       @ requires 0 <= bucket < this.num_buckets;
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ requires \invariant_for(classifier);
       @
-      @ accessible values[begin + this.nextWriteOf(bucket) .. begin + this.lastReadOf(bucket + 1) - 1], this.buffer[2 * bucket], classifier.sorted_splitters[*], classifier.tree.tree[*];
+      @ accessible values[begin + this.nextWriteOf(bucket) .. begin + this.lastReadOf(bucket + 1) - 1], this.buffer[2 * bucket..2 * bucket + 1], classifier.sorted_splitters[*], classifier.tree.tree[*];
       @ model boolean elementsToReadOfBucketBlockClassified(Classifier classifier, int[] values, int begin, int end, int bucket) {
       @     return this.nextWriteOf(bucket) < this.lastReadOf(bucket) ==> classifier.isClassifiedBlocksRange(values, begin + this.nextWriteOf(bucket), begin + this.lastReadOf(bucket));
       @ }
@@ -170,7 +170,6 @@ public final class BucketPointers {
     /*@ public model_behaviour
       @ requires 0 <= bucket < this.num_buckets;
       @ requires overflow.length == Buffers.BUFFER_SIZE;
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
       @
       @ accessible values[begin + this.bucketStart(bucket) .. begin + this.nextWriteOf(bucket) - 1], overflow[*], this.buffer[2 * bucket + 1];
       @ model int writtenElementsOfBucketCountElement(int[] values, int begin, int end, int[] overflow, int bucket, int element) {
@@ -183,16 +182,15 @@ public final class BucketPointers {
 
     /*@ public model_behaviour
       @ requires 0 <= bucket < this.num_buckets;
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
       @
-      @ accessible values[begin + this.bucketStart(bucket) .. begin + this.lastReadOf(bucket) - 1], this.buffer[2 * bucket];
+      @ accessible values[begin + this.nextWriteOf(bucket) .. begin + this.lastReadOf(bucket) - 1], this.buffer[2 * bucket..2 * bucket + 1];
       @ model int elementsToReadOfBucketCountElement(int[] values, int begin, int end, int bucket, int element) {
       @     return Functions.countElement(values, begin + this.nextWriteOf(bucket), begin + this.lastReadOf(bucket), element);
       @ }
       @*/
 
     /*@ model_behaviour
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires overflow.length == Buffers.BUFFER_SIZE;
       @
       @ model int countElement(int[] values, int begin, int end, int[] overflow, int element) {
@@ -203,7 +201,6 @@ public final class BucketPointers {
 
     /*@ model_behaviour
       @ requires overflow.length == Buffers.BUFFER_SIZE;
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
       @
       @ model int writtenElementsCountElement(int[] values, int begin, int end, int[] overflow, int element) {
       @     return (\sum int b; 0 <= b < this.num_buckets;
@@ -214,7 +211,6 @@ public final class BucketPointers {
 
     /*@ public model_behaviour
       @ requires 0 <= split_bucket < this.num_buckets;
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
       @ requires begin + this.bucketStart(split_bucket) <= begin + this.nextWriteOf(split_bucket) - Buffers.BUFFER_SIZE <= begin + this.nextWriteOf(split_bucket);
       @ ensures \result;
       @ model boolean writtenElementsCountElementSplitBucket(int[] values, int begin, int end, int[] overflow, int split_bucket) {
@@ -233,7 +229,7 @@ public final class BucketPointers {
       @*/
 
     /*@ model_behaviour
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ requires true;
       @
       @ model int elementsToReadCountElement(int[] values, int begin, int end, int element) {
       @     return (\sum int b; 0 <= b < this.num_buckets;
@@ -244,7 +240,6 @@ public final class BucketPointers {
 
     /*@ public model_behaviour
       @ requires 0 <= split_bucket < this.num_buckets;
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
       @ requires begin + this.nextWriteOf(split_bucket) <= mid <= begin + this.lastReadOf(split_bucket);
       @ ensures \result;
       @ model boolean elementsToReadCountElementSplitBucket(int[] values, int begin, int mid, int end, int split_bucket, boolean pullout_first) {
@@ -266,10 +261,11 @@ public final class BucketPointers {
 
     /*@ public model_behaviour
       @ requires 0 <= bucket < this.num_buckets;
+      @ requires 0 <= begin <= end <= values.length;
       @ requires this.num_buckets == classifier.num_buckets;
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ requires \invariant_for(classifier);
       @ ensures \result >= 0;
-      @ accessible values[begin + this.nextWriteOf(bucket) .. begin + this.lastReadOf(bucket) - 1], this.buffer[2 * bucket], classifier.sorted_splitters[*], classifier.tree.tree[*];
+      @ accessible values[begin + this.nextWriteOf(bucket) .. begin + this.lastReadOf(bucket) - 1], this.buffer[2 * bucket..2 * bucket + 1], classifier.sorted_splitters[*], classifier.tree.tree[*];
       @ model int elementsToReadOfBucketCountClassEq(Classifier classifier, int[] values, int begin, int end, int bucket, int cls) {
       @     return classifier.countClassOfSliceEq(values, begin + this.nextWriteOf(bucket), begin + this.lastReadOf(bucket), cls);
       @ }
@@ -277,8 +273,7 @@ public final class BucketPointers {
 
     /*@ public model_behaviour
       @ requires 0 <= bucket < this.num_buckets;
-      @ requires this.num_buckets == classifier.num_buckets;
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ requires 0 <= begin <= end <= values.length;
       @ ensures \result >= 0;
       @ model int elementsToReadCountClassEq(Classifier classifier, int[] values, int begin, int end, int bucket) {
       @     return (\sum int b; 0 <= b < this.num_buckets;
@@ -291,7 +286,6 @@ public final class BucketPointers {
       @ requires 0 <= bucket < this.num_buckets;
       @ requires 0 <= split_bucket < this.num_buckets;
       @ requires this.num_buckets == classifier.num_buckets;
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
       @ requires begin + this.nextWriteOf(split_bucket) <= mid <= begin + this.lastReadOf(split_bucket);
       @ ensures \result;
       @ model boolean elementsToReadCountClassEqSplitBucket(Classifier classifier, int[] values, int begin, int mid, int end, int split_bucket, int bucket, boolean pullout_first) {
@@ -323,7 +317,7 @@ public final class BucketPointers {
     /*@ public model_behaviour
       @ requires 0 <= begin <= end;
       @ requires 0 <= bucket < this.num_buckets;
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ requires end - begin == (int) this.bucket_starts[num_buckets];
       @ requires end - begin < this.nextWriteOf(bucket) && Buffers.BUFFER_SIZE <= this.writtenCountOfBucket(bucket);
       @ requires disjointBucketsLemma(bucket);
       @ ensures \result;
@@ -378,7 +372,7 @@ public final class BucketPointers {
 
     /*@ public model_behaviour
       @ requires 0 <= begin <= end <= values.length;
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ requires end - begin == (int) this.bucket_starts[num_buckets];
       @ requires (\forall int b; 0 <= b < this.num_buckets;
       @     this.isAtInitialBucketState(b)
       @ );
@@ -393,7 +387,7 @@ public final class BucketPointers {
 
     /*@ public model_behaviour
       @ requires 0 <= begin <= end <= values.length;
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ requires end - begin == (int) this.bucket_starts[num_buckets];
       @ requires (\forall int b; 0 <= b < this.num_buckets;
       @     this.isAtInitialBucketState(b)
       @ );
@@ -425,7 +419,7 @@ public final class BucketPointers {
 
     /*@ public model_behaviour
       @ requires 0 <= begin <= end <= values.length;
-      @ requires Buffers.blockAligned(end - begin) == this.bucketStart(this.num_buckets);
+      @ requires end - begin == (int) this.bucket_starts[num_buckets];
       @ requires (\forall int b; 0 <= b < this.num_buckets;
       @     this.isAtInitialBucketState(b)
       @ );
@@ -456,7 +450,7 @@ public final class BucketPointers {
       @*/
 
     /*@ model_behaviour
-      @ requires 0 <= start <= stop;
+      @ requires 0 <= start <= stop <= Buffers.MAX_LEN;
       @ ensures \result;
       @ static model no_state boolean alignedBoundariesKeepEnoughSpace(int start, int stop) {
       @     return stop - start - Buffers.bufferSizeForBucketLen(stop - start) <= Buffers.blockAligned(stop) - Buffers.blockAligned(start);
@@ -465,12 +459,14 @@ public final class BucketPointers {
 
     /*@ public normal_behaviour
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets);
+      @ requires bucket_starts[num_buckets] <= Buffers.MAX_LEN;
       @ requires 0 <= 2 * num_buckets <= buffer.length;
       @ requires 0 <= first_empty_position <= bucket_starts[num_buckets];
       @ requires Buffers.isBlockAligned(first_empty_position);
       @ requires \disjoint(bucket_starts[*], buffer[*]);
       @
       @ ensures this.num_buckets == num_buckets && this.buffer == buffer && this.first_empty_position == first_empty_position;
+      @ ensures bucket_starts[num_buckets] == (int) this.bucket_starts[num_buckets];
       @ ensures (\forall int b; 0 <= b < num_buckets;
       @     this.isAtInitialBucketState(b) &&
       @     // enough space to write everything except the buffer content
@@ -500,7 +496,7 @@ public final class BucketPointers {
           @ assignable this.buffer[0..2 * num_buckets - 1];
           @*/
         for (int bucket = 0; bucket < num_buckets; ++bucket) {
-            //@ assert 0 <= bucket_starts[bucket] <= bucket_starts[bucket + 1];
+            //@ assert 0 <= bucket_starts[bucket] <= bucket_starts[bucket + 1] <= bucket_starts[num_buckets];
             int start = Buffers.align_to_next_block(bucket_starts[bucket]);
             int stop = Buffers.align_to_next_block(bucket_starts[bucket + 1]);
             //@ assert start == this.bucketStart(bucket) && stop == this.bucketStart(bucket + 1) && start <= stop;

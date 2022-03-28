@@ -2,6 +2,8 @@ package de.wiesler;
 
 public final class Buffers {
     public static final int BUFFER_SIZE = 1024 / 4;
+    public static final int MAX_INT = 0x7FFFFFFF;
+    public static final int MAX_LEN = MAX_INT - BUFFER_SIZE + 1;
 
     /*@ public model_behaviour
       @ requires 0 <= len;
@@ -16,7 +18,7 @@ public final class Buffers {
       @*/
 
     /*@ public model_behaviour
-      @ requires 0 <= value <= Integer.MAX_VALUE - Buffers.BUFFER_SIZE + 1;
+      @ requires 0 <= value <= MAX_LEN;
       @
       @ ensures Buffers.isBlockAligned(\result);
       @ ensures \result >= value;
@@ -54,7 +56,7 @@ public final class Buffers {
       @*/
 
     /*@ public normal_behaviour
-      @ requires 0 <= offset <= Integer.MAX_VALUE - Buffers.BUFFER_SIZE + 1;
+      @ requires 0 <= offset <= MAX_LEN;
       @
       @ ensures \result == blockAligned(offset);
       @
@@ -66,7 +68,7 @@ public final class Buffers {
     }
 
     public static void testContracts(int i) {
-        if (0 <= i && i <= Integer.MAX_VALUE - Buffers.BUFFER_SIZE + 1 && !testBlockAlignedContract(i, align_to_next_block(i))) {
+        if (0 <= i && i <= MAX_LEN && !testBlockAlignedContract(i, align_to_next_block(i))) {
             throw new Error("blockAligned contract fails for " + i);
         }
     }
@@ -120,6 +122,7 @@ public final class Buffers {
     /*@ public model_behaviour
       @ requires classifier.num_buckets == this.num_buckets;
       @ requires 0 <= bucket < this.num_buckets;
+      @ requires \invariant_for(classifier);
       @
       @ accessible this.indices[bucket], this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1], classifier.sorted_splitters[*], classifier.tree.tree[*];
       @ model boolean isBucketClassifiedWith(int bucket, Classifier classifier) {

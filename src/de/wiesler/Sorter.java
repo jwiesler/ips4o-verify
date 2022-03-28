@@ -152,6 +152,7 @@ public final class Sorter {
       @ requires bucket_starts.length == Constants.MAX_BUCKETS + 1;
       @ requires (\forall int b; 0 <= b < bucket_starts.length; bucket_starts[b] == 0);
       @ requires end - begin > Constants.ACTUAL_BASE_CASE_SIZE;
+      @ requires end - begin <= Buffers.MAX_LEN;
       @ requires \invariant_for(storage);
       @
       @ requires \disjoint(values[*], bucket_starts[*], storage.allArrays);
@@ -258,6 +259,7 @@ public final class Sorter {
 
     /*@ public normal_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
+      @ requires end - begin <= Buffers.MAX_LEN;
       @ requires 0 <= bucket && bucket < num_buckets;
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && bucket_starts[num_buckets] == end - begin;
       @ requires Sorter.allBucketsInRangeSorted(values, begin, end, bucket_starts, num_buckets, 0, bucket);
@@ -319,6 +321,7 @@ public final class Sorter {
     /*@ public normal_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires end - begin > Constants.ACTUAL_BASE_CASE_SIZE;
+      @ requires end - begin <= Buffers.MAX_LEN;
       @ requires \invariant_for(storage);
       @ requires \disjoint(storage.allArrays, values[*]);
       @
@@ -411,53 +414,56 @@ public final class Sorter {
     }
 
     /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, start, end);
+      @ requires Functions.isValidSlice(values, begin, end);
       @
-      @ ensures \dl_seqPerm(\dl_seq_def_workaround(start, end, values), \old(\dl_seq_def_workaround(start, end, values)));
-      @ ensures Functions.isSortedSlice(values, start, end);
+      @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
+      @ ensures Functions.isSortedSlice(values, begin, end);
       @
-      @ assignable values[start..end - 1];
+      @ assignable values[begin..end - 1];
       @*/
-    public static void fallback_sort(int[] values, int start, int end) {
-//        java.util.Arrays.sort(values, start, end);
+    public static void fallback_sort(int[] values, int begin, int end) {
+//        java.util.Arrays.sort(values, begin, end);
     }
 
     /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, start, end);
+      @ requires Functions.isValidSlice(values, begin, end);
       @
-      @ ensures \dl_seqPerm(\dl_seq_def_workaround(start, end, values), \old(\dl_seq_def_workaround(start, end, values)));
-      @ ensures Functions.isSortedSlice(values, start, end);
+      @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
+      @ ensures Functions.isSortedSlice(values, begin, end);
       @
-      @ assignable values[start..end - 1];
+      @ assignable values[begin..end - 1];
       @*/
-    private static void base_case_sort(int[] values, int start, int end) {
-        fallback_sort(values, start, end);
+    private static void base_case_sort(int[] values, int begin, int end) {
+        fallback_sort(values, begin, end);
     }
 
     /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, start, end);
+      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires end - begin <= Buffers.MAX_LEN;
       @ requires \invariant_for(storage);
       @ requires \disjoint(storage.allArrays, values[*]);
       @
-      @ ensures \dl_seqPerm(\dl_seq_def_workaround(start, end, values), \old(\dl_seq_def_workaround(start, end, values)));
-      @ ensures Functions.isSortedSlice(values, start, end);
+      @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
+      @ ensures Functions.isSortedSlice(values, begin, end);
       @ ensures \invariant_for(storage);
       @
       @ // sample_sort has +2 => +3
-      @ measured_by end - start, 3;
+      @ measured_by end - begin, 3;
       @
-      @ assignable values[start..end - 1];
+      @ assignable values[begin..end - 1];
       @ assignable storage.allArrays;
       @*/
-    public static void sort(int[] values, int start, int end, Storage storage) {
-        if (end - start <= Constants.ACTUAL_BASE_CASE_SIZE) {
-            base_case_sort(values, start, end);
+    public static void sort(int[] values, int begin, int end, Storage storage) {
+        if (end - begin <= Constants.ACTUAL_BASE_CASE_SIZE) {
+            base_case_sort(values, begin, end);
         } else {
-            sample_sort(values, start, end, storage);
+            sample_sort(values, begin, end, storage);
         }
     }
 
     /*@ public normal_behaviour
+      @ requires values.length <= Buffers.MAX_LEN;
+      @
       @ ensures \dl_seqPerm(\dl_array2seq(values), \old(\dl_array2seq(values)));
       @ ensures Functions.isSortedSlice(values, 0, values.length);
       @

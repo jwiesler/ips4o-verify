@@ -24,6 +24,7 @@ public final class Permute {
       @ requires current_swap.length == Buffers.BUFFER_SIZE && other_swap.length == Buffers.BUFFER_SIZE && overflow.length == Buffers.BUFFER_SIZE;
       @
       @ requires 0 <= begin <= end <= values.length;
+      @ requires end - begin <= Buffers.MAX_LEN;
       @ requires 0 <= target_bucket < classifier.num_buckets;
       @ requires (int) bucket_pointers.bucket_starts[classifier.num_buckets] == end - begin;
       @ requires bucket_pointers.first_empty_position <= end - begin;
@@ -276,6 +277,7 @@ public final class Permute {
       @ requires \disjoint(values[*], swap_1[*], swap_2[*], overflow[*], bucket_pointers.buffer[*], classifier.sorted_splitters[*], classifier.tree.tree[*]);
       @
       @ requires 0 <= begin <= end <= values.length;
+      @ requires end - begin <= Buffers.MAX_LEN;
       @ requires 0 <= target_bucket < classifier.num_buckets;
       @ requires (int) bucket_pointers.bucket_starts[classifier.num_buckets] == end - begin;
       @ requires bucket_pointers.first_empty_position <= end - begin;
@@ -398,6 +400,7 @@ public final class Permute {
       @ // requires (int) bucket_pointers.aligned_bucket_starts[0] == 0 && (int) bucket_pointers.aligned_bucket_starts[classifier.num_buckets] == Buffers.blockAligned(end - begin);
       @
       @ requires 0 <= begin <= end <= values.length;
+      @ requires end - begin <= Buffers.MAX_LEN;
       @ requires (int) bucket_pointers.bucket_starts[classifier.num_buckets] == end - begin;
       @ requires bucket_pointers.first_empty_position <= end - begin;
       @ requires (\forall int b; 0 <= b < classifier.num_buckets;

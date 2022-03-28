@@ -3,6 +3,7 @@ package de.wiesler;
 public final class Cleanup {
     /*@ public model_behaviour
       @ requires 0 <= begin <= begin + bucket_begin <= begin + bucket_end <= end <= values.length;
+      @ requires \invariant_for(classifier);
       @
       @ accessible values[begin + bucket_begin..begin + bucket_end - 1], classifier.sorted_splitters[*], classifier.tree.tree[*];
       @
@@ -16,6 +17,7 @@ public final class Cleanup {
       @ // * Permutation of: (\old(written blocks) + buffer content) <-> (full block content)
       @ public normal_behaviour
       @ requires 0 <= begin <= end <= values.length;
+      @ requires end - begin <= Buffers.MAX_LEN;
       @ requires Functions.isValidBucketStarts(bucket_starts, classifier.num_buckets);
       @ requires bucket_starts[classifier.num_buckets] == end - begin;
       @ requires classifier.num_buckets == buffers.num_buckets && classifier.num_buckets == bucket_pointers.num_buckets;

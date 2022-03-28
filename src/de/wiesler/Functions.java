@@ -29,8 +29,7 @@ public final class Functions {
       @*/
 
     /*@ public model_behaviour
-      @ requires 0 <= begin <= end <= values.length;
-      @
+      @ requires true;
       @ accessible values[begin..end - 1];
       @
       @ static model int countElement(int[] values, int begin, int end, int element) {
@@ -39,7 +38,7 @@ public final class Functions {
       @*/
 
     /*@ public model_behaviour
-      @ requires 0 <= begin <= mid <= end <= values.length;
+      @ requires begin <= mid <= end;
       @
       @ ensures \result;
       @

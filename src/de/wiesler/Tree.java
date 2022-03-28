@@ -88,6 +88,9 @@ public final class Tree {
       @ ensures this.num_buckets < \result ==> this.sorted_splitters[\result - this.num_buckets - 1] <= value;
       @ ensures \result < 2 * this.num_buckets - 1 ==> value < this.sorted_splitters[\result - this.num_buckets];
       @
+      @ // Needed to bring this method to logic
+      @ ensures_free \result == this.classify(value);
+      @
       @ assignable \strictly_nothing;
       @
       @ accessible this.tree[*], this.sorted_splitters[*];
@@ -114,9 +117,11 @@ public final class Tree {
     /*@ normal_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires indices.length == end - begin;
-      @ requires values != indices && values != this.tree && indices != this.tree;
+      @ requires \disjoint(values[*], indices[*], this.tree[*], this.sorted_splitters[*]);
       @
       @ ensures (\forall int i; 0 <= i < indices.length; this.num_buckets <= indices[i] < 2 * this.num_buckets);
+      @ // Needed to bring this method to logic
+      @ ensures_free (\forall int i; 0 <= i < indices.length; indices[i] == this.classify(values[begin + i]));
       @
       @ assignable indices[*];
       @*/

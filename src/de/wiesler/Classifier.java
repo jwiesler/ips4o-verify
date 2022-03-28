@@ -21,8 +21,6 @@ public final class Classifier {
     // This is a wrapper around classify not to be expanded in partition.
     /*@ public model_behaviour
       @ ensures 0 <= \result < this.num_buckets;
-      @ // ensures this.sorted_splitters[\result] <= value;
-      @ // ensures \result < this.num_buckets - 1 ==> value < this.sorted_splitters[\result + 1];
       @ accessible this.sorted_splitters[*], this.tree.tree[*];
       @ model int classOf(int value) {
       @     return this.classify(value);
@@ -45,7 +43,7 @@ public final class Classifier {
       @     return (\forall
       @              int i;
       @              begin <= i < end;
-      @              this.classOf((int) values[i]) == bucket);
+      @              this.classOf(values[i]) == bucket);
       @ }
       @*/
 
@@ -205,6 +203,7 @@ public final class Classifier {
       @ ensures \fresh(\result);
       @ ensures \invariant_for(\result);
       @ ensures \result.sorted_splitters == splitters && \result.tree.tree == tree;
+      @ ensures \result.num_buckets % 2 == 0;
       @
       @ assignable splitters[*], tree[*];
       @*/
@@ -261,21 +260,26 @@ public final class Classifier {
         return this.equal_buckets;
     }
 
+    /*@ public model_behaviour
+      @ requires 0 <= bucket < this.num_buckets;
+      @
+      @ model boolean isClassifiedAs(int value, int bucket) {
+      @     return this.equal_buckets ?
+      @         ((bucket % 2 == 0 || bucket == this.num_buckets - 1) ?
+      @             (0 < bucket ==> this.sorted_splitters[bucket / 2 - 1] <= value) &&
+      @             (bucket < this.num_buckets - 1 ==> value < this.sorted_splitters[bucket / 2]) :
+      @             this.sorted_splitters[(bucket - 1) / 2] == value) :
+      @         ((0 < bucket ==> this.sorted_splitters[bucket - 1] <= value) &&
+      @             (bucket < this.num_buckets - 1 ==> value < this.sorted_splitters[bucket]));
+      @ }
+      @*/
+
     /*@ public normal_behaviour
       @ ensures 0 <= \result < this.num_buckets;
-      @ ensures this.classOf(value) == \result;
+      @ ensures this.isClassifiedAs(value, \result);
       @
-      @ // ensures this.equal_buckets ==> (
-      @ //     (\result % 2 == 0 || \result == this.num_buckets - 1) ?
-      @ //         (0 < \result ==> this.sorted_splitters[\result / 2 - 1] <= value) &&
-      @ //         (\result < this.num_buckets - 1 ==> value < this.sorted_splitters[\result / 2]) :
-      @ //         this.sorted_splitters[(\result - 1) / 2] == value
-      @ // );
-      @
-      @ // ensures !this.equal_buckets ==> (
-      @ //     (0 < \result ==> this.sorted_splitters[\result - 1] <= value) &&
-      @ //     (\result < this.num_buckets - 1 ==> value < this.sorted_splitters[\result])
-      @ // );
+      @ // Needed to bring this method to logic
+      @ ensures_free \result == this.classify(value);
       @
       @ assignable \strictly_nothing;
       @
@@ -297,29 +301,42 @@ public final class Classifier {
     /*@ public normal_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires end - begin == indices.length;
+      @ requires \disjoint(values[*], indices[*], this.tree.tree[*], this.sorted_splitters[*]);
       @
-      @ ensures (\forall int i; 0 <= i && i < indices.length; 0 <= indices[i] < this.num_buckets);
-      @ ensures (\forall int i; 0 <= i && i < indices.length; this.classOf(values[begin + i]) == indices[i]);
+      @ ensures (\forall int i; 0 <= i && i < indices.length; this.classify(values[begin + i]) == indices[i]);
       @
       @ assignable indices[*];
       @*/
     public void classify_all(int[] values, int begin, int end, int[] indices) {
-        // TODO class invariant
-        //@ assert (this.num_buckets == 1 << (this.tree.log_buckets + Constants.toInt(this.equal_buckets)));
-
         this.tree.classify_all(values, begin, end, indices);
         if (this.equal_buckets) {
+            /*@ loop_invariant 0 <= i <= indices.length;
+              @ loop_invariant (\forall int j; 0 <= j < i; this.classify(values[begin + j]) == indices[j]);
+              @ loop_invariant (\forall int j; i <= j < indices.length; this.tree.classify(values[begin + j]) == indices[j]);
+              @ loop_invariant \invariant_for(this) && \invariant_for(this.tree);
+              @
+              @ decreases indices.length - i;
+              @ assignable indices[*];
+              @*/
             for (int i = 0; i < indices.length; ++i) {
                 final int value = values[begin + i];
                 final int index = indices[i];
                 final int bucket = index - this.num_buckets / 2;
                 final boolean equal_to_splitter = !Constants.cmp(value, this.sorted_splitters[bucket]);
-                indices[i] = 2 * index + Constants.toInt(equal_to_splitter);
+                indices[i] = 2 * index + Constants.toInt(equal_to_splitter) - this.num_buckets;
             }
-        }
-        for (int i = 0; i < indices.length; ++i) {
-            indices[i] -= this.num_buckets;
-            assert (indices[i] < this.num_buckets);
+        } else {
+            /*@ loop_invariant 0 <= i <= indices.length;
+              @ loop_invariant (\forall int j; 0 <= j < i; this.classify(values[begin + j]) == indices[j]);
+              @ loop_invariant (\forall int j; i <= j < indices.length; this.tree.classify(values[begin + j]) == indices[j]);
+              @ loop_invariant \invariant_for(this) && \invariant_for(this.tree);
+              @
+              @ decreases indices.length - i;
+              @ assignable indices[*];
+              @*/
+            for (int i = 0; i < indices.length; ++i) {
+                indices[i] -= this.num_buckets;
+            }
         }
     }
 

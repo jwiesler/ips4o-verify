@@ -18,6 +18,7 @@ public final class Partition {
 
     /*@ public normal_behaviour
       @ requires 0 <= begin <= end <= values.length;
+      @ requires end - begin <= Buffers.MAX_LEN;
       @ requires bucket_starts.length == Constants.MAX_BUCKETS + 1;
       @ requires (\forall int b; 0 <= b < bucket_starts.length; bucket_starts[b] == 0);
       @ requires end - begin > Constants.ACTUAL_BASE_CASE_SIZE;
