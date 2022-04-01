@@ -78,6 +78,22 @@ public final class Sorter {
       @*/
 
     /*@ public model_behaviour
+      @ requires \invariant_for(classifier);
+      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires nonEmptyBucketsLemma(classifier, values, begin, end, bucket_starts);
+      @ requires Functions.isValidBucketStarts(bucket_starts, classifier.num_buckets) && end - begin == bucket_starts[classifier.num_buckets];
+      @ requires (\forall int b; 0 <= b < classifier.num_buckets;
+      @     classifier.isClassOfSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1], b)
+      @ );
+      @
+      @ ensures \result;
+      @
+      @ static model boolean allBucketsPartitionedLemma(Classifier classifier, int[] values, int begin, int end, int[] bucket_starts) {
+      @     return allBucketsPartitioned(values, begin, end, bucket_starts, classifier.num_buckets);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires 0 <= lower && lower <= upper && upper <= num_buckets;
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && end - begin == bucket_starts[num_buckets];
@@ -114,6 +130,22 @@ public final class Sorter {
       @*/
 
     /*@ public model_behaviour
+      @ requires \invariant_for(classifier);
+      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires Functions.isValidBucketStarts(bucket_starts, classifier.num_buckets) && end - begin == bucket_starts[classifier.num_buckets];
+      @ requires (\forall int b; 0 <= b < classifier.num_buckets;
+      @     classifier.isClassOfSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1], b)
+      @ );
+      @
+      @ ensures \result;
+      @
+      @ static model boolean equalityBucketsLemma(Classifier classifier, int[] values, int begin, int end, int[] bucket_starts) {
+      @     return classifier.equal_buckets ==>
+      @         Sorter.equalityBucketsInRange(values, begin, end, bucket_starts, classifier.num_buckets, 1, classifier.num_buckets - 1);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires Functions.isValidSubSlice(values, begin, end, begin + bucket_begin, begin + bucket_end);
       @
@@ -144,6 +176,35 @@ public final class Sorter {
       @
       @ static model boolean notAllValuesInOneBucket(int[] bucket_starts, int num_buckets, int len) {
       @     return (\forall int b; 0 <= b < num_buckets; bucket_starts[b + 1] - bucket_starts[b] < len);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires \invariant_for(classifier);
+      @ requires Functions.isValidBucketStarts(bucket_starts, classifier.num_buckets) && end - begin == bucket_starts[classifier.num_buckets];
+      @ requires Lemma.bucketIndexFromOffset(bucket_starts, classifier.num_buckets, end - begin);
+      @ requires (\forall int b; 0 <= b < classifier.num_buckets;
+      @     classifier.isClassOfSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1], b)
+      @ );
+      @
+      @ ensures \result;
+      @
+      @ static model boolean nonEmptyBucketsLemma(Classifier classifier, int[] values, int begin, int end, int[] bucket_starts) {
+      @     return (\forall int i; begin <= i < end;
+      @         bucket_starts[classifier.classOf(values[i])] <= i - begin < bucket_starts[classifier.classOf(values[i]) + 1]
+      @     );
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && len == bucket_starts[num_buckets];
+      @
+      @ ensures \result;
+      @
+      @ static model boolean notAllValuesInOneBucketLemma(int[] bucket_starts, int num_buckets, int len) {
+      @     return (\forall int b; 0 <= b < num_buckets;
+      @         (\exists int c; 0 <= c < num_buckets && b != c; bucket_starts[c] < bucket_starts[c + 1])
+      @     ) ==> notAllValuesInOneBucket(bucket_starts, num_buckets, len);
       @ }
       @*/
 
@@ -237,6 +298,13 @@ public final class Sorter {
         // >= 2 unique splitters, therefore >= 3 buckets and >= 2 nonempty buckets
         final Classifier classifier = Classifier.from_sorted_samples(splitters, storage.tree, num_splitters, num_buckets);
 
+        /*@ normal_behaviour
+          @ ensures (\exists int i; begin <= i < end; (\exists int j; begin <= j < end; classifier.classOf(values[i]) != classifier.classOf(values[j])));
+          @ assignable \strictly_nothing;
+          @ measured_by end - begin, 1;
+          @*/
+        {;;}
+
         // Create this first, classifier is immutable and this removes heap mutations after partition
         final PartitionResult r = new PartitionResult(classifier.num_buckets(), classifier.equal_buckets());
 
@@ -253,6 +321,18 @@ public final class Sorter {
           @*/
         {;;}
         Partition.partition(values, begin, end, bucket_starts, classifier, storage);
+
+        /*@ normal_behaviour
+          @ ensures (\exists int i; begin <= i < end; (\exists int j; begin <= j < end; i != j && classifier.classOf(values[i]) < classifier.classOf(values[j])));
+          @ ensures Lemma.bucketIndexFromOffset(bucket_starts, classifier.num_buckets, end - begin);
+          @ ensures nonEmptyBucketsLemma(classifier, values, begin, end, bucket_starts);
+          @ ensures equalityBucketsLemma(classifier, values, begin, end, bucket_starts);
+          @ ensures allBucketsPartitionedLemma(classifier, values, begin, end, bucket_starts);
+          @ ensures notAllValuesInOneBucketLemma(bucket_starts, classifier.num_buckets, end - begin);
+          @ assignable \strictly_nothing;
+          @ measured_by end - begin, 1;
+          @*/
+        {;;}
 
         return r;
     }

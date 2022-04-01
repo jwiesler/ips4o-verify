@@ -73,6 +73,14 @@ public final class Functions {
 
     /*@ public model_behaviour
       @ requires true;
+      @ ensures \result;
+      @ static model boolean isSortedSeqTransitiveFromSlice(int[] values, int begin, int end) {
+      @     return isSortedSliceTransitive(values, begin, end) ==> isSortedSeqTransitive(\dl_seq_def_workaround(begin, end, values));
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires true;
       @ static no_state model boolean isSortedSeqTransitive(\seq values) {
       @     return
       @         (\forall int i; 0 <= i < values.length;

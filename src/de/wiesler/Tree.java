@@ -82,11 +82,28 @@ public final class Tree {
         }
     }
 
+    /*@ public model_behaviour
+      @ requires 0 <= bucket < this.num_buckets;
+      @
+      @ model boolean isClassifiedAs(int value, int bucket) {
+      @     return ((0 < bucket ==> this.sorted_splitters[bucket - 1] < value) &&
+      @             (bucket < this.num_buckets - 1 ==> value <= this.sorted_splitters[bucket]));
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires this.sorted_splitters[0] < this.sorted_splitters[1];
+      @ ensures \result;
+      @
+      @ model boolean classOfFirstSplitters() {
+      @     return this.classify(this.sorted_splitters[0]) != this.classify(this.sorted_splitters[1]);
+      @ }
+      @*/
+
     /*@ normal_behaviour
       @ ensures this.num_buckets <= \result < 2 * this.num_buckets;
       @
-      @ ensures this.num_buckets < \result ==> this.sorted_splitters[\result - this.num_buckets - 1] <= value;
-      @ ensures \result < 2 * this.num_buckets - 1 ==> value < this.sorted_splitters[\result - this.num_buckets];
+      @ ensures this.isClassifiedAs(value, \result - this.num_buckets);
       @
       @ // Needed to bring this method to logic
       @ ensures_free \result == this.classify(value);

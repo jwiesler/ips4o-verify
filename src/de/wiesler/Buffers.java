@@ -55,6 +55,29 @@ public final class Buffers {
       @ }
       @*/
 
+    /*@ public model_behaviour
+      @ requires 0 <= i;
+      @ requires 0 <= j;
+      @ requires isBlockAligned(i) && isBlockAligned(j);
+      @
+      @ ensures \result;
+      @
+      @ static no_state model boolean isBlockAlignedAdd(int i, int j) {
+      @     return isBlockAligned(i + j);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires 0 <= j <= i;
+      @ requires isBlockAligned(i) && isBlockAligned(j);
+      @
+      @ ensures \result;
+      @
+      @ static no_state model boolean isBlockAlignedSub(int i, int j) {
+      @     return isBlockAligned(i - j);
+      @ }
+      @*/
+
     /*@ public normal_behaviour
       @ requires 0 <= offset <= MAX_LEN;
       @
@@ -80,10 +103,29 @@ public final class Buffers {
     /*@ public model_behaviour
       @ requires true;
       @
-      @ ensures \result ==> (\forall int b; 0 <= b < this.num_buckets; this.bufferAt(b) == \seq_empty);
+      @ // ensures \result ==> (\forall int b; 0 <= b < this.num_buckets; this.bufferAt(b) == \seq_empty);
       @ ensures \result ==> this.count() == 0;
+      @ ensures \result ==> (\forall int element; true; this.countElement(element) == 0);
       @ model boolean isEmpty() {
-      @     return (\forall int b; 0 <= b < this.num_buckets; this.len(b) == 0);
+      @     return (\forall int b; 0 <= b < this.num_buckets; this.bufferLen(b) == 0);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires 0 <= bucket < this.num_buckets;
+      @ ensures 0 <= \result <= BUFFER_SIZE;
+      @ accessible this.indices[bucket];
+      @ model int bufferLen(int bucket) {
+      @     return this.indices[bucket];
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires 0 <= bucket < this.num_buckets;
+      @ requires 0 <= offset < this.indices[bucket];
+      @ accessible this.indices[bucket];
+      @ model int bufferElement(int bucket, int offset) {
+      @     return this.buffer[bucket * BUFFER_SIZE + offset];
       @ }
       @*/
 
@@ -92,7 +134,7 @@ public final class Buffers {
       @ ensures \result.length <= BUFFER_SIZE;
       @ accessible this.indices[bucket], this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1];
       @ model \seq bufferAt(int bucket) {
-      @     return (\seq_def \bigint i; bucket * BUFFER_SIZE; bucket * BUFFER_SIZE + this.indices[bucket]; this.buffer[i]);
+      @     return (\seq_def \bigint i; bucket * BUFFER_SIZE; bucket * BUFFER_SIZE + this.bufferLen(bucket); this.buffer[i]);
       @ }
       @*/
 
@@ -101,7 +143,7 @@ public final class Buffers {
       @
       @ accessible this.indices[0..this.num_buckets - 1];
       @ model int count() {
-      @     return (\sum int b; 0 <= b < this.num_buckets; this.bufferAt(b).length);
+      @     return (\sum int b; 0 <= b < this.num_buckets; this.bufferLen(b));
       @ }
       @*/
 
@@ -114,28 +156,16 @@ public final class Buffers {
       @     return (\forall
       @         int b;
       @         0 <= b < this.num_buckets;
-      @         this.isBucketClassifiedWith(b, classifier)
+      @         classifier.isClassOfSlice(this.buffer, b * BUFFER_SIZE, b * BUFFER_SIZE + this.bufferLen(b), b)
       @     );
       @ }
       @*/
 
     /*@ public model_behaviour
-      @ requires classifier.num_buckets == this.num_buckets;
-      @ requires 0 <= bucket < this.num_buckets;
-      @ requires \invariant_for(classifier);
-      @
-      @ accessible this.indices[bucket], this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1], classifier.sorted_splitters[*], classifier.tree.tree[*];
-      @ model boolean isBucketClassifiedWith(int bucket, Classifier classifier) {
-      @     return (\forall int i; 0 <= i < this.bufferAt(bucket).length; classifier.classOf((int)this.bufferAt(bucket)[i]) == bucket);
-      @ }
-      @*/
-
-    /*@ public model_behaviour
       @ requires 0 <= bucket < this.num_buckets;
       @
-      @ accessible this.indices[bucket], this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1];
       @ model int countElementInBucket(int bucket, int element) {
-      @     return (\num_of int i; bucket * BUFFER_SIZE <= i < bucket * BUFFER_SIZE + this.indices[bucket]; (int) this.buffer[i] == element);
+      @     return Functions.countElement(this.buffer, bucket * BUFFER_SIZE, bucket * BUFFER_SIZE + this.bufferLen(bucket), element);
       @ }
       @*/
 
@@ -182,42 +212,46 @@ public final class Buffers {
     /*@ public normal_behaviour
       @ requires 0 <= bucket && bucket < this.num_buckets;
       @
-      @ requires this.bufferAt(bucket).length != BUFFER_SIZE;
+      @ requires this.bufferLen(bucket) != BUFFER_SIZE;
       @
-      @ ensures this.bufferAt(bucket) == \seq_concat(\old(this.bufferAt(bucket)), \seq_singleton(value));
-      @ ensures (\forall int b; 0 <= b < this.num_buckets && b != bucket; this.bufferAt(b) == \old(this.bufferAt(b)));
+      @ // ensures this.bufferAt(bucket) == \seq_concat(\old(this.bufferAt(bucket)), \seq_singleton(value));
+      @ ensures this.bufferLen(bucket) == \old(this.bufferLen(bucket)) + 1;
+      @ ensures this.bufferElement(bucket, \old(this.bufferLen(bucket))) == value;
+      @ // ensures (\forall int b; 0 <= b < this.num_buckets && b != bucket; this.bufferAt(b) == \old(this.bufferAt(b)));
       @ ensures this.count() == \old(this.count()) + 1;
       @
       @ ensures (\forall int element; true; this.countElement(element) == \old(this.countElement(element)) + (element == value ? 1 : 0));
       @
       @ assignable this.indices[bucket];
-      @ assignable this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1];
+      @ assignable this.buffer[bucket * BUFFER_SIZE + this.bufferLen(bucket)];
       @*/
     public void push(int bucket, int value) {
         int buffer_offset = bucket * BUFFER_SIZE;
         int index = this.indices[bucket];
         this.buffer[buffer_offset + index] = value;
         this.indices[bucket] = index + 1;
-        //@ assert this.bufferAt(bucket) == \seq_concat(\old(this.bufferAt(bucket)), \seq_singleton(value));
-        //@ assert (\forall int b; 0 <= b < this.num_buckets && b != bucket; this.bufferAt(b) == \old(this.bufferAt(b)));
-        //@ assert (\forall int element; true; this.countElementInBucket(bucket, element) == \old(countElementInBucket(bucket, element)) + (element == value ? 1 : 0));
+        // assert this.bufferAt(bucket) == \seq_concat(\old(this.bufferAt(bucket)), \seq_singleton(value));
+        // assert (\forall int b; 0 <= b < this.num_buckets && b != bucket; this.bufferAt(b) == \old(this.bufferAt(b)));
+        //@ assert Functions.countElementSplit(this.buffer, bucket * BUFFER_SIZE, bucket * BUFFER_SIZE + index, bucket * BUFFER_SIZE + index + 1);
     }
 
     /*@ public normal_behaviour
       @ requires 0 <= bucket < this.num_buckets;
       @ requires \disjoint(values[*], this.buffer[*], this.indices[*]);
-      @ requires this.bufferAt(bucket).length == BUFFER_SIZE;
+      @ requires this.bufferLen(bucket) == BUFFER_SIZE;
       @ requires Functions.isValidSlice(values, write, end);
       @ requires end - write >= BUFFER_SIZE;
       @
-      @ ensures this.bufferAt(bucket) == \seq_empty;
-      @ ensures (\forall int i; 0 <= i && i < BUFFER_SIZE; values[write + i] == \old(this.bufferAt(bucket)[i]));
+      @ // ensures this.bufferAt(bucket) == \seq_empty;
+      @ ensures this.bufferLen(bucket) == 0;
+      @ ensures (\forall int i; 0 <= i && i < BUFFER_SIZE; values[write + i] == \old(this.buffer[bucket * BUFFER_SIZE + i]));
+      @ // ensures (\forall int i; 0 <= i && i < BUFFER_SIZE; values[write + i] == \old(this.bufferAt(bucket)[i]));
       @ ensures (\forall int element; true;
       @     \old(this.countElement(element)) ==
       @     Functions.countElement(values, write, write + BUFFER_SIZE, element) +
       @         this.countElement(element)
       @ );
-      @ ensures (\forall int b; 0 <= b < this.num_buckets && b != bucket; this.bufferAt(b) == \old(this.bufferAt(b)));
+      @ // ensures (\forall int b; 0 <= b < this.num_buckets && b != bucket; this.bufferAt(b) == \old(this.bufferAt(b)));
       @ ensures this.count() == \old(this.count()) - BUFFER_SIZE;
       @
       @ assignable this.indices[bucket];
@@ -227,7 +261,7 @@ public final class Buffers {
         int buffer_offset = bucket * BUFFER_SIZE;
         Functions.copy_nonoverlapping(this.buffer, buffer_offset, values, write, BUFFER_SIZE);
         this.indices[bucket] = 0;
-        //@ assert this.bufferAt(bucket) == \seq_empty;
+        // assert this.bufferAt(bucket) == \seq_empty;
         //@ assert (\forall int element; true; \old(this.countElementInBucket(bucket, element)) == Functions.countElement(values, write, write + BUFFER_SIZE, element));
     }
 
@@ -238,12 +272,12 @@ public final class Buffers {
       @ requires Functions.isValidSlice(values, head_start, head_start + head_len);
       @ requires Functions.isValidSlice(values, tail_start, tail_start + tail_len);
       @
-      @ requires head_len + tail_len == this.bufferAt(bucket).length;
+      @ requires head_len + tail_len == this.bufferLen(bucket);
       @ // Don't overlap
       @ requires \disjoint(values[head_start..(head_start + head_len - 1)], values[tail_start..(tail_start + tail_len - 1)]);
       @
-      @ ensures (\forall int i; 0 <= i && i < head_len; values[head_start + i] == \old(this.bufferAt(bucket)[i]));
-      @ ensures (\forall int i; 0 <= i && i < tail_len; values[tail_start + i] == \old(this.bufferAt(bucket)[head_len + i]));
+      @ ensures (\forall int i; 0 <= i && i < head_len; values[head_start + i] == \old(this.bufferElement(bucket, i)));
+      @ ensures (\forall int i; 0 <= i && i < tail_len; values[tail_start + i] == \old(this.bufferElement(bucket, head_len + i)));
       @
       @ ensures (\forall int element; true;
       @     Functions.countElement(values, head_start, head_start + head_len, element) +
@@ -264,8 +298,7 @@ public final class Buffers {
 
     /*@ public normal_behaviour
       @ requires 0 <= bucket < this.num_buckets;
-      @ ensures \result == this.bufferAt(bucket).length;
-      @ accessible this.indices[bucket];
+      @ ensures \result == this.bufferLen(bucket);
       @ assignable \strictly_nothing;
       @*/
     public int len(int bucket) {

@@ -161,7 +161,7 @@ public final class BucketPointers {
       @ requires 0 <= bucket < this.num_buckets;
       @ requires \invariant_for(classifier);
       @
-      @ accessible values[begin + this.nextWriteOf(bucket) .. begin + this.lastReadOf(bucket + 1) - 1], this.buffer[2 * bucket..2 * bucket + 1], classifier.sorted_splitters[*], classifier.tree.tree[*];
+      @ accessible values[begin + this.nextWriteOf(bucket) .. begin + this.lastReadOf(bucket) - 1], this.buffer[2 * bucket..2 * bucket + 1], classifier.sorted_splitters[*], classifier.tree.tree[*];
       @ model boolean elementsToReadOfBucketBlockClassified(Classifier classifier, int[] values, int begin, int end, int bucket) {
       @     return this.nextWriteOf(bucket) < this.lastReadOf(bucket) ==> classifier.isClassifiedBlocksRange(values, begin + this.nextWriteOf(bucket), begin + this.lastReadOf(bucket));
       @ }
@@ -283,23 +283,24 @@ public final class BucketPointers {
       @*/
 
     /*@ public model_behaviour
-      @ requires 0 <= bucket < this.num_buckets;
       @ requires 0 <= split_bucket < this.num_buckets;
       @ requires this.num_buckets == classifier.num_buckets;
       @ requires begin + this.nextWriteOf(split_bucket) <= mid <= begin + this.lastReadOf(split_bucket);
       @ ensures \result;
-      @ model boolean elementsToReadCountClassEqSplitBucket(Classifier classifier, int[] values, int begin, int mid, int end, int split_bucket, int bucket, boolean pullout_first) {
-      @     return this.elementsToReadCountClassEq(classifier, values, begin, end, bucket) ==
-      @         (\sum int b; 0 <= b < this.num_buckets; (b == split_bucket) ?
+      @ model boolean elementsToReadCountClassEqSplitBucket(Classifier classifier, int[] values, int begin, int mid, int end, int split_bucket, boolean pullout_first) {
+      @     return (\forall int bucket; 0 <= bucket < this.num_buckets;
+      @         this.elementsToReadCountClassEq(classifier, values, begin, end, bucket) ==
+      @             (\sum int b; 0 <= b < this.num_buckets; (b == split_bucket) ?
+      @                 (pullout_first ?
+      @                     classifier.countClassOfSliceEq(values, mid, begin + this.lastReadOf(b), bucket) :
+      @                     classifier.countClassOfSliceEq(values, begin + this.nextWriteOf(b), mid, bucket)
+      @                 ) :
+      @                 this.elementsToReadOfBucketCountClassEq(classifier, values, begin, end, b, bucket)) +
       @             (pullout_first ?
-      @                 classifier.countClassOfSliceEq(values, mid, begin + this.lastReadOf(b), bucket) :
-      @                 classifier.countClassOfSliceEq(values, begin + this.nextWriteOf(b), mid, bucket)
-      @             ) :
-      @             this.elementsToReadOfBucketCountClassEq(classifier, values, begin, end, b, bucket)) +
-      @         (pullout_first ?
-      @             classifier.countClassOfSliceEq(values, begin + this.nextWriteOf(split_bucket), mid, bucket) :
-      @             classifier.countClassOfSliceEq(values, mid, begin + this.lastReadOf(split_bucket), bucket)
-      @         );
+      @                 classifier.countClassOfSliceEq(values, begin + this.nextWriteOf(split_bucket), mid, bucket) :
+      @                 classifier.countClassOfSliceEq(values, mid, begin + this.lastReadOf(split_bucket), bucket)
+      @             )
+      @     );
       @ }
       @*/
 
@@ -328,15 +329,6 @@ public final class BucketPointers {
       @         // b < bucket: bucketStart(bucket) <= end - begin
       @         !(end - begin < this.nextWriteOf(b) && Buffers.BUFFER_SIZE <= this.writtenCountOfBucket(b))
       @     );
-      @ }
-      @*/
-
-    /*@ public model_behaviour
-      @ requires 0 <= begin <= subBegin <= subEnd <= end;
-      @ ensures \result;
-      @ model boolean disjointArrayRangeExtend(int[] values, int begin, int end, int otherBegin, int otherEnd, int subBegin, int subEnd) {
-      @     return \disjoint(\dl_arrayRange(values, begin, end), \dl_arrayRange(values, otherBegin, otherEnd)) ==>
-      @         \disjoint(\dl_arrayRange(values, subBegin, subEnd), \dl_arrayRange(values, otherBegin, otherEnd));
       @ }
       @*/
 
@@ -371,11 +363,19 @@ public final class BucketPointers {
       @*/
 
     /*@ public model_behaviour
+      @ requires true;
+      @
+      @ model boolean isAtInitialState() {
+      @     return (\forall int b; 0 <= b < this.num_buckets;
+      @         this.isAtInitialBucketState(b)
+      @     );
+      @ }
+      @*/
+
+    /*@ public model_behaviour
       @ requires 0 <= begin <= end <= values.length;
       @ requires end - begin == (int) this.bucket_starts[num_buckets];
-      @ requires (\forall int b; 0 <= b < this.num_buckets;
-      @     this.isAtInitialBucketState(b)
-      @ );
+      @ requires this.isAtInitialState();
       @ requires classifier.isClassifiedBlocksRange(values, begin, begin + this.first_empty_position);
       @
       @ ensures \result;
@@ -388,9 +388,7 @@ public final class BucketPointers {
     /*@ public model_behaviour
       @ requires 0 <= begin <= end <= values.length;
       @ requires end - begin == (int) this.bucket_starts[num_buckets];
-      @ requires (\forall int b; 0 <= b < this.num_buckets;
-      @     this.isAtInitialBucketState(b)
-      @ );
+      @ requires this.isAtInitialState();
       @
       @ ensures \result;
       @
@@ -420,9 +418,7 @@ public final class BucketPointers {
     /*@ public model_behaviour
       @ requires 0 <= begin <= end <= values.length;
       @ requires end - begin == (int) this.bucket_starts[num_buckets];
-      @ requires (\forall int b; 0 <= b < this.num_buckets;
-      @     this.isAtInitialBucketState(b)
-      @ );
+      @ requires this.isAtInitialState();
       @
       @ ensures \result;
       @
@@ -444,7 +440,7 @@ public final class BucketPointers {
       @ model boolean initialReadAreasCountBucketElements(Classifier classifier, int[] values, int begin, int end) {
       @     return (\forall int cls; 0 <= cls < this.num_buckets;
       @             classifier.countClassOfSliceEq(values, begin, begin + first_empty_position, cls) ==
-      @                 (\sum int b; 0 <= b < this.num_buckets; this.elementsToReadOfBucketCountClassEq(classifier, values, begin, end, b, cls))
+      @                 this.elementsToReadCountClassEq(classifier, values, begin, end, cls)
       @     );
       @ }
       @*/
@@ -467,10 +463,10 @@ public final class BucketPointers {
       @
       @ ensures this.num_buckets == num_buckets && this.buffer == buffer && this.first_empty_position == first_empty_position;
       @ ensures bucket_starts[num_buckets] == (int) this.bucket_starts[num_buckets];
+      @ ensures this.isAtInitialState();
       @ ensures (\forall int b; 0 <= b < num_buckets;
-      @     this.isAtInitialBucketState(b) &&
       @     // enough space to write everything except the buffer content
-      @     bucket_starts[b + 1] - bucket_starts[b] - Buffers.bufferSizeForBucketLen(bucket_starts[b + 1] - bucket_starts[b]) <= this.remainingWriteCountOfBucket(b)
+      @     bucket_starts[b + 1] - bucket_starts[b] - Buffers.bufferSizeForBucketLen(bucket_starts[b + 1] - bucket_starts[b]) <= this.bucketSize(b)
       @ );
       @ ensures (\forall int b; 0 <= b <= num_buckets; this.bucketStart(b) == Buffers.blockAligned(bucket_starts[b]));
       @
@@ -488,7 +484,7 @@ public final class BucketPointers {
           @ loop_invariant (\forall int b; 0 <= b < bucket;
           @     this.isValidBucketPointer(b) &&
           @     this.isAtInitialBucketState(b) &&
-          @     bucket_starts[b + 1] - bucket_starts[b] - Buffers.bufferSizeForBucketLen(bucket_starts[b + 1] - bucket_starts[b]) <= this.remainingWriteCountOfBucket(b)
+          @     bucket_starts[b + 1] - bucket_starts[b] - Buffers.bufferSizeForBucketLen(bucket_starts[b + 1] - bucket_starts[b]) <= this.bucketSize(b)
           @ );
           @
           @ decreases num_buckets - bucket;

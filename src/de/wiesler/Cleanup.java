@@ -45,11 +45,10 @@ public final class Cleanup {
       @ );
       @
       @ // Permutation property
-      @ ensures (\forall int b; 0 <= b < classifier.num_buckets;
-      @     (\forall int element; true;
-      @         \old(bucket_pointers.writtenElementsOfBucketCountElement(values, begin, end, overflow, b, element)) +
-      @             \old(buffers.countElementInBucket(b, element)) ==
-      @         Functions.countElement(values, begin + bucket_starts[b], begin + bucket_starts[b + 1], element))
+      @ ensures (\forall int element; true;
+      @     (\sum int b; 0 <= b < classifier.num_buckets; \old(bucket_pointers.writtenElementsOfBucketCountElement(values, begin, end, overflow, b, element))) +
+      @         (\sum int b; 0 <= b < classifier.num_buckets; \old(buffers.countElementInBucket(b, element))) ==
+      @         Functions.countElement(values, begin, end, element)
       @ );
       @
       @ assignable values[begin..end - 1];
@@ -69,11 +68,13 @@ public final class Cleanup {
 
         /*@ loop_invariant 0 <= bucket <= num_buckets;
           @ loop_invariant (\forall int b; 0 <= b < bucket;
-          @     cleanedUpSlice(values, begin, end, \old(bucket_starts[b]), \old(bucket_starts[b + 1]), classifier, b) &&
-          @     (\forall int element; true;
-          @         \old(bucket_pointers.writtenElementsOfBucketCountElement(values, begin, end, overflow, b, element)) +
-          @             \old(buffers.countElementInBucket(b, element)) ==
-          @         Functions.countElement(values, begin + \old(bucket_starts[b]), begin + \old(bucket_starts[b + 1]), element))
+          @     cleanedUpSlice(values, begin, end, \old(bucket_starts[b]), \old(bucket_starts[b + 1]), classifier, b)
+          @ );
+          @
+          @ loop_invariant (\forall int element; true;
+          @         (\sum int b; 0 <= b < bucket; \old(bucket_pointers.writtenElementsOfBucketCountElement(values, begin, end, overflow, b, element))) +
+          @             (\sum int b; 0 <= b < bucket; \old(buffers.countElementInBucket(b, element))) ==
+          @             Functions.countElement(values, begin, begin + \old(bucket_starts[bucket + 1]), element)
           @ );
           @
           @ loop_invariant (\forall int b; bucket <= b < classifier.num_buckets;
@@ -304,6 +305,7 @@ public final class Cleanup {
             }
 
             /*@ assert \invariant_for(classifier) && \invariant_for(bucket_pointers) && \invariant_for(buffers) &&
+              @     Functions.countElementSplit(values, begin, begin + \old(bucket_starts[bucket]), begin + \old(bucket_starts[bucket + 1])) &&
               @     (\forall int b; 0 <= b < num_buckets && b != bucket;
               @         (b < bucket ==> 0 <= \old(bucket_starts[b]) <= \old(bucket_starts[b + 1]) <= \old(bucket_starts[bucket])) &&
               @         (b > bucket ==> \old(bucket_starts[bucket + 1]) <= \old(bucket_starts[b]) <= \old(bucket_starts[b + 1]) <= \old(bucket_starts[num_buckets])));

@@ -6,7 +6,7 @@ public final class Classifier {
     private /*@ spec_public @*/ final Tree tree;
     private /*@ spec_public @*/ final int num_buckets;
     private /*@ spec_public @*/ final int[] sorted_splitters;
-    private final boolean equal_buckets;
+    private /*@ spec_public @*/ final boolean equal_buckets;
 
     /*@ invariant 2 <= this.num_buckets <= Constants.MAX_BUCKETS;
       @ invariant this.num_buckets == (this.equal_buckets ? 2 * this.tree.num_buckets : this.tree.num_buckets);
@@ -21,6 +21,7 @@ public final class Classifier {
     // This is a wrapper around classify not to be expanded in partition.
     /*@ public model_behaviour
       @ ensures 0 <= \result < this.num_buckets;
+      @ ensures this.isClassifiedAs(value, \result);
       @ accessible this.sorted_splitters[*], this.tree.tree[*];
       @ model int classOf(int value) {
       @     return this.classify(value);
@@ -153,7 +154,7 @@ public final class Classifier {
       @ ensures \result;
       @
       @ model boolean isClassifiedBlocksRangeSplit(int[] values, int begin, int mid, int end) {
-      @     return this.isClassifiedBlocksRange(values, begin, end) ==>
+      @     return this.isClassifiedBlocksRange(values, begin, end) <==>
       @         this.isClassifiedBlocksRange(values, begin, mid) && this.isClassifiedBlocksRange(values, mid, end);
       @ }
       @*/
@@ -167,9 +168,9 @@ public final class Classifier {
       @ requires sorted_splitters[(1 << log_buckets) - 1] == sorted_splitters[(1 << log_buckets) - 2];
       @
       @ ensures this.tree.tree == tree && this.sorted_splitters == sorted_splitters;
-      @ ensures this.tree.log_buckets == log_buckets && this.equal_buckets == equal_buckets && this.num_buckets == (equal_buckets ? 2 * num_buckets : num_buckets);
+      @ ensures this.tree.log_buckets == log_buckets && this.equal_buckets == equal_buckets && this.num_buckets == (equal_buckets ? 2 * (1 << log_buckets) : (1 << log_buckets));
       @
-      @ assignable sorted_splitters[*], tree[*];
+      @ assignable tree[*];
       @*/
     public Classifier(int[] sorted_splitters, int[] tree, int log_buckets, boolean equal_buckets) {
         int num_buckets = 1 << log_buckets;
@@ -186,6 +187,15 @@ public final class Classifier {
         this.equal_buckets = equal_buckets;
     }
 
+    /*@ public model_behaviour
+      @ requires this.tree.classOfFirstSplitters();
+      @ ensures \result;
+      @
+      @ model boolean classOfFirstSplitters() {
+      @     return this.classOf(this.sorted_splitters[0]) != this.classOf(this.sorted_splitters[1]);
+      @ }
+      @*/
+
     /*@ public normal_behaviour
       @ requires 0 <= num_splitters <= splitters.length;
       @ requires (\forall
@@ -195,7 +205,7 @@ public final class Classifier {
       @ );
       @ requires \disjoint(splitters[*], tree[*]);
       @
-      @ requires 1 <= num_splitters && num_splitters <= num_buckets - 1;
+      @ requires 2 <= num_splitters && num_splitters <= num_buckets - 1;
       @ requires 2 <= num_buckets && num_buckets <= (1 << Constants.LOG_MAX_BUCKETS);
       @ requires splitters.length == Classifier.STORAGE_SIZE;
       @ requires tree.length == Classifier.STORAGE_SIZE;
@@ -204,6 +214,8 @@ public final class Classifier {
       @ ensures \invariant_for(\result);
       @ ensures \result.sorted_splitters == splitters && \result.tree.tree == tree;
       @ ensures \result.num_buckets % 2 == 0;
+      @ ensures splitters[0] == \old(splitters[0]) && splitters[1] == \old(splitters[1]);
+      @ ensures \result.classOf(splitters[0]) != \result.classOf(splitters[1]);
       @
       @ assignable splitters[*], tree[*];
       @*/
@@ -218,6 +230,7 @@ public final class Classifier {
 
         // Fill the array to the next power of two
         int log_buckets = Constants.log2(num_splitters) + 1;
+        // Cut for result >= 6, lower bound
         //@ assert log_buckets <= Constants.LOG_MAX_BUCKETS;
         int actual_num_buckets = 1 << log_buckets;
         //@ assert actual_num_buckets <= splitters.length && num_splitters < actual_num_buckets;
@@ -241,7 +254,9 @@ public final class Classifier {
             splitters[i] = splitters[num_splitters - 1];
         }
 
-        return new Classifier(splitters, tree, log_buckets, use_equal_buckets);
+        Classifier classifier = new Classifier(splitters, tree, log_buckets, use_equal_buckets);
+        //@ assert classifier.classOfFirstSplitters();
+        return classifier;
     }
 
     /*@ public normal_behaviour
@@ -266,11 +281,11 @@ public final class Classifier {
       @ model boolean isClassifiedAs(int value, int bucket) {
       @     return this.equal_buckets ?
       @         ((bucket % 2 == 0 || bucket == this.num_buckets - 1) ?
-      @             (0 < bucket ==> this.sorted_splitters[bucket / 2 - 1] <= value) &&
-      @             (bucket < this.num_buckets - 1 ==> value < this.sorted_splitters[bucket / 2]) :
+      @             (0 < bucket ==> this.sorted_splitters[bucket / 2 - 1] < value) &&
+      @             (bucket < this.num_buckets - 1 ==> value <= this.sorted_splitters[bucket / 2]) :
       @             this.sorted_splitters[(bucket - 1) / 2] == value) :
-      @         ((0 < bucket ==> this.sorted_splitters[bucket - 1] <= value) &&
-      @             (bucket < this.num_buckets - 1 ==> value < this.sorted_splitters[bucket]));
+      @         ((0 < bucket ==> this.sorted_splitters[bucket - 1] < value) &&
+      @             (bucket < this.num_buckets - 1 ==> value <= this.sorted_splitters[bucket]));
       @ }
       @*/
 
@@ -285,7 +300,7 @@ public final class Classifier {
       @
       @ accessible this.sorted_splitters[*], this.tree.tree[*];
       @*/
-    public /*@ pure */ int classify(int value) {
+    public int classify(int value) {
         int index = this.tree.classify(value);
         int bucket;
         if (this.equal_buckets) {
@@ -299,11 +314,11 @@ public final class Classifier {
     }
 
     /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires end - begin == indices.length;
       @ requires \disjoint(values[*], indices[*], this.tree.tree[*], this.sorted_splitters[*]);
       @
-      @ ensures (\forall int i; 0 <= i && i < indices.length; this.classify(values[begin + i]) == indices[i]);
+      @ ensures (\forall int i; 0 <= i && i < indices.length; this.classOf(values[begin + i]) == indices[i]);
       @
       @ assignable indices[*];
       @*/
@@ -341,19 +356,15 @@ public final class Classifier {
     }
 
     /*@ model_behaviour
-      @ ensures \result >= 0;
-      @
-      @ accessible this.sorted_splitters[*], this.tree.tree[*], values[begin..end - 1];
-      @ model int countClassifiedElements(int[] values, int begin, int end, int bucket) {
-      @     return (\num_of int i; begin <= i && i < end; this.classOf(values[i]) == bucket);
-      @ }
-      @*/
-
-    /*@ model_behaviour
       @ requires bucket_starts.length >= this.num_buckets;
-      @ accessible this.sorted_splitters[*], this.tree.tree[*], values[begin..write - 1], bucket_starts[0..this.num_buckets];
+      @ accessible this.sorted_splitters[*];
+      @ accessible this.tree.tree[*];
+      @ accessible values[begin..write - 1];
+      @ accessible bucket_starts[0..this.num_buckets];
       @ model boolean allElementsCounted(int[] values, int begin, int write, int[] bucket_starts) {
-      @     return (\forall int b; 0 <= b && b < this.num_buckets; bucket_starts[b] == this.countClassifiedElements(values, begin, write, b));
+      @     return
+      @         (\forall int b; 0 <= b && b < this.num_buckets; bucket_starts[b] == this.countClassOfSliceEq(values, begin, write, b)) &&
+      @         (\sum int b; 0 <= b < this.num_buckets; bucket_starts[b]) == write - begin;
       @ }
       @*/
 
@@ -372,32 +383,11 @@ public final class Classifier {
       @     buffers.indices[0..this.num_buckets - 1],
       @     buffers.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1];
       @ model boolean isClassifiedUntil(int[] values, int begin, int write, int i, int[] bucket_starts, Buffers buffers) {
-      @     return this.allElementsCounted(values, begin, write, bucket_starts)
-      @         && isClassifiedBlocksRange(values, begin, write)
-      @         && buffers.isClassifiedWith(this)
-      @         && buffers.count() == i - write;
-      @ }
-      @*/
-
-    /*@ model_behaviour
-      @ requires \invariant_for(buffers);
-      @
-      @ requires buffers.num_buckets == this.num_buckets;
-      @ requires Functions.isAlignedTo(end - begin, Buffers.BUFFER_SIZE);
-      @ requires buffers.isClassifiedWith(this);
-      @
-      @ ensures \result >= 0;
-      @
-      @ accessible
-      @     this.sorted_splitters[*], this.tree.tree[*],
-      @     values[begin..end - 1],
-      @     buffers.indices[0..this.num_buckets - 1],
-      @     buffers.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1];
-      @
-      @ // All elements in [begin, end) and the buffers that are classified < bucket
-      @ model int allElementsInRangeAndBuffersLT(int[] values, int begin, int end, Buffers buffers, int bucket) {
-      @     return (\num_of int i; begin <= i && i < end; this.classOf(values[i]) < bucket) +
-      @         (\sum int c; 0 <= c < bucket; buffers.bufferAt(c).length);
+      @     return this.allElementsCounted(values, begin, write, bucket_starts) &&
+      @         isClassifiedBlocksRange(values, begin, write) &&
+      @         buffers.isClassifiedWith(this) &&
+      @         (\forall int b; 0 <= b < this.num_buckets; isValidBufferLen(buffers.bufferLen(b), bucket_starts[b])) &&
+      @         buffers.count() == i - write;
       @ }
       @*/
 
@@ -420,6 +410,18 @@ public final class Classifier {
       @ }
       @*/
 
+    /*@ model_behaviour
+      @ requires 0 <= len <= Buffers.BUFFER_SIZE;
+      @
+      @ ensures \result ==> Buffers.bufferSizeForBucketLen(len + writtenElements) == len;
+      @ static model boolean isValidBufferLen(int len, int writtenElements) {
+      @     return
+      @         0 <= writtenElements &&
+      @         Buffers.isBlockAligned(writtenElements) &&
+      @         (0 < writtenElements ==> len != 0);
+      @ }
+      @*/
+
     /*@ public normal_behaviour
       @ requires \invariant_for(buffers);
       @
@@ -427,10 +429,12 @@ public final class Classifier {
       @ requires \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.sorted_splitters[*], this.tree.tree[*], indices[*]);
       @ requires buffers.num_buckets == this.num_buckets;
       @
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @
       @ requires begin <= write <= i && i + indices.length <= end;
-      @ requires Functions.isAlignedTo(write - begin, Buffers.BUFFER_SIZE);
+      @ requires Buffers.isBlockAligned(write - begin);
+      @ requires Functions.isAlignedTo(i - begin, BATCH_SIZE);
+      @ requires indices.length <= BATCH_SIZE;
       @
       @ requires (\forall int j; 0 <= j < indices.length; this.classOf(values[i + j]) == indices[j]);
       @
@@ -438,7 +442,7 @@ public final class Classifier {
       @
       @ ensures \invariant_for(buffers) && \invariant_for(this);
       @
-      @ ensures write <= \result && \result <= i && Functions.isAlignedTo(\result - begin, Buffers.BUFFER_SIZE);
+      @ ensures write <= \result && \result <= i && Buffers.isBlockAligned(\result - begin);
       @ ensures this.isClassifiedUntil(values, begin, \result, i + indices.length, bucket_starts, buffers);
       @
       @ ensures (\forall int element; true;
@@ -457,7 +461,7 @@ public final class Classifier {
         /*@ loop_invariant 0 <= j && j <= indices.length;
           @
           @ loop_invariant \old(write) <= write && write <= i;
-          @ loop_invariant Functions.isAlignedTo(write - begin, Buffers.BUFFER_SIZE);
+          @ loop_invariant Buffers.isBlockAligned(write - begin);
           @
           @ loop_invariant this.isClassifiedUntil(values, begin, write, i + j, bucket_starts, buffers);
           @
@@ -475,6 +479,8 @@ public final class Classifier {
           @ assignable bucket_starts[0..this.num_buckets - 1];
           @*/
         for (int j = 0; j < indices.length; ++j) {
+            //@ ghost \dl_Heap heapAtLoopBodyBegin = \dl_heap();
+
             int bucket = indices[j];
             int value = values[i + j];
 
@@ -482,47 +488,71 @@ public final class Classifier {
             //@ assert 0 <= bucket < this.num_buckets;
 
             /*@ public normal_behaviour
-              @ ensures buffers.bufferAt(bucket).length != Buffers.BUFFER_SIZE;
+              @ ensures buffers.bufferLen(bucket) != Buffers.BUFFER_SIZE;
               @
               @ ensures \old(write) <= write && write <= i;
-              @ ensures Functions.isAlignedTo(write - begin, Buffers.BUFFER_SIZE);
+              @ ensures Buffers.isBlockAligned(write - begin);
               @
-              @ ensures this.isClassifiedUntil(values, begin, write, i + j, bucket_starts, buffers);
+              @ ensures this.allElementsCounted(values, begin, write, bucket_starts) &&
+              @     isClassifiedBlocksRange(values, begin, write) &&
+              @     buffers.isClassifiedWith(this) &&
+              @     buffers.count() == i + j - write;
+              @
+              @ ensures (\forall int b; 0 <= b < this.num_buckets;
+              @     isValidBufferLen(buffers.bufferLen(b) + (b == bucket ? 1 : 0), bucket_starts[b])
+              @ );
+              @
               @ ensures (\forall int element; true;
               @     \old(Classifier.countElement(values, begin, old_write, i, end, buffers, element)) ==
               @          Classifier.countElement(values, begin, write, i + j, end, buffers, element)
               @ );
               @
-              @ ensures \invariant_for(buffers);
+              @ ensures \invariant_for(buffers) && \invariant_for(this);
               @
-              @ assignable buffers.indices[0..this.num_buckets - 1];
+              @ assignable buffers.indices[bucket];
               @ assignable values[old_write..i - 1];
-              @ assignable bucket_starts[0..this.num_buckets - 1];
+              @ assignable bucket_starts[bucket];
               @*/
             {
                 if (buffers.len(bucket) == Buffers.BUFFER_SIZE) {
                     // Use element lower bound
                     //@ assert write + 256 <= i;
+
+                    // This was moved ahead to remove heap modifications after flush, changes nothing in the algorithm
+                    bucket_starts[bucket] += Buffers.BUFFER_SIZE;
+
                     buffers.flush(bucket, values, write, i);
-                    write += Buffers.BUFFER_SIZE;
+
+                    /*@ assert
+                      @     \invariant_for(this) &&
+                      @     Buffers.isBlockAlignedAdd(write - begin, Buffers.BUFFER_SIZE) &&
+                      @     Buffers.isBlockAlignedAdd(bucket_starts[bucket], Buffers.BUFFER_SIZE);
+                      @*/
+                    //@ assert Buffers.isBlockAligned(write + Buffers.BUFFER_SIZE - begin) && Buffers.isBlockAligned(bucket_starts[bucket] + Buffers.BUFFER_SIZE);
 
                     // Split off the written part
-                    //@ assert Functions.countElementSplit(values, begin, write - Buffers.BUFFER_SIZE, write);
-
-                    // Show this here to reduce the dependency contracts needed, verified
-                    /*@ assert (\forall int element; true;
-                      @     \old(Classifier.countElement(values, begin, old_write, i, end, buffers, element)) ==
-                      @          Classifier.countElement(values, begin, write, i + j, end, buffers, element)
+                    /*@ assert
+                      @     this.isClassifiedBlocksRangeSplit(values, begin, write, write + Buffers.BUFFER_SIZE) &&
+                      @     this.isClassOfSliceCopy(buffers.buffer, bucket * Buffers.BUFFER_SIZE, values, write, Buffers.BUFFER_SIZE, bucket) &&
+                      @     Functions.countElementSplit(values, begin, write, write + Buffers.BUFFER_SIZE);
+                      @*/
+                    //@ assert this.isClassOfSlice(values, write, write + Buffers.BUFFER_SIZE, bucket);
+                    //@ assert this.countClassOfSliceEqLemma(values, write, write + Buffers.BUFFER_SIZE, bucket);
+                    /*@ assert (\forall int b; 0 <= b && b < this.num_buckets;
+                      @     \at(this.countClassOfSliceEq(values, begin, write, b), heapAtLoopBodyBegin) + (b == bucket ? Buffers.BUFFER_SIZE : 0) ==
+                      @         this.countClassOfSliceEq(values, begin, write + Buffers.BUFFER_SIZE, b)
                       @ );
                       @*/
 
-                    bucket_starts[bucket] += Buffers.BUFFER_SIZE;
-                    //@ assert \invariant_for(this) && \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.sorted_splitters[*], this.tree.tree[*], indices[*]);
-                    //@ assert this.isClassOfSlice(values, write - Buffers.BUFFER_SIZE, write, bucket);
+                    /*@ assert (\sum int b; 0 <= b < this.num_buckets; bucket_starts[b]) ==
+                      @         (\sum int b; 0 <= b < this.num_buckets; \at(bucket_starts[b], heapAtLoopBodyBegin)) + Buffers.BUFFER_SIZE;
+                      @*/
+
+                    write += Buffers.BUFFER_SIZE;
                 }
             }
             buffers.push(bucket, value);
-            //@ assert \invariant_for(this) && \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.sorted_splitters[*], this.tree.tree[*], indices[*]);
+            //@ assert \invariant_for(this) && Functions.countElementSplit(values, i + j, i + j + 1, end);
             // permutation property: elements in [begin,write) stayed the same, split first in [read,end), split on element = value
         }
 
@@ -533,7 +563,7 @@ public final class Classifier {
       @ requires \invariant_for(buffers);
       @
       @ requires bucket_starts.length >= this.num_buckets + 1;
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires (\forall int b; 0 <= b < this.num_buckets; bucket_starts[b] == 0);
       @ requires buffers.isEmpty();
       @ requires \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.sorted_splitters[*], this.tree.tree[*]);
@@ -568,6 +598,7 @@ public final class Classifier {
         if (end - begin >= BATCH_SIZE) {
             int cutoff = end - BATCH_SIZE;
             final int[] indices = new int[BATCH_SIZE];
+            //@ assert \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.sorted_splitters[*], this.tree.tree[*], indices[*]);
 
             /*@ loop_invariant begin <= i && i <= end - (end - begin) % BATCH_SIZE;
               @
@@ -577,8 +608,6 @@ public final class Classifier {
               @
               @ // Bucket starts contain all elements in values[..write]
               @ loop_invariant this.isClassifiedUntil(values, begin, write, i, bucket_starts, buffers);
-              @
-              @ loop_invariant \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.sorted_splitters[*], this.tree.tree[*], indices[*]);
               @
               @ loop_invariant (\forall int element; true;
               @     \old(Classifier.countElement(values, begin, begin, begin, end, buffers, element)) ==
@@ -611,7 +640,7 @@ public final class Classifier {
       @ requires \invariant_for(buffers);
       @
       @ requires bucket_starts.length >= this.num_buckets + 1;
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.sorted_splitters[*], this.tree.tree[*]);
       @ requires buffers.num_buckets == this.num_buckets;
       @ requires this.isClassifiedUntil(values, begin, write, end, bucket_starts, buffers);
@@ -619,6 +648,10 @@ public final class Classifier {
       @ requires Functions.isAlignedTo(write - begin, Buffers.BUFFER_SIZE);
       @
       @ ensures Functions.isValidBucketStarts(bucket_starts, this.num_buckets) && bucket_starts[this.num_buckets] == end - begin;
+      @ ensures (\forall int b; 0 <= b < this.num_buckets;
+      @     bucket_starts[b + 1] - bucket_starts[b] ==
+      @         \old(this.countClassOfSliceEq(values, begin, write, b)) + \old(buffers.bufferLen(b))
+      @ );
       @
       @ assignable bucket_starts[0..this.num_buckets];
       @*/
@@ -627,21 +660,30 @@ public final class Classifier {
         // Calculate bucket starts
         int sum = 0;
 
-        /*@ loop_invariant 0 <= j && j <= this.num_buckets;
-          @ loop_invariant sum == this.allElementsInRangeAndBuffersLT(values, begin, write, buffers, j);
+        /*@ loop_invariant 0 <= j <= this.num_buckets;
+          @ loop_invariant 0 < j ==> bucket_starts[j - 1] <= sum && bucket_starts[0] == 0;
+          @ loop_invariant sum == (\sum int b; 0 <= b < j;
+          @     \old(this.countClassOfSliceEq(values, begin, write, b)) + \old(buffers.bufferLen(b))
+          @ );
           @ loop_invariant Functions.isSortedSlice(bucket_starts, 0, j);
-          @ loop_invariant (\forall int b; j <= b < this.num_buckets; bucket_starts[b] == \old(bucket_starts[b]));
-          @ loop_invariant (\forall int b; 0 <= b < j; bucket_starts[b] == this.allElementsInRangeAndBuffersLT(values, begin, write, buffers, b));
-          @ loop_invariant j > 0 ==> sum >= this.allElementsInRangeAndBuffersLT(values, begin, write, buffers, j - 1);
+          @ loop_invariant (\forall int b; j <= b < this.num_buckets; bucket_starts[b] == \old(this.countClassOfSliceEq(values, begin, write, b)));
+          @ loop_invariant (\forall int b; 0 <= b < j;
+          @     (b + 1 == j ? sum : bucket_starts[b + 1]) - bucket_starts[b] ==
+          @         \old(this.countClassOfSliceEq(values, begin, write, b)) + \old(buffers.bufferLen(b))
+          @ );
           @
           @ decreases this.num_buckets - j;
           @
           @ assignable bucket_starts[0..this.num_buckets];
           @*/
         for (int j = 0; j < this.num_buckets; ++j) {
+            //@ assert \invariant_for(buffers);
+            /*@ assert
+              @     bucket_starts[j] == \old(this.countClassOfSliceEq(values, begin, write, j)) &&
+              @     buffers.bufferLen(j) == \old(buffers.bufferLen(j));
+              @*/
             // Add the partially filled buffers
             int size = bucket_starts[j] + buffers.len(j);
-
 
             // Exclusive prefix sum
             bucket_starts[j] = sum;
@@ -657,7 +699,7 @@ public final class Classifier {
       @ requires \invariant_for(buffers);
       @
       @ requires bucket_starts.length >= this.num_buckets + 1;
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires (\forall int b; 0 <= b < this.num_buckets; bucket_starts[b] == 0);
       @ requires buffers.isEmpty();
       @ requires \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.sorted_splitters[*], this.tree.tree[*]);
@@ -671,13 +713,14 @@ public final class Classifier {
       @ ensures (\forall int b; 0 <= b < this.num_buckets;
       @     // Bucket starts contains the bucket counts
       @     bucket_starts[b + 1] - bucket_starts[b] ==
-      @         buffers.bufferAt(b).length + this.countClassOfSliceEq(values, begin, \result, b) &&
+      @         buffers.bufferLen(b) + this.countClassOfSliceEq(values, begin, \result, b) &&
       @     // Buffer len is correct for the bucket size
-      @     buffers.bufferAt(b).length == Buffers.bufferSizeForBucketLen(bucket_starts[b + 1] - bucket_starts[b])
+      @     buffers.bufferLen(b) == Buffers.bufferSizeForBucketLen(bucket_starts[b + 1] - bucket_starts[b])
       @ );
-      @ ensures (\forall int i; true;
-      @     \old(Classifier.countElement(values, begin, begin, begin, end, buffers, i)) ==
-      @          Classifier.countElement(values, begin, \result, end, end, buffers, i)
+      @ ensures (\forall int element; true;
+      @     \old(Functions.countElement(values, begin, end, element)) ==
+      @         Functions.countElement(values, begin, \result, element) +
+      @         buffers.countElement(element)
       @ );
       @ ensures \invariant_for(buffers);
       @
@@ -689,15 +732,23 @@ public final class Classifier {
       @ assignable buffers.indices[0..this.num_buckets - 1], buffers.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1];
       @*/
     public int classify_locally(int[] values, int begin, int end, int[] bucket_starts, Buffers buffers) {
+        /*@ assert (\forall int element; true;
+          @     Functions.countElement(values, begin, end, element) ==
+          @         Classifier.countElement(values, begin, begin, begin, end, buffers, element)
+          @ );
+          @*/
         int write = this.classify_locally_batched(values, begin, end, bucket_starts, buffers);
         int i = end - (end - begin) % BATCH_SIZE;
         //@ assert end - i >= 0;
         int[] indices = new int[end - i];
+        //@ assert \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.sorted_splitters[*], this.tree.tree[*], indices[*]);
         this.classify_all(values, i, end, indices);
         write = this.finish_batch(indices, values, begin, write, i, end, bucket_starts, buffers);
 
         this.calculate_bucket_starts(values, begin, write, end, bucket_starts, buffers);
-        //@ assert bucket_starts[this.num_buckets] == end - begin;
+
+        //@ assert this.isClassifiedUntil(values, begin, write, end, bucket_starts, buffers);
+
         return write;
     }
 }

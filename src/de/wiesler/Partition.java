@@ -67,6 +67,7 @@ public final class Partition {
     ) {
         Buffers buffers = new Buffers(storage.buffers_buffer, storage.buffers_indices, classifier.num_buckets());
         int first_empty_position = classifier.classify_locally(values, begin, end, bucket_starts, buffers);
+        //@ ghost \dl_Heap heapAfterClassify = \dl_heap();
 
         BucketPointers bucket_pointers = new BucketPointers(
             bucket_starts,
@@ -77,13 +78,17 @@ public final class Partition {
 
         /*@ assert
           @     \invariant_for(classifier) &&
-          @     Buffers.blockAligned(end - begin) == bucket_pointers.bucketStart(bucket_pointers.num_buckets) &&
-          @     (\forall int b; 0 <= b < bucket_pointers.num_buckets; bucket_pointers.isAtInitialBucketState(b));
+          @     Buffers.blockAligned(end - begin) == bucket_pointers.bucketStart(bucket_pointers.num_buckets);
           @*/
         /*@ assert
           @     bucket_pointers.initialReadAreasCount(values, begin, end) &&
           @     bucket_pointers.initialReadAreasBlockClassified(classifier, values, begin, end) &&
           @     bucket_pointers.initialReadAreasCountBucketElements(classifier, values, begin, end);
+          @*/
+        /*@ assert (\forall int b; 0 <= b < classifier.num_buckets;
+          @     \at(classifier.countClassOfSliceEq(values, begin, first_empty_position, b), heapAfterClassify) ==
+          @         bucket_pointers.elementsToReadCountClassEq(classifier, values, begin, end, b)
+          @ );
           @*/
 
         int[] overflow = storage.overflow;
@@ -98,6 +103,7 @@ public final class Partition {
             classifier,
             overflow);
 
+        //@ assert Functions.isValidBucketStarts(bucket_starts, classifier.num_buckets);
         //@ assert Partition.bucketCountsToTotalCount(values, begin, end, bucket_starts, classifier.num_buckets);
         //@ assert (\forall int element; true; Functions.countElement(values, begin, end, element) == \old(Functions.countElement(values, begin, end, element)));
     }
