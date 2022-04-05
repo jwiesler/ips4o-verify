@@ -116,7 +116,7 @@ public final class Permute {
             //@ ghost \dl_Heap heapAtLoopBodyBegin = \dl_heap();
 
             //@ assert bucket_pointers.bucketSize(target_bucket) > bucket_pointers.writtenCountOfBucket(target_bucket);
-            BucketPointers.Increment increment = bucket_pointers.increment_write(target_bucket);
+            Increment increment = bucket_pointers.increment_write(target_bucket);
             boolean occupied = increment.occupied;
             int write = begin + increment.position;
 

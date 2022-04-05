@@ -81,6 +81,7 @@ public final class Sorter {
       @ requires \invariant_for(classifier);
       @ requires Functions.isValidSlice(values, begin, end);
       @ requires nonEmptyBucketsLemma(classifier, values, begin, end, bucket_starts);
+      @ requires classifier.classOfTrans();
       @ requires Functions.isValidBucketStarts(bucket_starts, classifier.num_buckets) && end - begin == bucket_starts[classifier.num_buckets];
       @ requires (\forall int b; 0 <= b < classifier.num_buckets;
       @     classifier.isClassOfSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1], b)

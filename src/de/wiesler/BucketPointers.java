@@ -65,7 +65,6 @@ public final class BucketPointers {
 
     /*@ public model_behaviour
       @ requires 0 <= bucket < this.num_buckets;
-      @ requires \invariant_for(this);
       @
       @ ensures \result >= 0;
       @ ensures Buffers.isBlockAligned(\result);
@@ -521,16 +520,6 @@ public final class BucketPointers {
         }
     }
 
-    public static class Increment {
-        public final boolean occupied;
-        public final int position;
-
-        public /*@ strictly_pure @*/ Increment(boolean occupied, int position) {
-            this.occupied = occupied;
-            this.position = position;
-        }
-    }
-
     /*@ public normal_behaviour
       @ requires 0 <= bucket < this.num_buckets;
       @
@@ -546,7 +535,7 @@ public final class BucketPointers {
 
     /*@ public normal_behaviour
       @ requires 0 <= bucket < this.num_buckets;
-      @ requires this.bucketSize(bucket) > this.writtenCountOfBucket(bucket);
+      @ requires this.bucketSize(bucket) >= this.writtenCountOfBucket(bucket) + Buffers.BUFFER_SIZE;
       @
       @ ensures \old(this.nextWriteOf(bucket)) + Buffers.BUFFER_SIZE == this.nextWriteOf(bucket);
       @ ensures \old(this.remainingWriteCountOfBucket(bucket)) == this.remainingWriteCountOfBucket(bucket) + Buffers.BUFFER_SIZE;
@@ -593,8 +582,8 @@ public final class BucketPointers {
       @
       @ ensures this.toReadCountOfBucket(bucket) + Buffers.BUFFER_SIZE == \old(this.toReadCountOfBucket(bucket));
       @ ensures \old(this.lastReadOf(bucket)) == this.lastReadOf(bucket) + Buffers.BUFFER_SIZE;
-      @ ensures (\forall int b; 0 <= b < this.num_buckets && b != bucket; this.toReadCountOfBucket(b) == \old(this.toReadCountOfBucket(b)));
-      @ ensures (\forall int b; 0 <= b < this.num_buckets; this.writtenCountOfBucket(b) == \old(this.writtenCountOfBucket(b)));
+      @ // ensures (\forall int b; 0 <= b < this.num_buckets && b != bucket; this.toReadCountOfBucket(b) == \old(this.toReadCountOfBucket(b)));
+      @ // ensures (\forall int b; 0 <= b < this.num_buckets; this.writtenCountOfBucket(b) == \old(this.writtenCountOfBucket(b)));
       @
       @ assignable this.buffer[2 * bucket];
       @*/

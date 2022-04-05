@@ -276,16 +276,38 @@ public final class Classifier {
     }
 
     /*@ public model_behaviour
-      @ requires 0 <= bucket < this.num_buckets;
+      @ requires true;
+      @ model boolean isClassifiedBetweenSplitters(int value, int splitter) {
+      @     return ((0 < splitter ==> this.sorted_splitters[splitter - 1] < value) &&
+      @             (splitter < this.num_buckets - 1 ==> value <= this.sorted_splitters[splitter]));
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires true;
       @
       @ model boolean isClassifiedAs(int value, int bucket) {
       @     return this.equal_buckets ?
       @         ((bucket % 2 == 0 || bucket == this.num_buckets - 1) ?
-      @             (0 < bucket ==> this.sorted_splitters[bucket / 2 - 1] < value) &&
-      @             (bucket < this.num_buckets - 1 ==> value <= this.sorted_splitters[bucket / 2]) :
-      @             this.sorted_splitters[(bucket - 1) / 2] == value) :
+      @             ((0 < bucket ==> this.sorted_splitters[bucket / 2 - 1] < value) &&
+      @             (bucket < this.num_buckets - 1 ==> value < this.sorted_splitters[bucket / 2])) :
+      @             (this.sorted_splitters[bucket / 2] == value &&
+      @             // elements land in equality buckets iff the non equality bucket actually allows elements
+      @             (0 < bucket / 2 ==> this.sorted_splitters[bucket / 2 - 1] < value))) :
       @         ((0 < bucket ==> this.sorted_splitters[bucket - 1] < value) &&
       @             (bucket < this.num_buckets - 1 ==> value <= this.sorted_splitters[bucket]));
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires true;
+      @
+      @ ensures \result;
+      @
+      @ model boolean classOfTrans() {
+      @     return (\forall int i, j, classI, classJ; 0 <= classI < classJ < this.num_buckets;
+      @         this.isClassifiedAs(i, classI) && this.isClassifiedAs(j, classJ) ==> i < j
+      @     );
       @ }
       @*/
 

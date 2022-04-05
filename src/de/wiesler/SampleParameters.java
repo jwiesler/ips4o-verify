@@ -7,9 +7,6 @@ public final class SampleParameters {
 
     /*@ public normal_behaviour
       @ requires n >= Constants.BASE_CASE_SIZE;
-      @ ensures 1 <= \result && \result <= Constants.LOG_MAX_BUCKETS;
-      @ // Only the lower log bound holds since the function might yield a smaller result
-      @ ensures (1 << \result) * Constants.BASE_CASE_SIZE <= n;
       @
       @ assignable \strictly_nothing;
       @*/
@@ -27,12 +24,17 @@ public final class SampleParameters {
         }
     }
 
-    public static /*@ strictly_pure */ int oversampling_factor(int n) {
+    /*@ public normal_behaviour
+      @ requires n >= Constants.BASE_CASE_SIZE;
+      @
+      @ assignable \strictly_nothing;
+      @*/
+    public static int oversampling_factor(int n) {
         return Constants.log2(n) / 5;
     }
 
     /*@ public model_behaviour
-      @ requires n >= 1;
+      @ requires true;
       @ accessible \nothing;
       @ model boolean isValidForLen(int n) {
       @     return
@@ -60,7 +62,7 @@ public final class SampleParameters {
     /*@ public normal_behaviour
       @ requires n >= Constants.ACTUAL_BASE_CASE_SIZE;
       @ ensures this.isValidForLen(n);
-      @ assignable \strictly_nothing;
+      @ assignable \nothing;
       @*/
     public SampleParameters(int n) {
         int log_buckets = log_buckets(n);

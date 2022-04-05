@@ -84,7 +84,6 @@ public final class Buffers {
       @ ensures \result == blockAligned(offset);
       @
       @ assignable \strictly_nothing;
-      @ accessible \nothing;
       @*/
     public static int align_to_next_block(int offset) {
         return (offset + BUFFER_SIZE - 1) & (-BUFFER_SIZE);
@@ -121,9 +120,8 @@ public final class Buffers {
       @*/
 
     /*@ public model_behaviour
-      @ requires 0 <= bucket < this.num_buckets;
-      @ requires 0 <= offset < this.indices[bucket];
-      @ accessible this.indices[bucket];
+      @ requires true;
+      @ accessible this.buffer[bucket * BUFFER_SIZE + offset];
       @ model int bufferElement(int bucket, int offset) {
       @     return this.buffer[bucket * BUFFER_SIZE + offset];
       @ }
@@ -162,7 +160,7 @@ public final class Buffers {
       @*/
 
     /*@ public model_behaviour
-      @ requires 0 <= bucket < this.num_buckets;
+      @ requires true;
       @
       @ model int countElementInBucket(int bucket, int element) {
       @     return Functions.countElement(this.buffer, bucket * BUFFER_SIZE, bucket * BUFFER_SIZE + this.bufferLen(bucket), element);
