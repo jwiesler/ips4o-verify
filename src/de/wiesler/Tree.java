@@ -37,7 +37,7 @@ public final class Tree {
 
     /*@ public normal_behaviour
       @ requires 1 <= log_buckets <= Constants.LOG_MAX_BUCKETS;
-      @ requires Functions.isValidSlice(sorted_splitters, 0, (1 << log_buckets) - 1);
+      @ requires 0 <= (1 << log_buckets) - 1 <= sorted_splitters.length;
       @ requires Functions.isSortedSlice(sorted_splitters, 0, (1 << log_buckets) - 1);
       @ requires (1 << log_buckets) <= tree.length;
       @
@@ -66,7 +66,7 @@ public final class Tree {
       @ requires this.num_buckets == (1 << this.log_buckets);
       @
       @ requires 1 <= position && position < this.num_buckets;
-      @ requires Functions.isValidSlice(sorted_splitters, begin, end);
+      @ requires 0 <= begin <= end <= sorted_splitters.length;
       @ requires end - begin == this.num_buckets - position;
       @
       @ measured_by end - begin;
@@ -132,7 +132,7 @@ public final class Tree {
     }
 
     /*@ normal_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires indices.length == end - begin;
       @ requires \disjoint(values[*], indices[*], this.tree[*], this.sorted_splitters[*]);
       @

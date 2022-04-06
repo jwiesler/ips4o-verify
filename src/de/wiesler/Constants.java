@@ -22,7 +22,7 @@ public final class Constants {
     /*@ public normal_behaviour
       @ requires n > 0;
       @
-      @ ensures isLog2Of(n, \result);
+      @ ensures_free isLog2Of(n, \result);
       @
       @ assignable \strictly_nothing;
       @*/

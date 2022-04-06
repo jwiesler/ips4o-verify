@@ -162,7 +162,7 @@ public final class Classifier {
     /*@ public normal_behaviour
       @ requires tree != sorted_splitters;
       @ requires 1 <= log_buckets <= Constants.LOG_MAX_BUCKETS;
-      @ requires Functions.isValidSlice(sorted_splitters, 0, 1 << log_buckets);
+      @ requires 0 <= (1 << log_buckets) <= sorted_splitters.length;
       @ requires Functions.isSortedSlice(sorted_splitters, 0, 1 << log_buckets);
       @ requires (1 << log_buckets) <= tree.length;
       @ requires sorted_splitters[(1 << log_buckets) - 1] == sorted_splitters[(1 << log_buckets) - 2];
@@ -244,7 +244,7 @@ public final class Classifier {
           @     splitters[j] == \old(splitters[j])
           @ );
           @ loop_invariant (\forall int j; num_splitters <= j < i; splitters[j] == splitters[num_splitters - 1]);
-          @ loop_invariant Functions.isValidSlice(splitters, 0, i);
+          @ loop_invariant 0 <= i <= splitters.length;
           @ loop_invariant Functions.isSortedSlice(splitters, 0, i);
           @
           @ decreases actual_num_buckets - i;
@@ -397,7 +397,7 @@ public final class Classifier {
       @
       @ requires bucket_starts.length >= this.num_buckets;
       @ requires buffers.num_buckets == this.num_buckets;
-      @ requires Functions.isAlignedTo(write - begin, Buffers.BUFFER_SIZE);
+      @ requires Buffers.isBlockAligned(write - begin);
       @ accessible
       @     this.sorted_splitters[*], this.tree.tree[*],
       @     values[begin..write - 1],
@@ -414,9 +414,7 @@ public final class Classifier {
       @*/
 
     /*@ model_behaviour
-      @ requires Functions.isAlignedTo(write - begin, Buffers.BUFFER_SIZE);
-      @ requires 0 <= begin <= write <= read <= end <= values.length;
-      @
+      @ requires true;
       @ ensures \result >= 0;
       @
       @ accessible values[begin..end];
@@ -455,7 +453,7 @@ public final class Classifier {
       @
       @ requires begin <= write <= i && i + indices.length <= end;
       @ requires Buffers.isBlockAligned(write - begin);
-      @ requires Functions.isAlignedTo(i - begin, BATCH_SIZE);
+      @ requires i - begin % BATCH_SIZE == 0;
       @ requires indices.length <= BATCH_SIZE;
       @
       @ requires (\forall int j; 0 <= j < indices.length; this.classOf(values[i + j]) == indices[j]);
@@ -595,7 +593,7 @@ public final class Classifier {
       @
       @ // classifies until end - (end - begin) % BATCH_SIZE
       @
-      @ ensures begin <= \result && \result <= (end - (end - begin) % BATCH_SIZE) && Functions.isAlignedTo(\result - begin, Buffers.BUFFER_SIZE);
+      @ ensures begin <= \result && \result <= (end - (end - begin) % BATCH_SIZE) && Buffers.isBlockAligned(\result - begin);
       @ ensures this.isClassifiedUntil(values, begin, \result, end - (end - begin) % BATCH_SIZE, bucket_starts, buffers);
       @ ensures (\forall int element; true;
       @     \old(Classifier.countElement(values, begin, begin, begin, end, buffers, element)) ==
@@ -625,8 +623,8 @@ public final class Classifier {
             /*@ loop_invariant begin <= i && i <= end - (end - begin) % BATCH_SIZE;
               @
               @ loop_invariant begin <= write && write <= i;
-              @ loop_invariant Functions.isAlignedTo(i - begin, BATCH_SIZE);
-              @ loop_invariant Functions.isAlignedTo(write - begin, Buffers.BUFFER_SIZE);
+              @ loop_invariant (i - begin) % BATCH_SIZE == 0;
+              @ loop_invariant Buffers.isBlockAligned(write - begin);
               @
               @ // Bucket starts contain all elements in values[..write]
               @ loop_invariant this.isClassifiedUntil(values, begin, write, i, bucket_starts, buffers);
@@ -667,7 +665,7 @@ public final class Classifier {
       @ requires buffers.num_buckets == this.num_buckets;
       @ requires this.isClassifiedUntil(values, begin, write, end, bucket_starts, buffers);
       @ requires begin <= write <= end;
-      @ requires Functions.isAlignedTo(write - begin, Buffers.BUFFER_SIZE);
+      @ requires Buffers.isBlockAligned(write - begin);
       @
       @ ensures Functions.isValidBucketStarts(bucket_starts, this.num_buckets) && bucket_starts[this.num_buckets] == end - begin;
       @ ensures (\forall int b; 0 <= b < this.num_buckets;
@@ -727,7 +725,7 @@ public final class Classifier {
       @ requires \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.sorted_splitters[*], this.tree.tree[*]);
       @ requires buffers.num_buckets == this.num_buckets;
       @
-      @ ensures begin <= \result && \result <= end && Functions.isAlignedTo(\result - begin, Buffers.BUFFER_SIZE);
+      @ ensures begin <= \result && \result <= end && Buffers.isBlockAligned(\result - begin);
       @ ensures this.isClassifiedBlocksRange(values, begin, \result);
       @ ensures buffers.isClassifiedWith(this);
       @ ensures Functions.isValidBucketStarts(bucket_starts, this.num_buckets) && bucket_starts[this.num_buckets] == end - begin;

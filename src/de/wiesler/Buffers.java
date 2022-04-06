@@ -237,7 +237,7 @@ public final class Buffers {
       @ requires 0 <= bucket < this.num_buckets;
       @ requires \disjoint(values[*], this.buffer[*], this.indices[*]);
       @ requires this.bufferLen(bucket) == BUFFER_SIZE;
-      @ requires Functions.isValidSlice(values, write, end);
+      @ requires 0 <= write <= end <= values.length;
       @ requires end - write >= BUFFER_SIZE;
       @
       @ // ensures this.bufferAt(bucket) == \seq_empty;
@@ -267,8 +267,8 @@ public final class Buffers {
       @ requires 0 <= bucket && bucket < this.num_buckets;
       @ requires \disjoint(values[*], this.buffer[*], this.indices[*]);
       @
-      @ requires Functions.isValidSlice(values, head_start, head_start + head_len);
-      @ requires Functions.isValidSlice(values, tail_start, tail_start + tail_len);
+      @ requires 0 <= head_start <= head_start + head_len <= values.length;
+      @ requires 0 <= tail_start <= tail_start + tail_len <= values.length;
       @
       @ requires head_len + tail_len == this.bufferLen(bucket);
       @ // Don't overlap

@@ -1,35 +1,7 @@
 package de.wiesler;
 
 public final class Functions {
-    /*@
-      @ public model_behaviour
-      @ requires index >= 1;
-      @ static no_state model boolean isAlignedTo(int index, int alignment) {
-      @     return index % alignment == 0;
-      @ }
-      @*/
-
-    /*@
-      @ public model_behaviour
-      @ requires true;
-      @ static no_state model boolean isValidSlice(int[] values, int begin, int end) {
-      @     return 0 <= begin <= end <= values.length;
-      @ }
-      @*/
-
-    /*@
-      @ public model_behaviour
-      @ requires isValidSlice(values, begin, end);
-      @
-      @ ensures \result ==> isValidSlice(values, sub_begin, sub_end);
-      @
-      @ static no_state model boolean isValidSubSlice(int[] values, int begin, int end, int sub_begin, int sub_end) {
-      @     return 0 <= begin <= sub_begin <= sub_end <= end <= values.length;
-      @ }
-      @*/
-
     /*@ public model_behaviour
-      @ requires true;
       @ accessible values[begin..end - 1];
       @
       @ static model int countElement(int[] values, int begin, int end, int element) {
@@ -47,10 +19,7 @@ public final class Functions {
       @ }
       @*/
 
-    /*@
-      @ public model_behaviour
-      @ requires true;
-      @
+    /*@ public model_behaviour
       @ ensures \result ==> Functions.isSortedSliceTransitive(values, begin, end);
       @
       @ accessible values[begin..end - 1];
@@ -72,7 +41,6 @@ public final class Functions {
       @*/
 
     /*@ public model_behaviour
-      @ requires true;
       @ ensures \result;
       @ static model boolean isSortedSeqTransitiveFromSlice(int[] values, int begin, int end) {
       @     return isSortedSliceTransitive(values, begin, end) ==> isSortedSeqTransitive(\dl_seq_def_workaround(begin, end, values));
@@ -89,10 +57,6 @@ public final class Functions {
       @*/
 
     /*@ public model_behaviour
-      @ requires true;
-      @
-      @ ensures \result ==> Lemma.bucketIndexFromOffset(bucket_starts, num_buckets, bucket_starts[num_buckets]);
-      @
       @ accessible bucket_starts[0..num_buckets];
       @ static model boolean isValidBucketStarts(int[] bucket_starts, int num_buckets) {
       @     return 2 <= num_buckets &&
@@ -103,7 +67,7 @@ public final class Functions {
       @*/
 
     /*@ public normal_behaviour
-      @ requires isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires 1 <= num_samples && num_samples <= end - begin;
       @
       @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
@@ -114,7 +78,6 @@ public final class Functions {
 
     /*@ public normal_behaviour
       @ ensures \result == ((a >= b) ? a : b);
-      @ accessible \nothing;
       @ assignable \strictly_nothing;
       @*/
     public static int max(int a, int b) {
@@ -123,7 +86,6 @@ public final class Functions {
 
     /*@ public normal_behaviour
       @ ensures \result == ((a <= b) ? a : b);
-      @ accessible \nothing;
       @ assignable \strictly_nothing;
       @*/
     public static int min(int a, int b) {
@@ -176,69 +138,8 @@ public final class Functions {
         // System.arraycopy(src, srcPos, dest, destPos, length);
     }
 
-    public static int isSorted(int[] values, int begin, int end) {
-        for (int i = begin + 1; i < end; ++i) {
-            if (values[i - 1] > values[i]) {
-                return i - 1;
-            }
-        }
-        return -1;
-    }
-
-    public static void assertSorted(int[] values, int begin, int end) {
-        int inversion = isSorted(values, begin, end);
-        if (inversion != -1) {
-            System.out.println("Inversion at " + (inversion - begin) + " (" + inversion + " absolute): " + values[inversion] + " > " + values[inversion + 1]);
-//            System.out.println(Arrays.toString(Arrays.copyOfRange(values, begin, end)));
-            assert (false);
-        }
-    }
-
     /*@ public normal_behaviour
-      @ requires Functions.isValidSubSlice(values, begin, end, from, from + Buffers.BUFFER_SIZE);
-      @ requires Buffers.isBlockAligned(from - begin);
-      @
-      @ requires buffer.length == Buffers.BUFFER_SIZE;
-      @ requires \disjoint(values[*], buffer[*]);
-      @
-      @ ensures (\forall int i; 0 <= i && i < Buffers.BUFFER_SIZE; buffer[i] == values[from + i]);
-      @
-      @ assignable buffer[*];
-      @*/
-    public static void copy_block_to_buffer(int[] values, int begin, int end, int from, int[] buffer) {
-        copy_nonoverlapping(values, from, buffer, 0, Buffers.BUFFER_SIZE);
-    }
-
-    /*@ public normal_behaviour
-      @ requires Functions.isValidSubSlice(values, begin, end, to, to + Buffers.BUFFER_SIZE);
-      @ requires Buffers.isBlockAligned(to - begin);
-      @
-      @ requires buffer.length == Buffers.BUFFER_SIZE;
-      @ requires \disjoint(values[*], buffer[*]);
-      @
-      @ ensures (\forall int i; 0 <= i && i < Buffers.BUFFER_SIZE; values[to + i] == buffer[i]);
-      @
-      @ assignable values[to..to + Buffers.BUFFER_SIZE - 1];
-      @*/
-    public static void copy_block_from_buffer(int[] values, int begin, int end, int[] buffer, int to) {
-        copy_nonoverlapping(buffer, 0, values, to, Buffers.BUFFER_SIZE);
-    }
-
-    /*@ public normal_behaviour
-      @ requires buffer.length == Buffers.BUFFER_SIZE;
-      @ requires to.length == Buffers.BUFFER_SIZE;
-      @ requires \disjoint(to[*], buffer[*]);
-      @
-      @ ensures (\forall int i; 0 <= i && i < Buffers.BUFFER_SIZE; buffer[i] == to[i]);
-      @
-      @ assignable to[*];
-      @*/
-    public static void copy_buffer_to(int[] buffer, int[] to) {
-        copy_nonoverlapping(buffer, 0, to, 0, Buffers.BUFFER_SIZE);
-    }
-
-    /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires Functions.isSortedSlice(values, begin, end);
       @ requires \disjoint(target[*], values[*]);
       @

@@ -2,7 +2,7 @@ package de.wiesler;
 
 public final class Sorter {
     /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires end - begin > Constants.ACTUAL_BASE_CASE_SIZE;
       @ requires \invariant_for(storage);
       @ requires \disjoint(storage.allArrays, values[*]);
@@ -48,7 +48,7 @@ public final class Sorter {
     }
 
     /*@ public model_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires bucket_begin <= bucket_end;
       @ requires begin <= begin + bucket_begin <= end;
       @ requires begin <= begin + bucket_end <= end;
@@ -67,7 +67,7 @@ public final class Sorter {
       @*/
 
     /*@ public model_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && end - begin == bucket_starts[num_buckets];
       @
       @ accessible values[begin..end - 1];
@@ -79,7 +79,7 @@ public final class Sorter {
 
     /*@ public model_behaviour
       @ requires \invariant_for(classifier);
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires nonEmptyBucketsLemma(classifier, values, begin, end, bucket_starts);
       @ requires classifier.classOfTrans();
       @ requires Functions.isValidBucketStarts(bucket_starts, classifier.num_buckets) && end - begin == bucket_starts[classifier.num_buckets];
@@ -95,7 +95,7 @@ public final class Sorter {
       @*/
 
     /*@ public model_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires 0 <= lower && lower <= upper && upper <= num_buckets;
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && end - begin == bucket_starts[num_buckets];
       @
@@ -116,7 +116,7 @@ public final class Sorter {
       @*/
 
     /*@ public model_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires 0 <= lower && lower <= upper && upper <= num_buckets;
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && end - begin == bucket_starts[num_buckets];
       @
@@ -132,7 +132,7 @@ public final class Sorter {
 
     /*@ public model_behaviour
       @ requires \invariant_for(classifier);
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires Functions.isValidBucketStarts(bucket_starts, classifier.num_buckets) && end - begin == bucket_starts[classifier.num_buckets];
       @ requires (\forall int b; 0 <= b < classifier.num_buckets;
       @     classifier.isClassOfSlice(values, begin + bucket_starts[b], begin + bucket_starts[b + 1], b)
@@ -147,9 +147,6 @@ public final class Sorter {
       @*/
 
     /*@ public model_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
-      @ requires Functions.isValidSubSlice(values, begin, end, begin + bucket_begin, begin + bucket_end);
-      @
       @ accessible values[begin + bucket_begin..begin + bucket_end - 1];
       @
       @ static model boolean smallBucketIsSorted(int[] values, int begin, int end, int bucket_begin, int bucket_end) {
@@ -159,7 +156,7 @@ public final class Sorter {
       @*/
 
     /*@ public model_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires 0 <= lower && lower <= upper && upper <= num_buckets;
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && end - begin == bucket_starts[num_buckets];
       @
@@ -339,7 +336,7 @@ public final class Sorter {
     }
 
     /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires end - begin <= Buffers.MAX_LEN;
       @ requires 0 <= bucket && bucket < num_buckets;
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets) && bucket_starts[num_buckets] == end - begin;
@@ -400,7 +397,7 @@ public final class Sorter {
     }
 
     /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires end - begin > Constants.ACTUAL_BASE_CASE_SIZE;
       @ requires end - begin <= Buffers.MAX_LEN;
       @ requires \invariant_for(storage);
@@ -495,7 +492,7 @@ public final class Sorter {
     }
 
     /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @
       @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
       @ ensures Functions.isSortedSlice(values, begin, end);
@@ -507,7 +504,7 @@ public final class Sorter {
     }
 
     /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @
       @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
       @ ensures Functions.isSortedSlice(values, begin, end);
@@ -519,7 +516,7 @@ public final class Sorter {
     }
 
     /*@ public normal_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires end - begin <= Buffers.MAX_LEN;
       @ requires \invariant_for(storage);
       @ requires \disjoint(storage.allArrays, values[*]);

@@ -61,7 +61,7 @@ public final class SampleParameters {
 
     /*@ public normal_behaviour
       @ requires n >= Constants.ACTUAL_BASE_CASE_SIZE;
-      @ ensures this.isValidForLen(n);
+      @ ensures_free this.isValidForLen(n);
       @ assignable \nothing;
       @*/
     public SampleParameters(int n) {

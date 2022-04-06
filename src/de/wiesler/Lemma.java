@@ -2,7 +2,7 @@ package de.wiesler;
 
 public final class Lemma {
     /*@ public model_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets);
       @ requires bucket_starts[num_buckets] == end - begin;
       @
@@ -36,7 +36,7 @@ public final class Lemma {
 
     // Unused
     /*@ public model_behaviour
-      @ requires Functions.isValidSlice(values, begin, end);
+      @ requires 0 <= begin <= end <= values.length;
       @ // all positive
       @ requires (\forall int i; begin <= i < end; values[i] >= 0);
       @
