@@ -29,16 +29,6 @@ public final class Classifier {
       @*/
 
     /*@ public model_behaviour
-      @ accessible this.sorted_splitters[*], this.tree.tree[*];
-      @ model boolean isClassOfSeq(\seq values, int bucket) {
-      @     return (\forall
-      @              int i;
-      @              0 <= i < values.length;
-      @              this.classOf((int) values[i]) == bucket);
-      @ }
-      @*/
-
-    /*@ public model_behaviour
       @ accessible this.sorted_splitters[*], this.tree.tree[*], values[begin..end - 1];
       @ model boolean isClassOfSlice(int[] values, int begin, int end, int bucket) {
       @     return (\forall
@@ -73,19 +63,7 @@ public final class Classifier {
       @*/
 
     /*@ public model_behaviour
-      @ requires begin <= mid <= end;
-      @ requires this.isClassOfSlice(values, begin, mid, bucket) && this.isClassOfSlice(values, mid, end, bucket);
-      @
-      @ ensures \result;
-      @
-      @ // Verified
-      @ model boolean isClassOfSliceConcat(int[] values, int begin, int mid, int end, int bucket) {
-      @     return this.isClassOfSlice(values, begin, end, bucket);
-      @ }
-      @*/
-
-    /*@ public model_behaviour
-      @ accessible this.sorted_splitters[*], this.tree.tree[*];
+      @ accessible values[begin..end - 1], this.sorted_splitters[*], this.tree.tree[*];
       @ model int countClassOfSliceEq(int[] values, int begin, int end, int bucket) {
       @     return (\num_of
       @              int i;
@@ -123,14 +101,6 @@ public final class Classifier {
       @
       @ model boolean classOfClassifiedBlockFromFirst(int[] values, int begin, int end, int bucket) {
       @     return this.isClassOfSlice(values, begin, end, bucket);
-      @ }
-      @*/
-
-    // Unused
-    /*@ public model_behaviour
-      @ accessible this.sorted_splitters[*], this.tree.tree[*];
-      @ model boolean isClassifiedBlockSeq(\seq values) {
-      @     return (\exists int bucket; 0 <= bucket < this.num_buckets; this.isClassOfSeq(values, bucket));
       @ }
       @*/
 
@@ -277,14 +247,6 @@ public final class Classifier {
 
     /*@ public model_behaviour
       @ requires true;
-      @ model boolean isClassifiedBetweenSplitters(int value, int splitter) {
-      @     return ((0 < splitter ==> this.sorted_splitters[splitter - 1] < value) &&
-      @             (splitter < this.num_buckets - 1 ==> value <= this.sorted_splitters[splitter]));
-      @ }
-      @*/
-
-    /*@ public model_behaviour
-      @ requires true;
       @
       @ model boolean isClassifiedAs(int value, int bucket) {
       @     return this.equal_buckets ?
@@ -414,10 +376,11 @@ public final class Classifier {
       @*/
 
     /*@ model_behaviour
-      @ requires true;
+      @ requires \invariant_for(buffers);
       @ ensures \result >= 0;
       @
-      @ accessible values[begin..end];
+      @ accessible values[begin..write - 1];
+      @ accessible values[read..end - 1];
       @ accessible buffers.indices[0..buffers.num_buckets - 1], buffers.buffer[0..Buffers.BUFFER_SIZE * buffers.num_buckets - 1];
       @ model static int countElement(int[] values, int begin, int write, int read, int end, Buffers buffers, int element) {
       @     return
@@ -434,7 +397,7 @@ public final class Classifier {
       @ requires 0 <= len <= Buffers.BUFFER_SIZE;
       @
       @ ensures \result ==> Buffers.bufferSizeForBucketLen(len + writtenElements) == len;
-      @ static model boolean isValidBufferLen(int len, int writtenElements) {
+      @ static model no_state boolean isValidBufferLen(int len, int writtenElements) {
       @     return
       @         0 <= writtenElements &&
       @         Buffers.isBlockAligned(writtenElements) &&
@@ -453,7 +416,7 @@ public final class Classifier {
       @
       @ requires begin <= write <= i && i + indices.length <= end;
       @ requires Buffers.isBlockAligned(write - begin);
-      @ requires i - begin % BATCH_SIZE == 0;
+      @ requires (i - begin) % BATCH_SIZE == 0;
       @ requires indices.length <= BATCH_SIZE;
       @
       @ requires (\forall int j; 0 <= j < indices.length; this.classOf(values[i + j]) == indices[j]);
@@ -536,7 +499,10 @@ public final class Classifier {
             {
                 if (buffers.len(bucket) == Buffers.BUFFER_SIZE) {
                     // Use element lower bound
-                    //@ assert write + 256 <= i;
+                    /*@ assert write + 256 <= i &&
+                      @     Buffers.isBlockAlignedAdd(write - begin, Buffers.BUFFER_SIZE) &&
+                      @     Buffers.isBlockAlignedAdd(bucket_starts[bucket], Buffers.BUFFER_SIZE);
+                      @*/
 
                     // This was moved ahead to remove heap modifications after flush, changes nothing in the algorithm
                     bucket_starts[bucket] += Buffers.BUFFER_SIZE;
@@ -545,10 +511,9 @@ public final class Classifier {
 
                     /*@ assert
                       @     \invariant_for(this) &&
-                      @     Buffers.isBlockAlignedAdd(write - begin, Buffers.BUFFER_SIZE) &&
-                      @     Buffers.isBlockAlignedAdd(bucket_starts[bucket], Buffers.BUFFER_SIZE);
+                      @     Buffers.isBlockAligned(write + Buffers.BUFFER_SIZE - begin) &&
+                      @     Buffers.isBlockAligned(bucket_starts[bucket]);
                       @*/
-                    //@ assert Buffers.isBlockAligned(write + Buffers.BUFFER_SIZE - begin) && Buffers.isBlockAligned(bucket_starts[bucket] + Buffers.BUFFER_SIZE);
 
                     // Split off the written part
                     /*@ assert
@@ -766,9 +731,6 @@ public final class Classifier {
         write = this.finish_batch(indices, values, begin, write, i, end, bucket_starts, buffers);
 
         this.calculate_bucket_starts(values, begin, write, end, bucket_starts, buffers);
-
-        //@ assert this.isClassifiedUntil(values, begin, write, end, bucket_starts, buffers);
-
         return write;
     }
 }

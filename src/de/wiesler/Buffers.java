@@ -47,7 +47,7 @@ public final class Buffers {
     /*@ public model_behaviour
       @ ensures \result;
       @
-      @ static no_state model boolean isBlockAlignedLemma() {
+      @ static model boolean isBlockAlignedLemma() {
       @     return (\forall int i; 0 <= i && isBlockAligned(i);
       @         (\forall int j; isBlockAligned(j); isBlockAligned(i + j)) &&
       @         (\forall int j; j <= i && isBlockAligned(j); isBlockAligned(i - j))
@@ -62,7 +62,7 @@ public final class Buffers {
       @
       @ ensures \result;
       @
-      @ static no_state model boolean isBlockAlignedAdd(int i, int j) {
+      @ static model boolean isBlockAlignedAdd(int i, int j) {
       @     return isBlockAligned(i + j);
       @ }
       @*/
@@ -73,7 +73,7 @@ public final class Buffers {
       @
       @ ensures \result;
       @
-      @ static no_state model boolean isBlockAlignedSub(int i, int j) {
+      @ static model boolean isBlockAlignedSub(int i, int j) {
       @     return isBlockAligned(i - j);
       @ }
       @*/

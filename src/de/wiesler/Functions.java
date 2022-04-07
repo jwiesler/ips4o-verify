@@ -158,8 +158,6 @@ public final class Functions {
       @ ensures (\forall
       @     int i;
       @     0 <= i < \result;
-      @     // It is from the source array
-      @     (\exists int j; begin <= j < end; values[j] == target[i]) &&
       @     // It is unique in the target array (or: strictly ascending)
       @     (i < \result - 1 ==> target[i] < target[i + 1])
       @ );
@@ -217,4 +215,19 @@ public final class Functions {
 
         return target_offset;
     }
+
+    /*@ public model_behaviour
+      @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets);
+      @ requires 0 <= bucket < num_buckets;
+      @
+      @ ensures \result;
+      @
+      @ static model boolean bucketStartsOrdering(int[] bucket_starts, int num_buckets, int bucket) {
+      @     return 0 <= bucket_starts[bucket] <= bucket_starts[bucket + 1] <= bucket_starts[num_buckets] &&
+      @         (\forall int b; 0 <= b < num_buckets && b != bucket;
+      @             (b < bucket ==> 0 <= bucket_starts[b] <= bucket_starts[b + 1] <= bucket_starts[bucket]) &&
+      @             (b > bucket ==> bucket_starts[bucket + 1] <= bucket_starts[b] <= bucket_starts[b + 1] <= bucket_starts[num_buckets])
+      @         );
+      @ }
+      @*/
 }

@@ -6,40 +6,41 @@ public final class Tree {
     //@ ghost final int num_buckets;
     //@ ghost final int[] sorted_splitters;
 
-    /*@ public model_behaviour
-      @ requires 1 <= log_length <= 29;
-      @ requires 0 <= index < (1 << log_length);
-      @
-      @ ensures \result ==> 2 * index + 1 < (1 << log_length);
-      @
-      @ static model no_state boolean hasChildren(int log_length, int index) {
-      @     return 2 * index < (1 << log_length);
-      @ }
-      @*/
+    // /*@ public model_behaviour
+    //   @ requires 1 <= log_length <= 29;
+    //   @ requires 0 <= index < (1 << log_length);
+    //   @
+    //   @ ensures \result ==> 2 * index + 1 < (1 << log_length);
+    //   @
+    //   @ static model no_state boolean hasChildren(int log_length, int index) {
+    //   @     return 2 * index < (1 << log_length);
+    //   @ }
+    //   @*/
 
-    /*@ public model_behaviour
-      @ requires (1 << log_length) <= tree.length;
-      @ static model boolean heapProperty(int[] tree, int log_length) {
-      @     return (\forall int i; 0 <= i < (1 << log_length);
-      @         Tree.hasChildren(log_length, i) ==> tree[i] < tree[i * 2 + 1]
-      @     );
-      @ }
-      @*/
+    // /*@ public model_behaviour
+    //   @ requires (1 << log_length) <= tree.length;
+    //   @ static model boolean heapProperty(int[] tree, int log_length) {
+    //   @     return (\forall int i; 0 <= i < (1 << log_length);
+    //   @         Tree.hasChildren(log_length, i) ==> tree[i] < tree[i * 2 + 1]
+    //   @     );
+    //   @ }
+    //   @*/
 
     /*@ public invariant 1 <= this.log_buckets <= Constants.LOG_MAX_BUCKETS;
       @ public invariant this.num_buckets == (1 << this.log_buckets);
       @ public invariant 2 <= this.num_buckets <= this.tree.length;
       @ public invariant this.num_buckets <= this.sorted_splitters.length;
-      @ public invariant Functions.isSortedSlice(this.sorted_splitters, 0, this.num_buckets);
+      @ public invariant Functions.isSortedSlice(this.sorted_splitters, 0, this.num_buckets - 1);
       @
       @ accessible \inv: this.tree[*], this.sorted_splitters[*];
       @*/
 
     /*@ public normal_behaviour
       @ requires 1 <= log_buckets <= Constants.LOG_MAX_BUCKETS;
-      @ requires 0 <= (1 << log_buckets) - 1 <= sorted_splitters.length;
+      @ requires 0 <= (1 << log_buckets) <= sorted_splitters.length;
       @ requires Functions.isSortedSlice(sorted_splitters, 0, (1 << log_buckets) - 1);
       @ requires (1 << log_buckets) <= tree.length;
+      @ requires \disjoint(sorted_splitters[*], tree[*]);
       @
       @ ensures this.log_buckets == log_buckets;
       @ ensures this.tree == tree;
@@ -49,10 +50,11 @@ public final class Tree {
       @*/
     public Tree(int[] sorted_splitters, int[] tree, int log_buckets) {
         //@ set num_buckets = 1 << log_buckets;
+        //@ set this.sorted_splitters = sorted_splitters;
         final int num_buckets = 1 << log_buckets;
         final int num_splitters = num_buckets - 1;
 
-        //@ assert num_buckets <= tree.length;
+        //@ assert 2 <= num_buckets <= tree.length;
 
         this.log_buckets = log_buckets;
         this.tree = tree;
@@ -67,7 +69,6 @@ public final class Tree {
       @
       @ requires 1 <= position && position < this.num_buckets;
       @ requires 0 <= begin <= end <= sorted_splitters.length;
-      @ requires end - begin == this.num_buckets - position;
       @
       @ measured_by end - begin;
       @

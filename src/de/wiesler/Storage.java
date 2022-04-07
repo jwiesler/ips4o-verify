@@ -1,18 +1,6 @@
 package de.wiesler;
 
 public final class Storage {
-    public static final int VALUES = 0;
-    public static final int BUCKET_STARTS = 1;
-
-    public static final int TREE = 2;
-    public static final int SPLITTERS = 3;
-    public static final int BUCKET_POINTERS = 4;
-    public static final int BUFFERS_BUFFER = 5;
-    public static final int BUFFERS_INDICES = 6;
-    public static final int SWAP_1 = 7;
-    public static final int SWAP_2 = 8;
-    public static final int OVERFLOW = 9;
-
     /*@ public normal_behaviour
       @ requires length >= 0;
       @ ensures \result.length == length;
