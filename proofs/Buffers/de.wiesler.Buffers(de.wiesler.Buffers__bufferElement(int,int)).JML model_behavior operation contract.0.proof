@@ -2,7 +2,7 @@
 
 \settings {
 "#Proof-Settings-Config-File
-#Tue Apr 05 14:22:15 CEST 2022
+#Fri Apr 08 13:12:58 CEST 2022
 [NewSMT]NoTypeHierarchy=false
 [Labels]UseOriginLabels=true
 [StrategyProperty]QUERYAXIOM_OPTIONS_KEY=QUERYAXIOM_OFF
@@ -50,16 +50,16 @@
 \javaSource "../../src";
 
 \proofObligation "#Proof Obligation Settings
-#Tue Apr 05 14:22:15 CEST 2022
-contract=de.wiesler.SampleParameters[de.wiesler.SampleParameters\\:\\:isValidForLen(int)].JML model_behavior operation contract.0
-name=de.wiesler.SampleParameters[de.wiesler.SampleParameters\\:\\:isValidForLen(int)].JML model_behavior operation contract.0
+#Fri Apr 08 13:12:58 CEST 2022
+contract=de.wiesler.Buffers[de.wiesler.Buffers\\:\\:bufferElement(int,int)].JML model_behavior operation contract.0
+name=de.wiesler.Buffers[de.wiesler.Buffers\\:\\:bufferElement(int,int)].JML model_behavior operation contract.0
 class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
 ";
 
 \proof {
 (keyLog "0" (keyUser "Julian" ) (keyVersion "802059dea3"))
 
-(autoModeTime "5")
+(autoModeTime "29")
 
 (branch "dummy ID"
  (builtin "One Step Simplification" (formula "1") (newnames "heapAtPre_0,heapBefore,o,f"))

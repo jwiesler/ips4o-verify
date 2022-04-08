@@ -2,7 +2,7 @@
 
 \settings {
 "#Proof-Settings-Config-File
-#Tue Apr 05 14:23:38 CEST 2022
+#Tue Apr 05 14:15:54 CEST 2022
 [NewSMT]NoTypeHierarchy=false
 [Labels]UseOriginLabels=true
 [StrategyProperty]QUERYAXIOM_OPTIONS_KEY=QUERYAXIOM_OFF
@@ -50,21 +50,21 @@
 \javaSource "../../src";
 
 \proofObligation "#Proof Obligation Settings
-#Tue Apr 05 14:23:38 CEST 2022
-contract=de.wiesler.Constants[de.wiesler.Constants\\:\\:isLog2Of(int,int)].JML model_behavior operation contract.0
-name=de.wiesler.Constants[de.wiesler.Constants\\:\\:isLog2Of(int,int)].JML model_behavior operation contract.0
+#Tue Apr 05 14:15:54 CEST 2022
+contract=de.wiesler.Buffers[de.wiesler.Buffers\\:\\:count()].JML model_behavior operation contract.0
+name=de.wiesler.Buffers[de.wiesler.Buffers\\:\\:count()].JML model_behavior operation contract.0
 class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
 ";
 
 \proof {
 (keyLog "0" (keyUser "Julian" ) (keyVersion "802059dea3"))
-(keyLog "1" (keyUser "Julian" ) (keyVersion "802059dea3"))
-(keyLog "2" (keyUser "Julian" ) (keyVersion "802059dea3"))
 
-(autoModeTime "6")
+(autoModeTime "4")
 
 (branch "dummy ID"
- (builtin "One Step Simplification" (formula "1") (newnames "heapAtPre_0"))
-(rule "closeTrue" (formula "1"))
+ (builtin "One Step Simplification" (formula "1") (newnames "heapAtPre_0,heapBefore,o,f"))
+(rule "impRight" (formula "1"))
+(rule "andLeft" (formula "1"))
+(rule "close" (formula "3") (ifseqformula "2"))
 )
 }

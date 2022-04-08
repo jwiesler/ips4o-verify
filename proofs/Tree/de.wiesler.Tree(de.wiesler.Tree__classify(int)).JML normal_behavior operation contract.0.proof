@@ -44,7 +44,7 @@
 "
 }
 
-\javaSource "../src";
+\javaSource "../../src";
 
 \proofObligation "#Proof Obligation Settings
 #Fri Dec 31 15:51:14 CET 2021

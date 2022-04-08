@@ -45,17 +45,6 @@ public final class Buffers {
       @*/
 
     /*@ public model_behaviour
-      @ ensures \result;
-      @
-      @ static model boolean isBlockAlignedLemma() {
-      @     return (\forall int i; 0 <= i && isBlockAligned(i);
-      @         (\forall int j; isBlockAligned(j); isBlockAligned(i + j)) &&
-      @         (\forall int j; j <= i && isBlockAligned(j); isBlockAligned(i - j))
-      @     );
-      @ }
-      @*/
-
-    /*@ public model_behaviour
       @ requires 0 <= i;
       @ requires 0 <= j;
       @ requires isBlockAligned(i) && isBlockAligned(j);
@@ -102,7 +91,6 @@ public final class Buffers {
     /*@ public model_behaviour
       @ requires true;
       @
-      @ // ensures \result ==> (\forall int b; 0 <= b < this.num_buckets; this.bufferAt(b) == \seq_empty);
       @ ensures \result ==> this.count() == 0;
       @ ensures \result ==> (\forall int element; true; this.countElement(element) == 0);
       @ model boolean isEmpty() {
@@ -124,15 +112,6 @@ public final class Buffers {
       @ accessible this.buffer[bucket * BUFFER_SIZE + offset];
       @ model int bufferElement(int bucket, int offset) {
       @     return this.buffer[bucket * BUFFER_SIZE + offset];
-      @ }
-      @*/
-
-    /*@ public model_behaviour
-      @ requires 0 <= bucket < this.num_buckets;
-      @ ensures \result.length <= BUFFER_SIZE;
-      @ accessible this.indices[bucket], this.buffer[bucket * BUFFER_SIZE..(bucket + 1) * BUFFER_SIZE - 1];
-      @ model \seq bufferAt(int bucket) {
-      @     return (\seq_def \bigint i; bucket * BUFFER_SIZE; bucket * BUFFER_SIZE + this.bufferLen(bucket); this.buffer[i]);
       @ }
       @*/
 
@@ -212,10 +191,8 @@ public final class Buffers {
       @
       @ requires this.bufferLen(bucket) != BUFFER_SIZE;
       @
-      @ // ensures this.bufferAt(bucket) == \seq_concat(\old(this.bufferAt(bucket)), \seq_singleton(value));
       @ ensures this.bufferLen(bucket) == \old(this.bufferLen(bucket)) + 1;
       @ ensures this.bufferElement(bucket, \old(this.bufferLen(bucket))) == value;
-      @ // ensures (\forall int b; 0 <= b < this.num_buckets && b != bucket; this.bufferAt(b) == \old(this.bufferAt(b)));
       @ ensures this.count() == \old(this.count()) + 1;
       @
       @ ensures (\forall int element; true; this.countElement(element) == \old(this.countElement(element)) + (element == value ? 1 : 0));
@@ -228,8 +205,6 @@ public final class Buffers {
         int index = this.indices[bucket];
         this.buffer[buffer_offset + index] = value;
         this.indices[bucket] = index + 1;
-        // assert this.bufferAt(bucket) == \seq_concat(\old(this.bufferAt(bucket)), \seq_singleton(value));
-        // assert (\forall int b; 0 <= b < this.num_buckets && b != bucket; this.bufferAt(b) == \old(this.bufferAt(b)));
         //@ assert Functions.countElementSplit(this.buffer, bucket * BUFFER_SIZE, bucket * BUFFER_SIZE + index, bucket * BUFFER_SIZE + index + 1);
     }
 
@@ -240,16 +215,13 @@ public final class Buffers {
       @ requires 0 <= write <= end <= values.length;
       @ requires end - write >= BUFFER_SIZE;
       @
-      @ // ensures this.bufferAt(bucket) == \seq_empty;
       @ ensures this.bufferLen(bucket) == 0;
       @ ensures (\forall int i; 0 <= i && i < BUFFER_SIZE; values[write + i] == \old(this.buffer[bucket * BUFFER_SIZE + i]));
-      @ // ensures (\forall int i; 0 <= i && i < BUFFER_SIZE; values[write + i] == \old(this.bufferAt(bucket)[i]));
       @ ensures (\forall int element; true;
       @     \old(this.countElement(element)) ==
       @     Functions.countElement(values, write, write + BUFFER_SIZE, element) +
       @         this.countElement(element)
       @ );
-      @ // ensures (\forall int b; 0 <= b < this.num_buckets && b != bucket; this.bufferAt(b) == \old(this.bufferAt(b)));
       @ ensures this.count() == \old(this.count()) - BUFFER_SIZE;
       @
       @ assignable this.indices[bucket];
@@ -259,7 +231,6 @@ public final class Buffers {
         int buffer_offset = bucket * BUFFER_SIZE;
         Functions.copy_nonoverlapping(this.buffer, buffer_offset, values, write, BUFFER_SIZE);
         this.indices[bucket] = 0;
-        // assert this.bufferAt(bucket) == \seq_empty;
         //@ assert (\forall int element; true; \old(this.countElementInBucket(bucket, element)) == Functions.countElement(values, write, write + BUFFER_SIZE, element));
     }
 
