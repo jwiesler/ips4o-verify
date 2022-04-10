@@ -20,9 +20,10 @@ public final class Buffers {
     /*@ public model_behaviour
       @ requires 0 <= value <= MAX_LEN;
       @
-      @ ensures Buffers.isBlockAligned(\result);
-      @ ensures \result >= value;
-      @ ensures \result - value < BUFFER_SIZE;
+      @ // checked by exhaustive search below
+      @ ensures_free Buffers.isBlockAligned(\result);
+      @ ensures_free \result >= value;
+      @ ensures_free \result - value < BUFFER_SIZE;
       @
       @ static no_state model int blockAligned(int value) {
       @     return (value + BUFFER_SIZE - 1) & (-BUFFER_SIZE);

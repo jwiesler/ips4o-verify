@@ -27,6 +27,21 @@ public final class BucketPointers {
       @*/
 
     /*@ public model_behaviour
+      @ requires 0 <= bucket <= this.num_buckets;
+      @ requires \invariant_for(this);
+      @
+      @ ensures 0 <= \result <= this.bucketStart(this.num_buckets) <= Buffers.MAX_LEN;
+      @ ensures Buffers.isBlockAligned(\result);
+      @ ensures bucket < this.num_buckets ==> \result <= this.bucketStart(bucket + 1);
+      @ ensures 0 < bucket <= this.num_buckets ==> this.bucketStart(bucket - 1) <= \result;
+      @
+      @ // final only no_state
+      @ model no_state int bucketStart(int bucket) {
+      @     return Buffers.blockAligned((int) this.bucket_starts[bucket]);
+      @ }
+      @*/
+
+    /*@ public model_behaviour
       @ requires 0 <= bucket < this.num_buckets;
       @
       @ ensures 0 <= this.bucketStart(bucket) <= \result <= this.bucketStart(bucket + 1) <= this.bucketStart(this.num_buckets);
@@ -85,34 +100,6 @@ public final class BucketPointers {
       @ // final only no_state
       @ model no_state int bucketSize(int bucket) {
       @     return this.bucketStart(bucket + 1) - this.bucketStart(bucket);
-      @ }
-      @*/
-
-    /*@ public model_behaviour
-      @ requires 0 <= bucket <= this.num_buckets;
-      @ requires \invariant_for(this);
-      @
-      @ ensures 0 <= \result <= this.bucketStart(this.num_buckets) <= Buffers.MAX_LEN;
-      @ ensures Buffers.isBlockAligned(\result);
-      @ ensures bucket < this.num_buckets ==> \result <= this.bucketStart(bucket + 1);
-      @ ensures 0 < bucket <= this.num_buckets ==> this.bucketStart(bucket - 1) <= \result;
-      @
-      @ // final only no_state
-      @ model no_state int bucketStart(int bucket) {
-      @     return Buffers.blockAligned((int) this.bucket_starts[bucket]);
-      @ }
-      @*/
-
-    /*@ public model_behaviour
-      @ requires 0 <= bucket < this.num_buckets;
-      @
-      @ ensures \result;
-      @
-      @ model boolean disjointnessLemma(int bucket) {
-      @     return (\forall int b; 0 <= b < this.num_buckets;
-      @         (b < bucket ==> this.bucketStart(b + 1) <= this.bucketStart(bucket)) &&
-      @         (b > bucket ==> this.bucketStart(bucket + 1) <= this.bucketStart(b))
-      @     );
       @ }
       @*/
 
@@ -321,7 +308,7 @@ public final class BucketPointers {
       @ requires 0 <= bucket < this.num_buckets;
       @ requires end - begin == (int) this.bucket_starts[num_buckets];
       @ requires end - begin < this.nextWriteOf(bucket) && Buffers.BUFFER_SIZE <= this.writtenCountOfBucket(bucket);
-      @ requires disjointBucketsLemma(bucket);
+      @ requires this.disjointBucketsLemma(bucket);
       @ ensures \result;
       @ model boolean overflowBucketUniqueLemma(int begin, int end, int bucket) {
       @     return (\forall int b; 0 <= b < this.num_buckets && b != bucket;

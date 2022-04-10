@@ -1,13 +1,246 @@
+de.wiesler.Constants[de.wiesler.Constants::isLog2Of(int,int)].JML model_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::bucketStartsOrdering([I,int,int)].JML model_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::countElement([I,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::countElementSplit([I,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::isSortedSeqTransitive(\seq)].JML model_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::isSortedSeqTransitiveFromSlice([I,int,int)].JML model_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::isSortedSlice([I,int,int)].JML model_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::isSortedSliceTransitive([I,int,int)].JML model_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::isValidBucketStarts([I,int)].JML model_behavior operation contract.0
+
 de.wiesler.Buffers[de.wiesler.Buffers::isBlockAligned(int)].JML model_behavior operation contract.0
 
 de.wiesler.Buffers[de.wiesler.Buffers::blockAligned(int)].JML model_behavior operation contract.0
 
+de.wiesler.Tree[de.wiesler.Tree::classOfFirstSplitters()].JML model_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::isClassifiedAs(int,int)].JML model_behavior operation contract.0
+
+de.wiesler.Classifier[de.wiesler.Classifier::classOf(int)].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::allElementsCounted([I,int,int,[I)].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::classOfClassifiedBlockFromFirst([I,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::classOfFirstSplitters()].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::classOfTrans()].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::countClassOfSliceEq([I,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::countClassOfSliceEqLemma([I,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::countElement([I,int,int,int,int,de.wiesler.Buffers,int)].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::isClassOfSlice([I,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::isClassOfSliceCopy([I,int,[I,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::isClassOfSliceSplit([I,int,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::isClassifiedAs(int,int)].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::isClassifiedBlock([I,int,int)].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::isClassifiedBlocksRange([I,int,int)].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::isClassifiedBlocksRangeSplit([I,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::isClassifiedUntil([I,int,int,int,[I,de.wiesler.Buffers)].JML model_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::isValidBufferLen(int,int)].JML model_behavior operation contract.0
+
+de.wiesler.Buffers[de.wiesler.Buffers::bufferElement(int,int)].JML model_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::bufferLen(int)].JML model_behavior operation contract.0
+
+de.wiesler.Buffers[de.wiesler.Buffers::bufferSizeForBucketLen(int)].JML model_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::count()].JML model_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::countElement(int)].JML model_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::countElementInBucket(int,int)].JML model_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::isBlockAlignedAdd(int,int)].JML model_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::isBlockAlignedSub(int,int)].JML model_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::isClassifiedWith(de.wiesler.Classifier)].JML model_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::isEmpty()].JML model_behavior operation contract.0
+
 de.wiesler.BucketPointers[de.wiesler.BucketPointers::bucketStart(int)].JML model_behavior operation contract.0
 
 de.wiesler.BucketPointers[de.wiesler.BucketPointers::bucketSize(int)].JML model_behavior operation contract.0
-de.wiesler.BucketPointers[de.wiesler.BucketPointers::nextWriteOf(int)].JML model_behavior operation contract.0
 de.wiesler.BucketPointers[de.wiesler.BucketPointers::lastReadOf(int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::nextWriteOf(int)].JML model_behavior operation contract.0
 
-de.wiesler.BucketPointers[de.wiesler.BucketPointers::writtenCountOfBucket(int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::alignedBoundariesKeepEnoughSpace(int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::countElement([I,int,int,[I,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::disjointBucketsAreaLemma([I,int,int,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::disjointBucketsLemma(int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::elementsToReadCountClassEq(de.wiesler.Classifier,[I,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::elementsToReadCountClassEqSplitBucket(de.wiesler.Classifier,[I,int,int,int,int,boolean)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::elementsToReadCountElement([I,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::elementsToReadCountElementSplitBucket([I,int,int,int,int,boolean)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::elementsToReadOfBucket([I,int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::elementsToReadOfBucketBlockClassified(de.wiesler.Classifier,[I,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::elementsToReadOfBucketCountClassEq(de.wiesler.Classifier,[I,int,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::elementsToReadOfBucketCountElement([I,int,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::initialReadAreasBlockClassified(de.wiesler.Classifier,[I,int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::initialReadAreasCount([I,int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::initialReadAreasCountBucketElements(de.wiesler.Classifier,[I,int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::initialReadAreasCountBucketElementsLemma(de.wiesler.Classifier,[I,int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::initialReadAreasCountLemma([I,int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::isAtInitialBucketState(int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::isAtInitialState()].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::isValidBucketPointer(int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::overflowBucketUniqueLemma(int,int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::readIsMaximal(int,int,int,int)].JML model_behavior operation contract.0
 de.wiesler.BucketPointers[de.wiesler.BucketPointers::remainingWriteCountOfBucket(int)].JML model_behavior operation contract.0
 de.wiesler.BucketPointers[de.wiesler.BucketPointers::toReadCountOfBucket(int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::writtenCountOfBucket(int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::writtenElementsCountElement([I,int,int,[I,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::writtenElementsCountElementSplitBucket([I,int,int,[I,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::writtenElementsOfBucket([I,int,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::writtenElementsOfBucketClassified(de.wiesler.Classifier,[I,int,int,[I,int)].JML model_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::writtenElementsOfBucketCountElement([I,int,int,[I,int,int)].JML model_behavior operation contract.0
+
+de.wiesler.Cleanup[de.wiesler.Cleanup::cleanedUpSlice([I,int,int,int,int,de.wiesler.Classifier,int)].JML model_behavior operation contract.0
+
+de.wiesler.Permute[de.wiesler.Permute::countBucketElementsEverywhere([I,int,int,int,de.wiesler.BucketPointers,de.wiesler.Classifier)].JML model_behavior operation contract.0
+
+de.wiesler.Partition[de.wiesler.Partition::allBucketsClassified([I,int,int,de.wiesler.Classifier,[I)].JML model_behavior operation contract.0
+de.wiesler.Partition[de.wiesler.Partition::bucketCountsToTotalCount([I,int,int,[I,int)].JML model_behavior operation contract.0
+
+de.wiesler.SampleParameters[de.wiesler.SampleParameters::isValidForLen(int)].JML model_behavior operation contract.0
+
+de.wiesler.Sorter[de.wiesler.Sorter::allBucketsInRangeSorted([I,int,int,[I,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::allBucketsPartitioned([I,int,int,[I,int)].JML model_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::allBucketsPartitionedLemma(de.wiesler.Classifier,[I,int,int,[I)].JML model_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::bucketIndexFromOffset([I,int,int)].JML model_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::equalityBucketsInRange([I,int,int,[I,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::equalityBucketsLemma(de.wiesler.Classifier,[I,int,int,[I)].JML model_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::isBucketPartitioned([I,int,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::isEqualityBucket([I,int,int)].JML model_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::nonEmptyBucketsLemma(de.wiesler.Classifier,[I,int,int,[I)].JML model_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::notAllValuesInOneBucket([I,int,int)].JML model_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::notAllValuesInOneBucketLemma([I,int,int)].JML model_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::smallBucketIsSorted([I,int,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::smallBucketsInRangeSorted([I,int,int,[I,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::sortednessFromPartitionSorted([I,int,int,[I,int)].JML model_behavior operation contract.0
+
+de.wiesler.Functions[de.wiesler.Functions::countElement([I,int,int,int)].JML accessible clause.0
+de.wiesler.Functions[de.wiesler.Functions::isSortedSlice([I,int,int)].JML accessible clause.0
+de.wiesler.Functions[de.wiesler.Functions::isSortedSliceTransitive([I,int,int)].JML accessible clause.0
+de.wiesler.Functions[de.wiesler.Functions::isValidBucketStarts([I,int)].JML accessible clause.0
+
+de.wiesler.Tree[java.lang.Object::<inv>()].JML accessible clause.0
+
+de.wiesler.Tree[de.wiesler.Tree::classify(int)].JML accessible clause.0
+
+de.wiesler.Classifier[java.lang.Object::<inv>()].JML accessible clause.0
+
+de.wiesler.Classifier[de.wiesler.Classifier::classify(int)].JML accessible clause.0
+
+de.wiesler.Classifier[de.wiesler.Classifier::classOf(int)].JML accessible clause.0
+
+de.wiesler.Classifier[de.wiesler.Classifier::isClassOfSlice([I,int,int,int)].JML accessible clause.0
+
+de.wiesler.Classifier[de.wiesler.Classifier::isClassifiedBlock([I,int,int)].JML accessible clause.0
+de.wiesler.Classifier[de.wiesler.Classifier::allElementsCounted([I,int,int,[I)].JML accessible clause.0
+de.wiesler.Classifier[de.wiesler.Classifier::countClassOfSliceEq([I,int,int,int)].JML accessible clause.0
+de.wiesler.Classifier[de.wiesler.Classifier::countElement([I,int,int,int,int,de.wiesler.Buffers,int)].JML accessible clause.0
+
+de.wiesler.Classifier[de.wiesler.Classifier::isClassifiedBlocksRange([I,int,int)].JML accessible clause.0
+
+de.wiesler.Classifier[de.wiesler.Classifier::isClassifiedUntil([I,int,int,int,[I,de.wiesler.Buffers)].JML accessible clause.0
+
+de.wiesler.Buffers[java.lang.Object::<inv>()].JML accessible clause.0
+
+de.wiesler.Buffers[de.wiesler.Buffers::bufferElement(int,int)].JML accessible clause.0
+de.wiesler.Buffers[de.wiesler.Buffers::bufferLen(int)].JML accessible clause.0
+
+de.wiesler.Buffers[de.wiesler.Buffers::count()].JML accessible clause.0
+de.wiesler.Buffers[de.wiesler.Buffers::countElement(int)].JML accessible clause.0
+de.wiesler.Buffers[de.wiesler.Buffers::isClassifiedWith(de.wiesler.Classifier)].JML accessible clause.0
+
+de.wiesler.BucketPointers[java.lang.Object::<inv>()].JML accessible clause.0
+
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::lastReadOf(int)].JML accessible clause.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::nextWriteOf(int)].JML accessible clause.0
+
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::elementsToReadOfBucketBlockClassified(de.wiesler.Classifier,[I,int,int,int)].JML accessible clause.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::elementsToReadOfBucketCountClassEq(de.wiesler.Classifier,[I,int,int,int,int)].JML accessible clause.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::elementsToReadOfBucketCountElement([I,int,int,int,int)].JML accessible clause.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::isAtInitialBucketState(int)].JML accessible clause.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::remainingWriteCountOfBucket(int)].JML accessible clause.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::toReadCountOfBucket(int)].JML accessible clause.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::writtenCountOfBucket(int)].JML accessible clause.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::writtenElementsOfBucketClassified(de.wiesler.Classifier,[I,int,int,[I,int)].JML accessible clause.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::writtenElementsOfBucketCountElement([I,int,int,[I,int,int)].JML accessible clause.0
+
+de.wiesler.Cleanup[de.wiesler.Cleanup::cleanedUpSlice([I,int,int,int,int,de.wiesler.Classifier,int)].JML accessible clause.0
+
+de.wiesler.SampleParameters[de.wiesler.SampleParameters::isValidForLen(int)].JML accessible clause.0
+
+de.wiesler.Sorter[de.wiesler.Sorter::allBucketsInRangeSorted([I,int,int,[I,int,int,int)].JML accessible clause.0
+de.wiesler.Sorter[de.wiesler.Sorter::allBucketsPartitioned([I,int,int,[I,int)].JML accessible clause.0
+de.wiesler.Sorter[de.wiesler.Sorter::equalityBucketsInRange([I,int,int,[I,int,int,int)].JML accessible clause.0
+de.wiesler.Sorter[de.wiesler.Sorter::isBucketPartitioned([I,int,int,int,int)].JML accessible clause.0
+de.wiesler.Sorter[de.wiesler.Sorter::isEqualityBucket([I,int,int)].JML accessible clause.0
+de.wiesler.Sorter[de.wiesler.Sorter::notAllValuesInOneBucket([I,int,int)].JML accessible clause.0
+de.wiesler.Sorter[de.wiesler.Sorter::smallBucketIsSorted([I,int,int,int,int)].JML accessible clause.0
+de.wiesler.Sorter[de.wiesler.Sorter::smallBucketsInRangeSorted([I,int,int,[I,int,int,int)].JML accessible clause.0
+
+de.wiesler.Storage[java.lang.Object::<inv>()].JML accessible clause.0
+
+
+
+de.wiesler.Constants[de.wiesler.Constants::log2(int)].JML normal_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::copy_nonoverlapping([I,int,[I,int,int)].JML normal_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::copy_unique([I,int,int,int,int,[I)].JML normal_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::fill([I,int,int,int)].JML normal_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::max(int,int)].JML normal_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::min(int,int)].JML normal_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::select_n([I,int,int,int)].JML normal_behavior operation contract.0
+
+de.wiesler.Increment[de.wiesler.Increment::Increment(boolean,int)].JML normal_behavior operation contract.0
+de.wiesler.PartitionResult[de.wiesler.PartitionResult::PartitionResult(int,boolean)].JML normal_behavior operation contract.0
+
+de.wiesler.Buffers[de.wiesler.Buffers::Buffers([I,[I,int)].JML normal_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::align_to_next_block(int)].JML normal_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::distribute(int,[I,int,int,int,int)].JML normal_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::flush(int,[I,int,int)].JML normal_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::len(int)].JML normal_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::push(int,int)].JML normal_behavior operation contract.0
+
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::BucketPointers([I,int,int,[I)].JML normal_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::decrement_read(int)].JML normal_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::hasRemainingRead(int)].JML normal_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::increment_write(int)].JML normal_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::write(int)].JML normal_behavior operation contract.0
+
+de.wiesler.Tree[de.wiesler.Tree::build(int,[I,int,int)].JML normal_behavior operation contract.0
+
+de.wiesler.Tree[de.wiesler.Tree::Tree([I,[I,int)].JML normal_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::classify(int)].JML normal_behavior operation contract.0
+
+de.wiesler.Tree[de.wiesler.Tree::classify_all([I,int,int,[I)].JML normal_behavior operation contract.0
+
+de.wiesler.Classifier[de.wiesler.Classifier::Classifier([I,[I,int,boolean)].JML normal_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::num_buckets()].JML normal_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::equal_buckets()].JML normal_behavior operation contract.0
+
+de.wiesler.Classifier[de.wiesler.Classifier::from_sorted_samples([I,[I,int,int)].JML normal_behavior operation contract.0
+
+de.wiesler.Classifier[de.wiesler.Classifier::classify(int)].JML normal_behavior operation contract.0
+
+de.wiesler.Classifier[de.wiesler.Classifier::classify_all([I,int,int,[I)].JML normal_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::finish_batch([I,[I,int,int,int,int,[I,de.wiesler.Buffers)].JML normal_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::calculate_bucket_starts([I,int,int,int,[I,de.wiesler.Buffers)].JML normal_behavior operation contract.0
+
+de.wiesler.Classifier[de.wiesler.Classifier::classify_locally_batched([I,int,int,[I,de.wiesler.Buffers)].JML normal_behavior operation contract.0
+
+de.wiesler.Classifier[de.wiesler.Classifier::classify_locally([I,int,int,[I,de.wiesler.Buffers)].JML normal_behavior operation contract.0
+
+de.wiesler.Sorter[de.wiesler.Sorter::base_case_sort([I,int,int)].JML normal_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::fallback_sort([I,int,int)].JML normal_behavior operation contract.0
+
+de.wiesler.Cleanup[de.wiesler.Cleanup::cleanup([I,int,int,de.wiesler.Buffers,[I,de.wiesler.BucketPointers,de.wiesler.Classifier,[I)].JML normal_behavior operation contract.0
+
+de.wiesler.Permute[de.wiesler.Permute::permute([I,int,int,de.wiesler.Classifier,de.wiesler.BucketPointers,[I,[I,[I)].JML normal_behavior operation contract.0
+de.wiesler.Permute[de.wiesler.Permute::place_block(int,[I,int,int,de.wiesler.Classifier,de.wiesler.BucketPointers,[I,[I,[I)].JML normal_behavior operation contract.0
+de.wiesler.Permute[de.wiesler.Permute::swap_block(int,[I,int,int,de.wiesler.Classifier,de.wiesler.BucketPointers,[I,[I,[I)].JML normal_behavior operation contract.0
+
+de.wiesler.Storage[de.wiesler.Storage::createArray(int)].JML normal_behavior operation contract.0
+
+de.wiesler.Partition[de.wiesler.Partition::partition([I,int,int,[I,de.wiesler.Classifier,de.wiesler.Storage)].JML normal_behavior operation contract.0
+de.wiesler.SampleParameters[de.wiesler.SampleParameters::SampleParameters(int)].JML normal_behavior operation contract.0
+de.wiesler.SampleParameters[de.wiesler.SampleParameters::log_buckets(int)].JML normal_behavior operation contract.0
+de.wiesler.SampleParameters[de.wiesler.SampleParameters::oversampling_factor(int)].JML normal_behavior operation contract.0
+de.wiesler.Storage[de.wiesler.Storage::Storage()].JML normal_behavior operation contract.0
+
+de.wiesler.Sorter[de.wiesler.Sorter::partition([I,int,int,[I,de.wiesler.Storage)].JML normal_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::sample([I,int,int,de.wiesler.Storage)].JML normal_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::sample_sort([I,int,int,de.wiesler.Storage)].JML normal_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::sample_sort_recurse_on([I,int,int,de.wiesler.Storage,[I,int,boolean,int)].JML normal_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::sort([I,int,int,de.wiesler.Storage)].JML normal_behavior operation contract.0
+
+de.wiesler.Sorter[de.wiesler.Sorter::sort([I)].JML normal_behavior operation contract.0
