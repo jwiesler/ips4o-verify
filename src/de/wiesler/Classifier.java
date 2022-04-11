@@ -133,7 +133,7 @@ public final class Classifier {
       @ requires tree != sorted_splitters;
       @ requires 1 <= log_buckets <= Constants.LOG_MAX_BUCKETS;
       @ requires 0 <= (1 << log_buckets) <= sorted_splitters.length;
-      @ requires Functions.isSortedSlice(sorted_splitters, 0, 1 << log_buckets);
+      @ requires Functions.isSortedSliceTransitive(sorted_splitters, 0, 1 << log_buckets);
       @ requires (1 << log_buckets) <= tree.length;
       @ requires sorted_splitters[(1 << log_buckets) - 1] == sorted_splitters[(1 << log_buckets) - 2];
       @
@@ -153,7 +153,13 @@ public final class Classifier {
         //@ assert this.tree.log_buckets == log_buckets;
         //@ assert sorted_splitters[num_splitters] == sorted_splitters[num_splitters - 1];
         this.sorted_splitters = sorted_splitters;
-        this.num_buckets = num_buckets << Constants.toInt(equal_buckets);
+        /*@ normal_behaviour
+          @ ensures this.num_buckets == (equal_buckets ? 2 * num_buckets : num_buckets);
+          @ assignable this.num_buckets;
+          @*/
+        {
+            this.num_buckets = equal_buckets ? 2 * num_buckets : num_buckets;
+        }
         this.equal_buckets = equal_buckets;
     }
 

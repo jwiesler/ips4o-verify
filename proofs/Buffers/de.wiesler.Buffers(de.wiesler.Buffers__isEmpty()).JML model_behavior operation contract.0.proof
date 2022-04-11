@@ -2,7 +2,7 @@
 
 \settings {
 "#Proof-Settings-Config-File
-#Tue Apr 05 14:40:38 CEST 2022
+#Mon Apr 11 18:43:14 CEST 2022
 [NewSMT]NoTypeHierarchy=false
 [Labels]UseOriginLabels=true
 [StrategyProperty]QUERYAXIOM_OPTIONS_KEY=QUERYAXIOM_OFF
@@ -50,7 +50,7 @@
 \javaSource "../../src";
 
 \proofObligation "#Proof Obligation Settings
-#Tue Apr 05 14:40:38 CEST 2022
+#Mon Apr 11 18:43:14 CEST 2022
 contract=de.wiesler.Buffers[de.wiesler.Buffers\\:\\:isEmpty()].JML model_behavior operation contract.0
 name=de.wiesler.Buffers[de.wiesler.Buffers\\:\\:isEmpty()].JML model_behavior operation contract.0
 class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
@@ -58,11 +58,12 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
 
 \proof {
 (keyLog "0" (keyUser "Julian" ) (keyVersion "802059dea3"))
+(keyLog "1" (keyUser "Julian" ) (keyVersion "e1a85b31e7"))
 
-(autoModeTime "145")
+(autoModeTime "442")
 
 (branch "dummy ID"
- (builtin "One Step Simplification" (formula "1") (newnames "heapAtPre_0,heapBefore,o,f"))
+ (builtin "One Step Simplification" (formula "1") (newnames "heapAtPre,heapBefore,o,f"))
 (rule "impRight" (formula "1"))
 (rule "andLeft" (formula "1"))
 (rule "andLeft" (formula "1"))
@@ -168,15 +169,11 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
 (rule "mul_literals" (formula "9") (term "1,0,0,0"))
 (rule "Definition_axiom_for_count_in_de_wiesler_Buffers" (formula "14") (term "0,1,0") (inst "b=b"))
 (rule "translateJavaCastInt" (formula "14") (term "0,1,0"))
-(rule "Contract_axiom_for_countElement_in_Buffers" (formula "14") (term "0,0,1,1"))
-(rule "replace_known_left" (formula "1") (term "1,0,0,0") (ifseqformula "2"))
- (builtin "One Step Simplification" (formula "1") (ifInst ""  (formula "3")) (ifInst ""  (formula "14")))
-(rule "true_left" (formula "1"))
+(rule "Definition_axiom_for_bufferLen_in_de_wiesler_Buffers" (formula "14") (term "0,1,0,0,0"))
+(rule "Definition_axiom_for_bufferLen_in_de_wiesler_Buffers" (formula "14") (term "0,1,0,0,1"))
+(rule "Definition_axiom_for_bufferLen_in_de_wiesler_Buffers" (formula "14") (term "2,0,1,0"))
 (rule "Definition_axiom_for_countElement_in_de_wiesler_Buffers" (formula "14") (term "0,0,1,1") (inst "b=b"))
 (rule "translateJavaCastInt" (formula "14") (term "0,0,1,1"))
-(rule "Definition_axiom_for_bufferLen_in_de_wiesler_Buffers" (formula "14") (term "0,1,0,0,1"))
-(rule "Definition_axiom_for_bufferLen_in_de_wiesler_Buffers" (formula "14") (term "0,1,0,0,0"))
-(rule "Definition_axiom_for_bufferLen_in_de_wiesler_Buffers" (formula "14") (term "2,0,1,0"))
 (rule "Definition_axiom_for_countElementInBucket_in_de_wiesler_Buffers" (formula "14") (term "2,0,0,1,1"))
  (builtin "One Step Simplification" (formula "14"))
 (rule "translateJavaAddInt" (formula "14") (term "3,2,0,0,1,1"))
@@ -265,32 +262,18 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
    (rule "inEqSimp_sepNegMonomial0" (formula "3"))
    (rule "polySimp_mulLiterals" (formula "3") (term "0"))
    (rule "polySimp_elimOne" (formula "3") (term "0"))
-   (rule "arrayLengthNotNegative" (formula "13") (term "0"))
-   (rule "applyEq" (formula "13") (term "0") (ifseqformula "14"))
-   (rule "qeq_literals" (formula "13"))
-   (rule "true_left" (formula "13"))
-   (rule "arrayLengthIsAShort" (formula "13") (term "0"))
-    (builtin "One Step Simplification" (formula "13"))
-   (rule "true_left" (formula "13"))
-   (rule "arrayLengthNotNegative" (formula "12") (term "0"))
-   (rule "applyEq" (formula "12") (term "0") (ifseqformula "13"))
-   (rule "qeq_literals" (formula "12"))
-   (rule "true_left" (formula "12"))
-   (rule "arrayLengthIsAShort" (formula "12") (term "0"))
-    (builtin "One Step Simplification" (formula "12"))
-   (rule "true_left" (formula "12"))
    (rule "allLeft" (formula "17") (inst "t=b_0"))
    (rule "inEqSimp_commuteGeq" (formula "17") (term "1,0"))
-   (rule "inEqSimp_contradInEq1" (formula "17") (term "0,0") (ifseqformula "4"))
-   (rule "qeq_literals" (formula "17") (term "0,0,0"))
+   (rule "inEqSimp_contradInEq1" (formula "17") (term "1,0") (ifseqformula "6"))
+   (rule "inEqSimp_homoInEq1" (formula "17") (term "0,1,0"))
+   (rule "polySimp_pullOutFactor1b" (formula "17") (term "0,0,1,0"))
+   (rule "add_literals" (formula "17") (term "1,1,0,0,1,0"))
+   (rule "times_zero_1" (formula "17") (term "1,0,0,1,0"))
+   (rule "add_zero_right" (formula "17") (term "0,0,1,0"))
+   (rule "leq_literals" (formula "17") (term "0,1,0"))
     (builtin "One Step Simplification" (formula "17"))
-   (rule "inEqSimp_contradInEq1" (formula "17") (term "0") (ifseqformula "6"))
-   (rule "inEqSimp_homoInEq1" (formula "17") (term "0,0"))
-   (rule "polySimp_pullOutFactor1b" (formula "17") (term "0,0,0"))
-   (rule "add_literals" (formula "17") (term "1,1,0,0,0"))
-   (rule "times_zero_1" (formula "17") (term "1,0,0,0"))
-   (rule "add_zero_right" (formula "17") (term "0,0,0"))
-   (rule "leq_literals" (formula "17") (term "0,0"))
+   (rule "inEqSimp_contradInEq1" (formula "17") (term "0") (ifseqformula "4"))
+   (rule "qeq_literals" (formula "17") (term "0,0"))
     (builtin "One Step Simplification" (formula "17"))
    (rule "inEqSimp_exactShadow3" (formula "3") (ifseqformula "17"))
    (rule "polySimp_rightDist" (formula "3") (term "0,0"))
@@ -303,19 +286,6 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
    (rule "inEqSimp_sepNegMonomial1" (formula "3"))
    (rule "polySimp_mulLiterals" (formula "3") (term "0"))
    (rule "polySimp_elimOne" (formula "3") (term "0"))
-   (rule "allLeft" (formula "17") (inst "t=b_0"))
-   (rule "inEqSimp_commuteGeq" (formula "17") (term "1,0"))
-   (rule "inEqSimp_contradInEq1" (formula "17") (term "1,0") (ifseqformula "7"))
-   (rule "inEqSimp_homoInEq1" (formula "17") (term "0,1,0"))
-   (rule "polySimp_pullOutFactor1b" (formula "17") (term "0,0,1,0"))
-   (rule "add_literals" (formula "17") (term "1,1,0,0,1,0"))
-   (rule "times_zero_1" (formula "17") (term "1,0,0,1,0"))
-   (rule "add_zero_right" (formula "17") (term "0,0,1,0"))
-   (rule "leq_literals" (formula "17") (term "0,1,0"))
-    (builtin "One Step Simplification" (formula "17"))
-   (rule "inEqSimp_contradInEq1" (formula "17") (term "0") (ifseqformula "5"))
-   (rule "qeq_literals" (formula "17") (term "0,0"))
-    (builtin "One Step Simplification" (formula "17"))
    (rule "allLeft" (formula "8") (inst "t=b_0"))
    (rule "inEqSimp_commuteGeq" (formula "8") (term "1,0"))
    (rule "inEqSimp_contradInEq1" (formula "8") (term "0,0") (ifseqformula "5"))
@@ -329,13 +299,6 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
    (rule "add_zero_right" (formula "8") (term "0,0,0"))
    (rule "leq_literals" (formula "8") (term "0,0"))
     (builtin "One Step Simplification" (formula "8"))
-   (rule "applyEq" (formula "4") (term "0") (ifseqformula "8"))
-   (rule "inEqSimp_homoInEq1" (formula "4"))
-   (rule "times_zero_2" (formula "4") (term "1,0"))
-   (rule "add_zero_right" (formula "4") (term "0"))
-   (rule "applyEq" (formula "18") (term "0") (ifseqformula "8"))
-   (rule "qeq_literals" (formula "18"))
-   (rule "true_left" (formula "18"))
    (rule "applyEq" (formula "19") (term "0") (ifseqformula "8"))
    (rule "leq_literals" (formula "19"))
    (rule "true_left" (formula "19"))

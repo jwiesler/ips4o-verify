@@ -30,7 +30,7 @@ public final class Tree {
       @ public invariant this.num_buckets == (1 << this.log_buckets);
       @ public invariant 2 <= this.num_buckets <= this.tree.length;
       @ public invariant this.num_buckets <= this.sorted_splitters.length;
-      @ public invariant Functions.isSortedSlice(this.sorted_splitters, 0, this.num_buckets - 1);
+      @ public invariant Functions.isSortedSliceTransitive(this.sorted_splitters, 0, this.num_buckets - 1);
       @
       @ accessible \inv: this.tree[*], this.sorted_splitters[*];
       @*/
@@ -38,7 +38,7 @@ public final class Tree {
     /*@ public normal_behaviour
       @ requires 1 <= log_buckets <= Constants.LOG_MAX_BUCKETS;
       @ requires 0 <= (1 << log_buckets) <= sorted_splitters.length;
-      @ requires Functions.isSortedSlice(sorted_splitters, 0, (1 << log_buckets) - 1);
+      @ requires Functions.isSortedSliceTransitive(sorted_splitters, 0, (1 << log_buckets) - 1);
       @ requires (1 << log_buckets) <= tree.length;
       @ requires \disjoint(sorted_splitters[*], tree[*]);
       @
