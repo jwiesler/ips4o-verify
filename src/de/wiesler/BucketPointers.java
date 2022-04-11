@@ -284,10 +284,25 @@ public final class BucketPointers {
 
     /*@ public model_behaviour
       @ requires 0 <= begin <= end;
+      @ requires end - begin == (int) this.bucket_starts[num_buckets];
+      @ ensures \result;
+      @ model boolean overflowBucketCharacteristic(int begin, int end) {
+      @     return (\forall int b; 0 <= b < this.num_buckets;
+      @         end - begin < this.nextWriteOf(b) && Buffers.BUFFER_SIZE <= this.writtenCountOfBucket(b) ==>
+      @             this.bucketStart(b) < end - begin &&
+      @             this.nextWriteOf(b) == this.bucketStart(b + 1) &&
+      @             this.bucketStart(b + 1) == this.bucketStart(this.num_buckets)
+      @     );
+      @ }
+      @*/
+
+    /*@ public model_behaviour
+      @ requires 0 <= begin <= end;
       @ requires 0 <= bucket < this.num_buckets;
       @ requires end - begin == (int) this.bucket_starts[num_buckets];
       @ requires end - begin < this.nextWriteOf(bucket) && Buffers.BUFFER_SIZE <= this.writtenCountOfBucket(bucket);
       @ requires this.disjointBucketsLemma(bucket);
+      @ requires this.overflowBucketCharacteristic(begin, end);
       @ ensures \result;
       @ model boolean overflowBucketUniqueLemma(int begin, int end, int bucket) {
       @     return (\forall int b; 0 <= b < this.num_buckets && b != bucket;
