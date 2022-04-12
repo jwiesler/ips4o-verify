@@ -531,12 +531,12 @@ public final class BucketPointers {
       @ ensures \old(this.writtenCountOfBucket(bucket)) + Buffers.BUFFER_SIZE == this.writtenCountOfBucket(bucket);
       @ ensures this.lastReadOf(bucket) == \old(this.lastReadOf(bucket));
       @ // read count either decreased or stayed 0
-      @ ensures \old(this.toReadCountOfBucket(bucket)) > 0 ?
+      @ ensures \old(this.toReadCountOfBucket(bucket)) >= Buffers.BUFFER_SIZE ?
       @     this.toReadCountOfBucket(bucket) < \old(this.toReadCountOfBucket(bucket)) :
       @     this.toReadCountOfBucket(bucket) == 0;
       @
       @ ensures \result.position == \old(this.nextWriteOf(bucket));
-      @ ensures \result.occupied <==> \old(this.toReadCountOfBucket(bucket)) > 0;
+      @ ensures \result.occupied <==> \old(this.toReadCountOfBucket(bucket)) >= Buffers.BUFFER_SIZE;
       @
       @ assignable this.buffer[2 * bucket + 1];
       @*/
