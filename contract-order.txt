@@ -12,6 +12,7 @@ de.wiesler.Buffers[de.wiesler.Buffers::blockAligned(int)].JML model_behavior ope
 de.wiesler.Tree[de.wiesler.Tree::Tree([I,[I,int)].JML normal_behavior operation contract.0
 de.wiesler.Tree[de.wiesler.Tree::build(int,[I,int,int)].JML normal_behavior operation contract.0
 
+de.wiesler.Storage[de.wiesler.Storage::Storage()].JML normal_behavior operation contract.0
 de.wiesler.Buffers[de.wiesler.Buffers::Buffers([I,[I,int)].JML normal_behavior operation contract.0
 de.wiesler.BucketPointers[de.wiesler.BucketPointers::BucketPointers([I,int,int,[I)].JML normal_behavior operation contract.0
 de.wiesler.Classifier[de.wiesler.Classifier::Classifier([I,[I,int,boolean)].JML normal_behavior operation contract.0
@@ -224,8 +225,9 @@ de.wiesler.Classifier[de.wiesler.Classifier::classify_locally_batched([I,int,int
 
 de.wiesler.Classifier[de.wiesler.Classifier::classify_locally([I,int,int,[I,de.wiesler.Buffers)].JML normal_behavior operation contract.0
 
-de.wiesler.Sorter[de.wiesler.Sorter::base_case_sort([I,int,int)].JML normal_behavior operation contract.0
 de.wiesler.Sorter[de.wiesler.Sorter::fallback_sort([I,int,int)].JML normal_behavior operation contract.0
+
+de.wiesler.Sorter[de.wiesler.Sorter::base_case_sort([I,int,int)].JML normal_behavior operation contract.0
 
 de.wiesler.Cleanup[de.wiesler.Cleanup::cleanup([I,int,int,de.wiesler.Buffers,[I,de.wiesler.BucketPointers,de.wiesler.Classifier,[I)].JML normal_behavior operation contract.0
 
