@@ -116,8 +116,7 @@ public final class Tree {
     int classify(int value) {
         int b = 1;
 
-        /*@
-          @ loop_invariant 0 <= i && i <= this.log_buckets;
+        /*@ loop_invariant 0 <= i && i <= this.log_buckets;
           @
           @ loop_invariant (1 << i) <= b;
           @ loop_invariant i == 0 ==> b == 1;
