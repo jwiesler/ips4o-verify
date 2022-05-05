@@ -26,7 +26,7 @@ public final class Storage {
     /*@ public instance invariant this.tree.length == Classifier.STORAGE_SIZE &&
       @     this.splitters.length == Classifier.STORAGE_SIZE &&
       @     this.bucket_pointers.length == 2 * Constants.MAX_BUCKETS &&
-      @     this.buffers_buffer.length == 2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS &&
+      @     this.buffers_buffer.length == Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS &&
       @     this.buffers_indices.length == Constants.MAX_BUCKETS &&
       @     this.swap_1.length == Buffers.BUFFER_SIZE &&
       @     this.swap_2.length == Buffers.BUFFER_SIZE &&
@@ -79,7 +79,7 @@ public final class Storage {
         this.splitters = createArray(Classifier.STORAGE_SIZE);
         this.tree = createArray(Classifier.STORAGE_SIZE);
         this.bucket_pointers = createArray(2 * Constants.MAX_BUCKETS);
-        this.buffers_buffer = createArray(2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS);
+        this.buffers_buffer = createArray(Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS);
         this.buffers_indices = createArray(Constants.MAX_BUCKETS);
         this.swap_1 = createArray(Buffers.BUFFER_SIZE);
         this.swap_2 = createArray(Buffers.BUFFER_SIZE);

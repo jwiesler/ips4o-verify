@@ -2,7 +2,7 @@
 
 \settings {
 "#Proof-Settings-Config-File
-#Thu Apr 14 14:08:48 CEST 2022
+#Thu May 05 18:16:06 CEST 2022
 [NewSMT]NoTypeHierarchy=false
 [Labels]UseOriginLabels=true
 [StrategyProperty]QUERYAXIOM_OPTIONS_KEY=QUERYAXIOM_ON
@@ -50,7 +50,7 @@
 \javaSource "../../src";
 
 \proofObligation "#Proof Obligation Settings
-#Thu Apr 14 14:08:48 CEST 2022
+#Thu May 05 18:16:06 CEST 2022
 contract=de.wiesler.Sorter[de.wiesler.Sorter\\:\\:sort([I)].JML normal_behavior operation contract.0
 name=de.wiesler.Sorter[de.wiesler.Sorter\\:\\:sort([I)].JML normal_behavior operation contract.0
 class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
@@ -58,11 +58,12 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
 
 \proof {
 (keyLog "0" (keyUser "Julian" ) (keyVersion "e1a85b31e7"))
+(keyLog "1" (keyUser "Julian" ) (keyVersion "e1a85b31e7"))
 
-(autoModeTime "5478")
+(autoModeTime "5601")
 
 (branch "dummy ID"
- (builtin "One Step Simplification" (formula "1") (newnames "heapAtPre_0,o,f"))
+ (builtin "One Step Simplification" (formula "1") (newnames "heapAtPre,o,f"))
 (rule "impRight" (formula "1"))
 (rule "andLeft" (formula "1"))
 (rule "andLeft" (formula "1"))
@@ -375,15 +376,15 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
                   (rule "andRight" (formula "16"))
                   (branch "Case 1"
                      (rule "andRight" (formula "16"))
-                     (branch
+                     (branch "Case 1"
                         (rule "andRight" (formula "16"))
-                        (branch
+                        (branch "Case 1"
                            (rule "andRight" (formula "16"))
                            (branch
                               (rule "leq_literals" (formula "16"))
                               (rule "closeTrue" (formula "16"))
                            )
-                           (branch
+                           (branch "Case 2"
                               (rule "inEqSimp_leqRight" (formula "16"))
                               (rule "add_zero_right" (formula "1") (term "0"))
                               (rule "polySimp_mulComm0" (formula "1") (term "1,0"))
@@ -398,9 +399,7 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
                                (builtin "One Step Simplification" (formula "10"))
                               (rule "translateJavaMulInt" (formula "10") (term "1,1,0,0,0,0,1,0,0"))
                               (rule "translateJavaMulInt" (formula "10") (term "1,1,0,0,0,0,0,1,0,0"))
-                              (rule "translateJavaMulInt" (formula "10") (term "0,1,1,0,0,0,0,1,0,0"))
                               (rule "mul_literals" (formula "10") (term "1,1,0,0,0,0,0,1,0,0"))
-                              (rule "polySimp_mulLiterals" (formula "10") (term "1,1,0,0,0,0,1,0,0"))
                               (rule "mul_literals" (formula "10") (term "1,1,0,0,0,0,1,0,0"))
                               (rule "andLeft" (formula "10"))
                               (rule "andLeft" (formula "11"))
@@ -408,32 +407,32 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
                               (rule "andLeft" (formula "12"))
                               (rule "andLeft" (formula "10"))
                               (rule "andLeft" (formula "13"))
-                              (rule "andLeft" (formula "11"))
                               (rule "andLeft" (formula "10"))
+                              (rule "andLeft" (formula "12"))
                               (rule "andLeft" (formula "15"))
-                              (rule "andLeft" (formula "12"))
                               (rule "andLeft" (formula "10"))
                               (rule "notLeft" (formula "12"))
+                              (rule "andLeft" (formula "12"))
                               (rule "andLeft" (formula "16"))
+                              (rule "notLeft" (formula "11"))
+                              (rule "andLeft" (formula "10"))
                               (rule "andLeft" (formula "12"))
+                              (rule "andLeft" (formula "17"))
                               (rule "andLeft" (formula "10"))
                               (rule "notLeft" (formula "12"))
-                              (rule "andLeft" (formula "17"))
                               (rule "andLeft" (formula "12"))
-                              (rule "notLeft" (formula "11"))
-                              (rule "andLeft" (formula "10"))
                               (rule "andLeft" (formula "18"))
-                              (rule "andLeft" (formula "12"))
-                              (rule "notLeft" (formula "11"))
                               (rule "andLeft" (formula "10"))
+                              (rule "notLeft" (formula "12"))
+                              (rule "andLeft" (formula "12"))
                               (rule "andLeft" (formula "19"))
-                              (rule "andLeft" (formula "12"))
-                              (rule "notLeft" (formula "11"))
                               (rule "andLeft" (formula "10"))
+                              (rule "notLeft" (formula "12"))
+                              (rule "andLeft" (formula "12"))
                               (rule "andLeft" (formula "20"))
-                              (rule "andLeft" (formula "12"))
                               (rule "notLeft" (formula "11"))
                               (rule "andLeft" (formula "10"))
+                              (rule "andLeft" (formula "12"))
                               (rule "andLeft" (formula "21"))
                               (rule "notLeft" (formula "11"))
                               (rule "notLeft" (formula "10"))
@@ -547,34 +546,42 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
                               (rule "disjointDefinition" (formula "21"))
                                (builtin "One Step Simplification" (formula "21"))
                               (rule "notLeft" (formula "21"))
-                              (rule "disjointDefinition" (formula "19"))
-                               (builtin "One Step Simplification" (formula "19"))
-                              (rule "notLeft" (formula "19"))
+                              (rule "disjointDefinition" (formula "20"))
+                               (builtin "One Step Simplification" (formula "20"))
+                              (rule "notLeft" (formula "20"))
                               (rule "disjointDefinition" (formula "19"))
                                (builtin "One Step Simplification" (formula "19"))
                               (rule "notLeft" (formula "19"))
                               (rule "applyEq" (formula "9") (term "0") (ifseqformula "18"))
                               (rule "subsetUnionLeft" (formula "9"))
                               (rule "andLeft" (formula "9"))
-                              (rule "subsetUnionLeft" (formula "10"))
-                              (rule "andLeft" (formula "10"))
                               (rule "subsetUnionLeft" (formula "9"))
                               (rule "andLeft" (formula "9"))
                               (rule "subsetUnionLeft" (formula "11"))
                               (rule "andLeft" (formula "11"))
-                              (rule "subsetUnionLeft" (formula "13"))
-                              (rule "andLeft" (formula "13"))
-                              (rule "subsetUnionLeft" (formula "10"))
-                              (rule "andLeft" (formula "10"))
                               (rule "subsetUnionLeft" (formula "9"))
                               (rule "andLeft" (formula "9"))
-                              (rule "commuteUnion_2" (formula "25") (term "0,1"))
+                              (rule "subsetUnionLeft" (formula "11"))
+                              (rule "andLeft" (formula "11"))
+                              (rule "subsetUnionLeft" (formula "14"))
+                              (rule "andLeft" (formula "14"))
+                              (rule "subsetUnionLeft" (formula "13"))
+                              (rule "andLeft" (formula "13"))
+                              (rule "commuteUnion" (formula "25") (term "0,1"))
                               (rule "commuteUnion" (formula "25") (term "1,1,1"))
-                              (rule "commuteUnion" (formula "25") (term "0,0,1"))
+                              (rule "commuteUnion" (formula "25") (term "1,0,1"))
+                              (rule "associativeLawUnion" (formula "25") (term "1"))
+                              (rule "associativeLawUnion" (formula "25") (term "1"))
+                              (rule "associativeLawUnion" (formula "25") (term "0,0,1"))
+                              (rule "commuteUnion_2" (formula "25") (term "0,1"))
+                              (rule "commuteUnion_2" (formula "25") (term "0,0,0,1"))
+                              (rule "commuteUnion_2" (formula "25") (term "0,0,1"))
+                              (rule "associativeLawUnion" (formula "25") (term "0,0,1"))
                               (rule "commuteUnion_2" (formula "25") (term "0,1"))
                               (rule "commuteUnion_2" (formula "25") (term "1"))
-                              (rule "associativeLawUnion" (formula "25") (term "0,1"))
-                              (rule "associativeLawUnion" (formula "25") (term "0,1"))
+                              (rule "arrayLengthIsAShort" (formula "1") (term "0"))
+                               (builtin "One Step Simplification" (formula "1"))
+                              (rule "true_left" (formula "1"))
                               (rule "arrayLengthNotNegative" (formula "1") (term "0"))
                               (rule "inEqSimp_contradInEq0" (formula "1") (ifseqformula "2"))
                               (rule "qeq_literals" (formula "1") (term "0"))
@@ -605,7 +612,7 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
                         (branch "Case 2"
                            (rule "disjointDefinition" (formula "16"))
                            (rule "commuteIntersection" (formula "16") (term "0"))
-                           (rule "equalityToElementOfRight" (formula "16") (inst "ov=ov") (inst "fv=fv"))
+                           (rule "equalityToElementOfRight" (formula "16") (inst "fv=fv") (inst "ov=ov"))
                             (builtin "One Step Simplification" (formula "16"))
                            (rule "allRight" (formula "16") (inst "sk=ov_0"))
                            (rule "allRight" (formula "16") (inst "sk=fv_0"))

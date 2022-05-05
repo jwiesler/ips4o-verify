@@ -158,7 +158,7 @@ public final class Buffers {
 
     /*@
       @ invariant this.buffer != this.indices;
-      @ invariant this.buffer.length == 2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS;
+      @ invariant this.buffer.length == Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS;
       @ invariant this.indices.length == Constants.MAX_BUCKETS;
       @ invariant 0 <= this.num_buckets <= Constants.MAX_BUCKETS;
       @ invariant (\forall int b; 0 <= b && b < this.num_buckets; 0 <= this.indices[b] && this.indices[b] <= BUFFER_SIZE);
@@ -168,7 +168,7 @@ public final class Buffers {
 
     /*@ public normal_behaviour
       @ requires buffer != indices;
-      @ requires buffer.length == 2 * Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS;
+      @ requires buffer.length == Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS;
       @ requires indices.length == Constants.MAX_BUCKETS;
       @ requires 0 <= num_buckets <= Constants.MAX_BUCKETS;
       @

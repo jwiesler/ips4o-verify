@@ -124,6 +124,8 @@ de.wiesler.Sorter[de.wiesler.Sorter::smallBucketIsSorted([I,int,int,int,int)].JM
 de.wiesler.Sorter[de.wiesler.Sorter::smallBucketsInRangeSorted([I,int,int,[I,int,int,int)].JML model_behavior operation contract.0
 de.wiesler.Sorter[de.wiesler.Sorter::sortednessFromPartitionSorted([I,int,int,[I,int)].JML model_behavior operation contract.0
 
+# accessible clauses
+
 de.wiesler.Functions[de.wiesler.Functions::countElement([I,int,int,int)].JML accessible clause.0
 de.wiesler.Functions[de.wiesler.Functions::isSortedSlice([I,int,int)].JML accessible clause.0
 de.wiesler.Functions[de.wiesler.Functions::isSortedSliceTransitive([I,int,int)].JML accessible clause.0

@@ -2,7 +2,7 @@
 
 \settings {
 "#Proof-Settings-Config-File
-#Tue Apr 05 16:08:19 CEST 2022
+#Thu May 05 18:38:26 CEST 2022
 [NewSMT]NoTypeHierarchy=false
 [Labels]UseOriginLabels=true
 [StrategyProperty]QUERYAXIOM_OPTIONS_KEY=QUERYAXIOM_OFF
@@ -50,7 +50,7 @@
 \javaSource "../../src";
 
 \proofObligation "#Proof Obligation Settings
-#Tue Apr 05 16:08:19 CEST 2022
+#Thu May 05 18:38:26 CEST 2022
 contract=de.wiesler.Buffers[java.lang.Object\\:\\:<inv>()].JML accessible clause.0
 name=de.wiesler.Buffers[java.lang.Object\\:\\:<inv>()].JML accessible clause.0
 class=de.uka.ilkd.key.proof.init.DependencyContractPO
@@ -58,11 +58,12 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
 
 \proof {
 (keyLog "0" (keyUser "Julian" ) (keyVersion "802059dea3"))
+(keyLog "1" (keyUser "Julian" ) (keyVersion "e1a85b31e7"))
 
-(autoModeTime "379")
+(autoModeTime "697")
 
 (branch "dummy ID"
- (builtin "One Step Simplification" (formula "1") (newnames "self_25,anon_heap"))
+ (builtin "One Step Simplification" (formula "1") (newnames "self,anon_heap"))
 (rule "impRight" (formula "1"))
 (rule "andLeft" (formula "1"))
 (rule "andLeft" (formula "1"))
@@ -76,13 +77,11 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
 (rule "Class_invariant_axiom_for_de_wiesler_Buffers" (formula "6") (inst "b=b"))
  (builtin "One Step Simplification" (formula "6"))
 (rule "translateJavaMulInt" (formula "6") (term "1,1,0,0,0"))
-(rule "translateJavaMulInt" (formula "6") (term "0,1,1,0,0,0"))
-(rule "polySimp_mulLiterals" (formula "6") (term "1,1,0,0,0"))
 (rule "mul_literals" (formula "6") (term "1,1,0,0,0"))
 (rule "andLeft" (formula "6"))
 (rule "andLeft" (formula "6"))
-(rule "andLeft" (formula "7"))
 (rule "andLeft" (formula "6"))
+(rule "andLeft" (formula "8"))
 (rule "andLeft" (formula "6"))
 (rule "andLeft" (formula "6"))
 (rule "andLeft" (formula "6"))
@@ -92,8 +91,8 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
 (rule "eqSymm" (formula "13"))
 (rule "inEqSimp_ltToLeq" (formula "10") (term "1,0,0"))
 (rule "polySimp_mulComm0" (formula "10") (term "1,0,0,1,0,0"))
-(rule "inEqSimp_commuteLeq" (formula "10") (term "0,0,0"))
 (rule "inEqSimp_commuteLeq" (formula "10") (term "0,1,0"))
+(rule "inEqSimp_commuteLeq" (formula "10") (term "0,0,0"))
 (rule "inEqSimp_commuteLeq" (formula "8"))
 (rule "inEqSimp_sepPosMonomial0" (formula "10") (term "1,0,0"))
 (rule "polySimp_mulComm0" (formula "10") (term "1,1,0,0"))
@@ -103,11 +102,6 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
 (rule "polySimp_elimOne" (formula "10") (term "1,1,1,0,0"))
 (rule "nnf_imp2or" (formula "10") (term "0"))
 (rule "nnf_notAnd" (formula "10") (term "0,0"))
-(rule "inEqSimp_notGeq" (formula "10") (term "0,0,0"))
-(rule "times_zero_1" (formula "10") (term "1,0,0,0,0,0"))
-(rule "add_zero_right" (formula "10") (term "0,0,0,0,0"))
-(rule "inEqSimp_sepPosMonomial0" (formula "10") (term "0,0,0"))
-(rule "mul_literals" (formula "10") (term "1,0,0,0"))
 (rule "inEqSimp_notLeq" (formula "10") (term "1,0,0"))
 (rule "polySimp_rightDist" (formula "10") (term "1,0,0,1,0,0"))
 (rule "mul_literals" (formula "10") (term "0,1,0,0,1,0,0"))
@@ -117,18 +111,20 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
 (rule "inEqSimp_sepPosMonomial1" (formula "10") (term "1,0,0"))
 (rule "polySimp_mulLiterals" (formula "10") (term "1,1,0,0"))
 (rule "polySimp_elimOne" (formula "10") (term "1,1,0,0"))
+(rule "inEqSimp_notGeq" (formula "10") (term "0,0,0"))
+(rule "times_zero_1" (formula "10") (term "1,0,0,0,0,0"))
+(rule "add_zero_right" (formula "10") (term "0,0,0,0,0"))
+(rule "inEqSimp_sepPosMonomial0" (formula "10") (term "0,0,0"))
+(rule "mul_literals" (formula "10") (term "1,0,0,0"))
 (rule "Class_invariant_axiom_for_de_wiesler_Buffers" (formula "15") (inst "b=b"))
  (builtin "One Step Simplification" (formula "15") (ifInst ""  (formula "12")) (ifInst ""  (formula "11")) (ifInst ""  (formula "7")) (ifInst ""  (formula "9")))
 (rule "translateJavaMulInt" (formula "15") (term "1,1,0,0"))
-(rule "translateJavaMulInt" (formula "15") (term "0,1,1,0,0"))
-(rule "polySimp_mulLiterals" (formula "15") (term "1,1,0,0"))
 (rule "mul_literals" (formula "15") (term "1,1,0,0"))
 (rule "eqSymm" (formula "15") (term "0,0,0,0"))
 (rule "replace_known_left" (formula "15") (term "1,0,0") (ifseqformula "6"))
  (builtin "One Step Simplification" (formula "15") (ifInst ""  (formula "13")))
 (rule "inEqSimp_ltToLeq" (formula "15") (term "1,0,0,1"))
 (rule "polySimp_mulComm0" (formula "15") (term "1,0,0,1,0,0,1"))
-(rule "inEqSimp_commuteLeq" (formula "15") (term "0,0,0,1"))
 (rule "inEqSimp_commuteLeq" (formula "15") (term "0,1,0,1"))
 (rule "inEqSimp_commuteLeq" (formula "15") (term "0"))
 (rule "replace_known_left" (formula "15") (term "0") (ifseqformula "8"))
@@ -137,11 +133,12 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
 (rule "impRight" (formula "15"))
 (rule "andLeft" (formula "1"))
 (rule "polySimp_addComm1" (formula "2") (term "0"))
+(rule "inEqSimp_commuteLeq" (formula "1"))
 (rule "inEqSimp_sepNegMonomial0" (formula "2"))
 (rule "polySimp_mulLiterals" (formula "2") (term "0"))
 (rule "polySimp_elimOne" (formula "2") (term "0"))
-(rule "pullOutSelect" (formula "17") (term "0,1") (inst "selectSK=arr_0"))
-(rule "applyEq" (formula "18") (term "0,0") (ifseqformula "1"))
+(rule "pullOutSelect" (formula "17") (term "0,0") (inst "selectSK=arr_0"))
+(rule "applyEq" (formula "18") (term "0,1") (ifseqformula "1"))
 (rule "simplifySelectOfAnon" (formula "1"))
  (builtin "One Step Simplification" (formula "1") (ifInst ""  (formula "14")))
 (rule "elementOfSetMinus" (formula "1") (term "0,0,0"))
@@ -159,6 +156,19 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
 (rule "distr_forallAnd" (formula "14"))
 (rule "andLeft" (formula "14"))
 (rule "commute_or" (formula "15") (term "0"))
+(rule "allLeft" (formula "15") (inst "t=b_0"))
+(rule "inEqSimp_commuteGeq" (formula "15") (term "1,0"))
+(rule "inEqSimp_contradInEq1" (formula "15") (term "0,0") (ifseqformula "2"))
+(rule "qeq_literals" (formula "15") (term "0,0,0"))
+ (builtin "One Step Simplification" (formula "15"))
+(rule "inEqSimp_contradInEq1" (formula "15") (term "0") (ifseqformula "4"))
+(rule "inEqSimp_homoInEq1" (formula "15") (term "0,0"))
+(rule "polySimp_pullOutFactor1b" (formula "15") (term "0,0,0"))
+(rule "add_literals" (formula "15") (term "1,1,0,0,0"))
+(rule "times_zero_1" (formula "15") (term "1,0,0,0"))
+(rule "add_zero_right" (formula "15") (term "0,0,0"))
+(rule "leq_literals" (formula "15") (term "0,0"))
+ (builtin "One Step Simplification" (formula "15"))
 (rule "allLeft" (formula "14") (inst "t=b_0"))
 (rule "inEqSimp_commuteGeq" (formula "14") (term "1,0"))
 (rule "inEqSimp_contradInEq1" (formula "14") (term "1,0") (ifseqformula "4"))
@@ -172,29 +182,16 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
 (rule "inEqSimp_contradInEq1" (formula "14") (term "0") (ifseqformula "2"))
 (rule "qeq_literals" (formula "14") (term "0,0"))
  (builtin "One Step Simplification" (formula "14"))
-(rule "allLeft" (formula "16") (inst "t=b_0"))
-(rule "inEqSimp_commuteGeq" (formula "16") (term "1,0"))
-(rule "inEqSimp_contradInEq1" (formula "16") (term "1,0") (ifseqformula "4"))
-(rule "inEqSimp_homoInEq1" (formula "16") (term "0,1,0"))
-(rule "polySimp_pullOutFactor1b" (formula "16") (term "0,0,1,0"))
-(rule "add_literals" (formula "16") (term "1,1,0,0,1,0"))
-(rule "times_zero_1" (formula "16") (term "1,0,0,1,0"))
-(rule "add_zero_right" (formula "16") (term "0,0,1,0"))
-(rule "leq_literals" (formula "16") (term "0,1,0"))
- (builtin "One Step Simplification" (formula "16"))
-(rule "inEqSimp_contradInEq1" (formula "16") (term "0") (ifseqformula "2"))
-(rule "qeq_literals" (formula "16") (term "0,0"))
- (builtin "One Step Simplification" (formula "16"))
 (rule "ifthenelse_split" (formula "1") (term "0"))
-(branch "self_25.indices.<created> = TRUE TRUE"
-   (rule "applyEqReverse" (formula "23") (term "0,0") (ifseqformula "2"))
+(branch "self.indices.<created> = TRUE TRUE"
    (rule "applyEqReverse" (formula "23") (term "0,1") (ifseqformula "2"))
+   (rule "applyEqReverse" (formula "23") (term "0,0") (ifseqformula "2"))
    (rule "hideAuxiliaryEq" (formula "2"))
-   (rule "replace_known_left" (formula "22") (term "1") (ifseqformula "16"))
-    (builtin "One Step Simplification" (formula "22") (ifInst ""  (formula "14")))
+   (rule "replace_known_left" (formula "22") (term "0") (ifseqformula "14"))
+    (builtin "One Step Simplification" (formula "22") (ifInst ""  (formula "16")))
    (rule "closeTrue" (formula "22"))
 )
-(branch "self_25.indices.<created> = TRUE FALSE"
+(branch "self.indices.<created> = TRUE FALSE"
    (rule "applyEqReverse" (formula "23") (term "0,1") (ifseqformula "1"))
    (rule "applyEqReverse" (formula "23") (term "0,0") (ifseqformula "1"))
    (rule "hideAuxiliaryEq" (formula "1"))
@@ -213,8 +210,8 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
     (builtin "One Step Simplification" (formula "9"))
    (rule "true_left" (formula "9"))
    (rule "onlyCreatedObjectsAreReferencedFinal" (formula "10") (term "0,0") (ifseqformula "4") (ifseqformula "6"))
-   (rule "replace_known_right" (formula "10") (term "1") (ifseqformula "18"))
-    (builtin "One Step Simplification" (formula "10") (ifInst ""  (formula "19")))
+   (rule "replace_known_right" (formula "10") (term "0") (ifseqformula "19"))
+    (builtin "One Step Simplification" (formula "10") (ifInst ""  (formula "18")))
    (rule "closeFalse" (formula "10"))
 )
 )

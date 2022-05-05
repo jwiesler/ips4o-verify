@@ -118,9 +118,7 @@ public final class Tree {
 
         /*@ loop_invariant 0 <= i && i <= this.log_buckets;
           @
-          @ loop_invariant (1 << i) <= b;
-          @ loop_invariant i == 0 ==> b == 1;
-          @ loop_invariant b < (1 << (i + 1));
+          @ loop_invariant (1 << i) <= b < (1 << (i + 1));
           @
           @ decreases this.log_buckets - i;
           @ assignable \strictly_nothing;
