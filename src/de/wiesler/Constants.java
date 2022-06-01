@@ -20,11 +20,11 @@ public final class Constants {
       @*/
 
     /*@ public normal_behaviour
-      @ requires n > 0;
+      @ requires_free n > 0;
       @
       @ ensures_free isLog2Of(n, \result);
       @
-      @ assignable \strictly_nothing;
+      @ assignable_free \strictly_nothing;
       @*/
     public static int log2(int n) {
         int log = 0;

@@ -5,10 +5,10 @@ public final class Increment {
     public final int position;
 
     /*@ public normal_behaviour
-      @ requires true;
-      @ ensures this.occupied == occupied;
-      @ ensures this.position == position;
-      @ assignable \nothing;
+      @ requires_free true;
+      @ ensures_free this.occupied == occupied;
+      @ ensures_free this.position == position;
+      @ assignable_free \nothing;
       @*/
     public Increment(boolean occupied, int position) {
         this.occupied = occupied;

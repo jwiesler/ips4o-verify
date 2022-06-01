@@ -5,7 +5,7 @@ public final class Partition {
       @ requires Functions.isValidBucketStarts(bucket_starts, num_buckets);
       @ requires 0 <= begin <= end <= values.length;
       @
-      @ ensures \result;
+      @ ensures_free \result;
       @ static model boolean bucketCountsToTotalCount(int[] values, int begin, int end, int[] bucket_starts, int num_buckets) {
       @     return (\forall int bucket; 0 <= bucket <= num_buckets;
       @         (\forall int element; true;
@@ -26,14 +26,14 @@ public final class Partition {
       @*/
 
     /*@ public normal_behaviour
-      @ requires 0 <= begin <= end <= values.length;
-      @ requires end - begin <= Buffers.MAX_LEN;
-      @ requires bucket_starts.length == Constants.MAX_BUCKETS + 1;
-      @ requires (\forall int b; 0 <= b < bucket_starts.length; bucket_starts[b] == 0);
-      @ requires end - begin > Constants.ACTUAL_BASE_CASE_SIZE;
-      @ requires \invariant_for(storage) && \invariant_for(classifier);
+      @ requires_free 0 <= begin <= end <= values.length;
+      @ requires_free end - begin <= Buffers.MAX_LEN;
+      @ requires_free bucket_starts.length == Constants.MAX_BUCKETS + 1;
+      @ requires_free (\forall int b; 0 <= b < bucket_starts.length; bucket_starts[b] == 0);
+      @ requires_free end - begin > Constants.ACTUAL_BASE_CASE_SIZE;
+      @ requires_free \invariant_for(storage) && \invariant_for(classifier);
       @
-      @ requires \disjoint(
+      @ requires_free \disjoint(
       @     values[*],
       @     bucket_starts[*],
       @     classifier.tree.tree[*],
@@ -46,21 +46,21 @@ public final class Partition {
       @     storage.overflow[*]
       @ );
       @
-      @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
-      @ ensures Functions.isValidBucketStarts(bucket_starts, classifier.num_buckets);
-      @ ensures bucket_starts[classifier.num_buckets] == end - begin;
-      @ ensures allBucketsClassified(values, begin, end, classifier, bucket_starts);
-      @ ensures Sorter.smallBucketsInRangeSorted(values, begin, end, bucket_starts, classifier.num_buckets, 0, classifier.num_buckets);
-      @ ensures \invariant_for(storage) && \invariant_for(classifier);
+      @ ensures_free \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
+      @ ensures_free Functions.isValidBucketStarts(bucket_starts, classifier.num_buckets);
+      @ ensures_free bucket_starts[classifier.num_buckets] == end - begin;
+      @ ensures_free allBucketsClassified(values, begin, end, classifier, bucket_starts);
+      @ ensures_free Sorter.smallBucketsInRangeSorted(values, begin, end, bucket_starts, classifier.num_buckets, 0, classifier.num_buckets);
+      @ ensures_free \invariant_for(storage) && \invariant_for(classifier);
       @
-      @ assignable values[begin..end - 1];
-      @ assignable bucket_starts[*];
-      @ assignable storage.bucket_pointers[*];
-      @ assignable storage.buffers_buffer[*];
-      @ assignable storage.buffers_indices[*];
-      @ assignable storage.swap_1[*];
-      @ assignable storage.swap_2[*];
-      @ assignable storage.overflow[*];
+      @ assignable_free values[begin..end - 1];
+      @ assignable_free bucket_starts[*];
+      @ assignable_free storage.bucket_pointers[*];
+      @ assignable_free storage.buffers_buffer[*];
+      @ assignable_free storage.buffers_indices[*];
+      @ assignable_free storage.swap_1[*];
+      @ assignable_free storage.swap_2[*];
+      @ assignable_free storage.overflow[*];
       @*/
     public static void partition(
         int[] values,
@@ -81,16 +81,16 @@ public final class Partition {
             storage.bucket_pointers
         );
 
-        /*@ assert
+        /*@ assume
           @     \invariant_for(classifier) &&
           @     Buffers.blockAligned(end - begin) == bucket_pointers.bucketStart(bucket_pointers.num_buckets);
           @*/
-        /*@ assert
+        /*@ assume
           @     bucket_pointers.initialReadAreasCount(values, begin, end) &&
           @     bucket_pointers.initialReadAreasBlockClassified(classifier, values, begin, end) &&
           @     bucket_pointers.initialReadAreasCountBucketElements(classifier, values, begin, end);
           @*/
-        /*@ assert (\forall int b; 0 <= b < classifier.num_buckets;
+        /*@ assume (\forall int b; 0 <= b < classifier.num_buckets;
           @     \at(classifier.countClassOfSliceEq(values, begin, first_empty_position, b), heapAfterClassify) ==
           @         bucket_pointers.elementsToReadCountClassEq(classifier, values, begin, end, b)
           @ );
@@ -108,8 +108,8 @@ public final class Partition {
             classifier,
             overflow);
 
-        //@ assert Functions.isValidBucketStarts(bucket_starts, classifier.num_buckets);
-        //@ assert Partition.bucketCountsToTotalCount(values, begin, end, bucket_starts, classifier.num_buckets);
-        //@ assert (\forall int element; true; Functions.countElement(values, begin, end, element) == \old(Functions.countElement(values, begin, end, element)));
+        //@ assume Functions.isValidBucketStarts(bucket_starts, classifier.num_buckets);
+        //@ assume Partition.bucketCountsToTotalCount(values, begin, end, bucket_starts, classifier.num_buckets);
+        //@ assume (\forall int element; true; Functions.countElement(values, begin, end, element) == \old(Functions.countElement(values, begin, end, element)));
     }
 }

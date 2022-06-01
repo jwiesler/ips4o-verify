@@ -6,9 +6,9 @@ public final class SampleParameters {
     public final int step;
 
     /*@ public normal_behaviour
-      @ requires n >= Constants.BASE_CASE_SIZE;
+      @ requires_free n >= Constants.BASE_CASE_SIZE;
       @
-      @ assignable \strictly_nothing;
+      @ assignable_free \strictly_nothing;
       @*/
     public static int log_buckets(int n) {
         if (n <= Constants.SINGLE_LEVEL_THRESHOLD) {
@@ -25,9 +25,9 @@ public final class SampleParameters {
     }
 
     /*@ public normal_behaviour
-      @ requires n >= Constants.BASE_CASE_SIZE;
+      @ requires_free n >= Constants.BASE_CASE_SIZE;
       @
-      @ assignable \strictly_nothing;
+      @ assignable_free \strictly_nothing;
       @*/
     public static int oversampling_factor(int n) {
         return Constants.log2(n) / 5;
@@ -60,9 +60,9 @@ public final class SampleParameters {
     }
 
     /*@ public normal_behaviour
-      @ requires n >= Constants.ACTUAL_BASE_CASE_SIZE;
+      @ requires_free n >= Constants.ACTUAL_BASE_CASE_SIZE;
       @ ensures_free this.isValidForLen(n);
-      @ assignable \nothing;
+      @ assignable_free \nothing;
       @*/
     public SampleParameters(int n) {
         int log_buckets = log_buckets(n);

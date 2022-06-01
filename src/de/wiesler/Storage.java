@@ -2,11 +2,11 @@ package de.wiesler;
 
 public final class Storage {
     /*@ public normal_behaviour
-      @ requires length >= 0;
-      @ ensures \result.length == length;
-      @ ensures \fresh(\result);
-      @ ensures (\forall int i; 0 <= i < length; \result[i] == 0);
-      @ assignable \nothing;
+      @ requires_free length >= 0;
+      @ ensures_free \result.length == length;
+      @ ensures_free \fresh(\result);
+      @ ensures_free (\forall int i; 0 <= i < length; \result[i] == 0);
+      @ assignable_free \nothing;
       @*/
     static int[] createArray(int length) {
         return new int[length];
@@ -23,7 +23,7 @@ public final class Storage {
 
     //@ ghost final \locset allArrays;
 
-    /*@ public instance invariant this.tree.length == Classifier.STORAGE_SIZE &&
+    /*@ public instance invariant_free this.tree.length == Classifier.STORAGE_SIZE &&
       @     this.splitters.length == Classifier.STORAGE_SIZE &&
       @     this.bucket_pointers.length == 2 * Constants.MAX_BUCKETS &&
       @     this.buffers_buffer.length == Buffers.BUFFER_SIZE * Constants.MAX_BUCKETS &&
@@ -33,7 +33,7 @@ public final class Storage {
       @     this.overflow.length == Buffers.BUFFER_SIZE;
       @*/
 
-    /*@ public instance invariant this.allArrays == \set_union(
+    /*@ public instance invariant_free this.allArrays == \set_union(
       @     \set_union(
       @         \set_union(
       @             \all_fields(tree),
@@ -57,7 +57,7 @@ public final class Storage {
       @ );
       @*/
 
-    /*@ public instance invariant \disjoint(
+    /*@ public instance invariant_free \disjoint(
       @     \all_fields(tree),
       @     \all_fields(splitters),
       @     \all_fields(bucket_pointers),
@@ -72,8 +72,8 @@ public final class Storage {
     //@ accessible \inv: this.*;
 
     /*@ public normal_behaviour
-      @ ensures \fresh(this.allArrays);
-      @ assignable \nothing;
+      @ ensures_free \fresh(this.allArrays);
+      @ assignable_free \nothing;
       @*/
     Storage() {
         this.splitters = createArray(Classifier.STORAGE_SIZE);
