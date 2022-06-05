@@ -14,6 +14,7 @@ public final class Sorter {
       @ ensures_free \invariant_free_for(storage);
       @ ensures_free \fresh(\result);
       @ ensures \invariant_for(storage);
+      @ ensures \result.isInInt();
       @
       @ // Calls sort directly => +0
       @ measured_by end - begin, 0;

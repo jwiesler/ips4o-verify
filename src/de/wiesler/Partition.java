@@ -31,7 +31,8 @@ public final class Partition {
       @ requires_free bucket_starts.length == Constants.MAX_BUCKETS + 1;
       @ requires_free (\forall int b; 0 <= b < bucket_starts.length; bucket_starts[b] == 0);
       @ requires_free end - begin > Constants.ACTUAL_BASE_CASE_SIZE;
-      @ requires_free \invariant_for(storage) && \invariant_for(classifier);
+      @ requires_free \invariant_free_for(storage) && \invariant_free_for(classifier);
+      @ requires \invariant_for(storage) && \invariant_for(classifier);
       @
       @ requires_free \disjoint(
       @     values[*],
@@ -51,7 +52,8 @@ public final class Partition {
       @ ensures_free bucket_starts[classifier.num_buckets] == end - begin;
       @ ensures_free allBucketsClassified(values, begin, end, classifier, bucket_starts);
       @ ensures_free Sorter.smallBucketsInRangeSorted(values, begin, end, bucket_starts, classifier.num_buckets, 0, classifier.num_buckets);
-      @ ensures_free \invariant_for(storage) && \invariant_for(classifier);
+      @ ensures_free \invariant_free_for(storage) && \invariant_free_for(classifier);
+      @ ensures \invariant_for(storage) && \invariant_for(classifier);
       @
       @ assignable_free values[begin..end - 1];
       @ assignable_free bucket_starts[*];

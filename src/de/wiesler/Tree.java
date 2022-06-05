@@ -102,6 +102,7 @@ public final class Tree {
       @*/
 
     /*@ normal_behaviour
+      @ requires_free \dl_inInt(value);
       @ ensures_free this.num_buckets <= \result < 2 * this.num_buckets;
       @
       @ ensures_free this.isClassifiedAs(value, \result - this.num_buckets);

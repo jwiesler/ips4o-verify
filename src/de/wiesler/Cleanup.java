@@ -18,7 +18,8 @@ public final class Cleanup {
       @ requires_free Functions.isValidBucketStarts(bucket_starts, classifier.num_buckets);
       @ requires_free bucket_starts[classifier.num_buckets] == end - begin;
       @ requires_free classifier.num_buckets == buffers.num_buckets && classifier.num_buckets == bucket_pointers.num_buckets;
-      @ requires_free \invariant_for(buffers) && \invariant_for(bucket_pointers) && \invariant_for(classifier);
+      @ requires_free \invariant_free_for(buffers) && \invariant_free_for(bucket_pointers) && \invariant_free_for(classifier);
+      @ requires \invariant_for(buffers) && \invariant_for(bucket_pointers) && \invariant_for(classifier);
       @
       @ requires_free \disjoint(values[*], bucket_starts[*], overflow[*], bucket_pointers.buffer[*], buffers.indices[*], buffers.buffer[*], classifier.sorted_splitters[*], classifier.tree.tree[*]);
       @ requires_free overflow.length == Buffers.BUFFER_SIZE;
@@ -92,17 +93,20 @@ public final class Cleanup {
           @ decreases num_buckets - bucket;
           @*/
         for (int bucket = 0; bucket < num_buckets; ++bucket) {
+            //@ assert \old(Functions.bucketStartsOrdering(bucket_starts, num_buckets, bucket));
             final int relative_start = bucket_starts[bucket];
             final int relative_stop = bucket_starts[bucket + 1];
             final int relative_write = bucket_pointers.write(bucket);
+            //@ assert \dl_inInt(begin + relative_start) && \dl_inInt(begin + relative_stop);
             final int start = begin + relative_start;
             final int stop = begin + relative_stop;
             final int write = begin + relative_write;
 
-            //@ assume \old(Functions.bucketStartsOrdering(bucket_starts, num_buckets, bucket));
             /*@ assume 0 <= bucket_starts[bucket] <= bucket_starts[bucket + 1] <= bucket_starts[num_buckets] &&
               @     Buffers.blockAligned(bucket_starts[num_buckets]) == bucket_pointers.bucketStart(num_buckets);
               @*/
+
+            //@ assert \dl_inInt(begin + bucket_pointers.bucketStart(bucket)) && \dl_inInt(begin + bucket_pointers.bucketStart(bucket + 1));
 
             /*@ normal_behaviour
               @ ensures_free classifier.isClassOfSlice(values, start, stop, bucket);
@@ -122,15 +126,16 @@ public final class Cleanup {
                 //@ assume Buffers.blockAligned(bucket_starts[bucket]) <= relative_write <= Buffers.blockAligned(bucket_starts[bucket + 1]);
 
                 final int head_start = start;
-                int head_stop;
+                int head_stop = -1;
 
-                int tail_start;
+                int tail_start = -1;
                 final int tail_stop = stop;
 
                 /*@ normal_behaviour
                   @ requires_free begin <= start <= stop <= end;
                   @
-                  @ ensures_free \invariant_for(classifier) && \invariant_for(bucket_pointers);
+                  @ ensures_free \invariant_free_for(classifier) && \invariant_free_for(bucket_pointers);
+                  @ ensures \invariant_for(classifier) && \invariant_for(bucket_pointers);
                   @
                   @ ensures_free start <= head_start <= head_stop <= tail_start <= tail_stop <= stop <= end <= values.length;
                   @ ensures_free tail_start - head_stop == \at(bucket_pointers.writtenCountOfBucket(bucket), heapOld);

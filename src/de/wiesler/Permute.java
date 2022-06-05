@@ -72,7 +72,8 @@ public final class Permute {
       @         \old(Functions.countElement(current_swap, 0, Buffers.BUFFER_SIZE, element))
       @ );
       @
-      @ ensures_free \invariant_for(bucket_pointers) && \invariant_for(classifier);
+      @ ensures_free \invariant_free_for(bucket_pointers) && \invariant_free_for(classifier);
+      @ ensures \invariant_for(bucket_pointers) && \invariant_for(classifier);
       @
       @ assignable_free values[begin..end - 1];
       @ assignable_free bucket_pointers.buffer[2 * target_bucket + 1];
@@ -157,6 +158,8 @@ public final class Permute {
                   @     Buffers.isBlockAlignedSub(bucket_pointers.lastReadOf(target_bucket), \at(bucket_pointers.nextWriteOf(target_bucket), heapAtLoopBodyBegin));
                   @*/
                 //@ assume write + Buffers.BUFFER_SIZE <= end && Buffers.isBlockAligned(bucket_pointers.lastReadOf(target_bucket) - \at(bucket_pointers.nextWriteOf(target_bucket), heapAtLoopBodyBegin));
+
+                //@ assume \dl_inInt(values[write]);
                 int new_target = classifier.classify(values[write]);
                 //@ assume classifier.isClassifiedBlocksRange(values, write, begin + bucket_pointers.lastReadOf(target_bucket));
                 //@ assume classifier.isClassifiedBlocksRangeSplit(values, write, write + Buffers.BUFFER_SIZE, begin + bucket_pointers.lastReadOf(target_bucket));
@@ -268,7 +271,8 @@ public final class Permute {
                   @         \at(bucket_pointers.writtenElementsCountElement(values, begin, end, overflow, element), heapAtLoopBodyBegin) +
                   @         \old(Functions.countElement(current_swap, 0, Buffers.BUFFER_SIZE, element))
                   @ );
-                  @ ensures_free \invariant_for(classifier) && \invariant_for(bucket_pointers);
+                  @ ensures_free \invariant_free_for(classifier) && \invariant_free_for(bucket_pointers);
+                  @ ensures \invariant_for(classifier) && \invariant_for(bucket_pointers);
                   @ assignable_free values[write..write + (write + Buffers.BUFFER_SIZE <= end ? Buffers.BUFFER_SIZE - 1 : 0)], overflow[*];
                   @*/
                 {
@@ -369,7 +373,8 @@ public final class Permute {
       @             Functions.countElement(swap_1, 0, Buffers.BUFFER_SIZE, element))
       @ );
       @
-      @ ensures_free \invariant_for(bucket_pointers) && \invariant_for(classifier);
+      @ ensures_free \invariant_free_for(bucket_pointers) && \invariant_free_for(classifier);
+      @ ensures \invariant_for(bucket_pointers) && \invariant_for(classifier);
       @
       @ assignable_free values[begin..end - 1];
       @ assignable_free bucket_pointers.buffer[*];
@@ -484,7 +489,8 @@ public final class Permute {
       @         \old(bucket_pointers.elementsToReadCountElement(values, begin, end, element))
       @ );
       @
-      @ ensures_free \invariant_for(bucket_pointers) && \invariant_for(classifier);
+      @ ensures_free \invariant_free_for(bucket_pointers) && \invariant_free_for(classifier);
+      @ ensures \invariant_for(bucket_pointers) && \invariant_for(classifier);
       @
       @ assignable_free values[begin..end - 1];
       @ assignable_free bucket_pointers.buffer[*];
@@ -577,6 +583,7 @@ public final class Permute {
                 //@ assume classifier.isClassifiedBlocksRangeSplit(values, begin + bucket_pointers.nextWriteOf(bucket), begin + read, begin + read + Buffers.BUFFER_SIZE);
                 //@ assume classifier.isClassifiedBlock(values, begin + read, begin + read + Buffers.BUFFER_SIZE);
                 int first_value = swap_1[0];
+                //@ assume \dl_inInt(first_value);
                 int target_bucket = classifier.classify(first_value);
                 //@ assume classifier.classOfClassifiedBlockFromFirst(values, begin + read, begin + read + Buffers.BUFFER_SIZE, target_bucket);
                 /*@ assume

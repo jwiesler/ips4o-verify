@@ -202,6 +202,12 @@ public final class Buffers {
       @ assignable_free this.buffer[bucket * BUFFER_SIZE + this.bufferLen(bucket)];
       @*/
     public void push(int bucket, int value) {
+        /*@ normal_behaviour
+          @ assignable \nothing;
+          @*/
+        {
+            value = value;
+        }
         int buffer_offset = bucket * BUFFER_SIZE;
         int index = this.indices[bucket];
         this.buffer[buffer_offset + index] = value;

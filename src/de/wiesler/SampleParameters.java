@@ -49,6 +49,17 @@ public final class SampleParameters {
       @ }
       @*/
 
+    /*@ public model_behaviour
+      @ requires true;
+      @ accessible \nothing;
+      @ model boolean isInInt() {
+      @     return
+      @         \dl_inInt(this.num_samples) &&
+      @         \dl_inInt(this.step) &&
+      @         \dl_inInt(this.num_buckets);
+      @ }
+      @*/
+
     private static boolean isValidForLen(SampleParameters p, int n) {
         return
             3 <= p.num_samples && p.num_samples <= n / 2 &&
@@ -61,7 +72,7 @@ public final class SampleParameters {
 
     /*@ public normal_behaviour
       @ requires_free n >= Constants.ACTUAL_BASE_CASE_SIZE;
-      @ ensures_free this.isValidForLen(n);
+      @ ensures_free this.isValidForLen(n) && this.isInInt();
       @ assignable_free \nothing;
       @*/
     public SampleParameters(int n) {

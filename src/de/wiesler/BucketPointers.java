@@ -484,7 +484,8 @@ public final class BucketPointers {
             int start = Buffers.align_to_next_block(bucket_starts[bucket]);
             int stop = Buffers.align_to_next_block(bucket_starts[bucket + 1]);
             //@ assume start == this.bucketStart(bucket) && stop == this.bucketStart(bucket + 1) && start <= stop;
-            int read;
+            int read = -1;
+
             /*@ normal_behaviour
               @ ensures_free start <= read <= stop;
               @ ensures_free Buffers.isBlockAligned(read);

@@ -281,6 +281,7 @@ public final class Classifier {
       @*/
 
     /*@ public normal_behaviour
+      @ requires_free \dl_inInt(value);
       @ ensures_free 0 <= \result < this.num_buckets;
       @ ensures_free this.isClassifiedAs(value, \result);
       @
@@ -292,6 +293,12 @@ public final class Classifier {
       @ accessible this.sorted_splitters[*], this.tree.tree[*];
       @*/
     public int classify(int value) {
+        /*@ normal_behaviour
+          @ assignable \nothing;
+          @*/
+        {
+            value = value;
+        }
         int index = this.tree.classify(value);
         int bucket;
         if (this.equal_buckets) {
@@ -326,7 +333,10 @@ public final class Classifier {
               @*/
             for (int i = 0; i < indices.length; ++i) {
                 final int value = values[begin + i];
+                //@ assume \dl_inInt(value);
                 final int index = indices[i];
+                //@ assert this.tree.num_buckets <= index < 2 * this.tree.num_buckets;
+                //@ assume 0 <= (index - this.num_buckets / 2) < this.sorted_splitters.length;
                 final int bucket = index - this.num_buckets / 2;
                 final boolean equal_to_splitter = !Constants.cmp(value, this.sorted_splitters[bucket]);
                 indices[i] = 2 * index + Constants.toInt(equal_to_splitter) - this.num_buckets;
@@ -341,6 +351,7 @@ public final class Classifier {
               @ assignable_free indices[*];
               @*/
             for (int i = 0; i < indices.length; ++i) {
+                //@ assume \dl_inInt(values[begin + i]);
                 indices[i] -= this.num_buckets;
             }
         }
@@ -498,7 +509,8 @@ public final class Classifier {
               @          Classifier.countElement(values, begin, write, i + j, end, buffers, element)
               @ );
               @
-              @ ensures_free \invariant_for(buffers) && \invariant_for(this);
+              @ ensures_free \invariant_free_for(buffers) && \invariant_free_for(this);
+              @ ensures \invariant_for(buffers) && \invariant_for(this);
               @
               @ assignable_free buffers.indices[bucket];
               @ assignable_free values[old_write..i - 1];
@@ -544,6 +556,7 @@ public final class Classifier {
                     write += Buffers.BUFFER_SIZE;
                 }
             }
+            //@ assume \dl_inInt(value);
             buffers.push(bucket, value);
             //@ assume \invariant_for(this) && Functions.countElementSplit(values, i + j, i + j + 1, end);
             // permutation property: elements in [begin,write) stayed the same, split first in [read,end), split on element = value
@@ -562,7 +575,8 @@ public final class Classifier {
       @ requires_free \disjoint(values[*], bucket_starts[*], buffers.buffer[*], buffers.indices[*], this.sorted_splitters[*], this.tree.tree[*]);
       @ requires_free buffers.num_buckets == this.num_buckets;
       @
-      @ ensures_free \invariant_for(buffers);
+      @ ensures_free \invariant_free_for(buffers);
+      @ ensures \invariant_for(buffers);
       @
       @ // classifies until end - (end - begin) % BATCH_SIZE
       @
@@ -715,7 +729,8 @@ public final class Classifier {
       @         Functions.countElement(values, begin, \result, element) +
       @         buffers.countElement(element)
       @ );
-      @ ensures_free \invariant_for(buffers);
+      @ ensures_free \invariant_free_for(buffers);
+      @ ensures \invariant_for(buffers);
       @
       @ // All values are either in a buffer or in values[..\result]
       @ // Bucket starts
