@@ -552,7 +552,7 @@ public final class Sorter {
       @ assignable values[begin..end - 1];
       @*/
     public static void fallback_sort(int[] values, int begin, int end) {
-//        java.util.Arrays.sort(values, begin, end);
+        java.util.Arrays.sort(values, begin, end);
     }
 
     /*@ public normal_behaviour

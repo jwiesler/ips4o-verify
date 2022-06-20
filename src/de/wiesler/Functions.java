@@ -74,7 +74,9 @@ public final class Functions {
       @
       @ assignable values[begin..end - 1];
       @*/
-    public static void select_n(int[] values, int begin, int end, int num_samples) {}
+    public static void select_n(int[] values, int begin, int end, int num_samples) {
+        // TODO
+    }
 
     /*@ public normal_behaviour
       @ ensures \result == ((a >= b) ? a : b);
@@ -125,17 +127,17 @@ public final class Functions {
       @ assignable dest[destPos..destPos + length - 1];
       @*/
     public static void copy_nonoverlapping(int[] src, int srcPos, int[] dest, int destPos, int length) {
-        /*@ loop_invariant 0 <= i <= length;
-          @ loop_invariant (\forall int j; 0 <= j < i; dest[destPos + j] == src[srcPos + j]);
-          @
-          @ decreases length - i;
-          @
-          @ assignable dest[destPos..destPos + length - 1];
-          @*/
-        for (int i = 0; i < length; ++i) {
-            dest[destPos + i] = src[srcPos + i];
-        }
-        // System.arraycopy(src, srcPos, dest, destPos, length);
+        // /*@ loop_invariant 0 <= i <= length;
+        //   @ loop_invariant (\forall int j; 0 <= j < i; dest[destPos + j] == src[srcPos + j]);
+        //   @
+        //   @ decreases length - i;
+        //   @
+        //   @ assignable dest[destPos..destPos + length - 1];
+        //   @*/
+        // for (int i = 0; i < length; ++i) {
+        //     dest[destPos + i] = src[srcPos + i];
+        // }
+        System.arraycopy(src, srcPos, dest, destPos, length);
     }
 
     /*@ public normal_behaviour
