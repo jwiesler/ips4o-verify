@@ -29,41 +29,41 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        bench(10, 10_000_000);
-        bench(100, 10_000_000);
-        bench(1_000, 1_000_000);
-        bench(10_000, 100_000);
-        bench(100_000, 10_000);
-        bench(1_000_000, 1_000);
-        bench(10_000_000, 100);
-        bench(100_000_000, 10);
+//        bench(10, 10_000_000);
+//        bench(100, 10_000_000);
+//        bench(1_000, 1_000_000);
+//        bench(10_000, 100_000);
+//        bench(100_000, 10_000);
+//        bench(1_000_000, 1_000);
+//        bench(10_000_000, 100);
+//        bench(100_000_000, 10);
         bench(1_000_000_000, 5);
 //        ----- 10 -----
-//        Sort:     905888700 (9.0588875 per element)
-//        Std Sort: 892957500 (8.929575 per element)
+//        Sort:     940370700 (9.403707 per element)
+//        Std Sort: 880247800 (8.802478 per element)
 //        ----- 100 -----
-//        Sort:     18561045400 (18.561045 per element)
-//        Std Sort: 18174935300 (18.174934 per element)
+//        Sort:     18558055600 (18.558056 per element)
+//        Std Sort: 18562744200 (18.562744 per element)
 //        ----- 1000 -----
-//        Sort:     26170475500 (26.170475 per element)
-//        Std Sort: 26499804300 (26.499805 per element)
+//        Sort:     26059955700 (26.059956 per element)
+//        Std Sort: 27373053000 (27.373055 per element)
 //        ----- 10000 -----
-//        Sort:     32742429600 (32.742428 per element)
-//        Std Sort: 36155426200 (36.155426 per element)
+//        Sort:     33152474000 (33.152473 per element)
+//        Std Sort: 35754726400 (35.754726 per element)
 //        ----- 100000 -----
-//        Sort:     36185792000 (36.18579 per element)
-//        Std Sort: 44252235400 (44.252235 per element)
+//        Sort:     37513429700 (37.513428 per element)
+//        Std Sort: 44528879300 (44.528877 per element)
 //        ----- 1000000 -----
-//        Sort:     41604779300 (41.60478 per element)
-//        Std Sort: 53309309000 (53.309307 per element)
+//        Sort:     43522675200 (43.522675 per element)
+//        Std Sort: 53386577500 (53.386578 per element)
 //        ----- 10000000 -----
-//        Sort:     47757276800 (47.757275 per element)
-//        Std Sort: 62458377500 (62.458378 per element)
+//        Sort:     49033964600 (49.033966 per element)
+//        Std Sort: 62888663300 (62.888664 per element)
 //        ----- 100000000 -----
-//        Sort:     26525384300 (53.05077 per element)
-//        Std Sort: 35730585400 (71.46117 per element)
+//        Sort:     55316603600 (55.316605 per element)
+//        Std Sort: 73520891800 (73.52089 per element)
 //        ----- 1000000000 -----
-//        Sort:     116565178600 (58.28259 per element)
-//        Std Sort: 162293283000 (81.146645 per element)
+//        Sort:     309287392600 (438.68515 per element)
+//        Std Sort: 414275035200 (587.5969 per element)
     }
 }
