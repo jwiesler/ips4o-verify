@@ -1,0 +1,1 @@
+cat all.txt | sed 's/\.JML.*$//' | sort | uniq | egrep -v "(java\.lang\.Object|<init>)"
