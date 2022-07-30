@@ -23,21 +23,41 @@ public class Main {
             sum_std += elapsed_std;
         }
 
-        System.out.println("----- " + len + " -----");
-        System.out.println("Sort:     " + sum + " (" + (((float) sum) / (len * count)) + " per element)");
-        System.out.println("Std Sort: " + sum_std + " (" + (((float) sum_std) / (len * count)) + " per element)");
+        System.out.println(len + "," + count + "," + sum + "," + sum_std);
     }
 
     public static void main(String[] args) {
-//        bench(10, 10_000_000);
-//        bench(100, 10_000_000);
+//        bench(1 << 8, 1_000_000);
+//        bench(1 << 9, 1_000_000);
+//        bench(1 << 10, 1_000_000);
+//        bench(1 << 11, 1_000_000);
+//        bench(1 << 12, 1_000_000);
+//        bench(1 << 13, 100_000);
+//        bench(1 << 14, 100_000);
+//        bench(1 << 15, 100_000);
+        bench(1 << 16, 100_000);
+//        bench(1 << 17, 100_000);
+//        bench(1 << 18, 10_000);
+//        bench(1 << 19, 10_000);
+//        bench(1 << 20, 10_000);
+        bench(1 << 21, 1_000);
+        bench(1 << 22, 1_000);
+        bench(1 << 23, 1_000);
+        bench(1 << 24, 100);
+        bench(1 << 25, 100);
+        bench(1 << 26, 100);
+        bench(1 << 27, 10);
+        bench(1 << 28, 5);
+
+//        bench(1 << 29, 10_000_000);
+//        bench(1 << 30, 10_000_000);
 //        bench(1_000, 1_000_000);
 //        bench(10_000, 100_000);
 //        bench(100_000, 10_000);
 //        bench(1_000_000, 1_000);
 //        bench(10_000_000, 100);
 //        bench(100_000_000, 10);
-        bench(1_000_000_000, 5);
+//        bench(1_000_000_000, 5);
 //        ----- 10 -----
 //        Sort:     940370700 (9.403707 per element)
 //        Std Sort: 880247800 (8.802478 per element)
