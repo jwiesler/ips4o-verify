@@ -3,8 +3,8 @@ package de.wiesler;
 public final class Tree {
     private /*@ spec_public @*/ final int[] tree;
     private /*@ spec_public @*/ final int log_buckets;
+    private /*@ spec_public @*/ final int[] sorted_splitters;
     //@ ghost final int num_buckets;
-    //@ ghost final int[] sorted_splitters;
 
     // /*@ public model_behaviour
     //   @ requires 1 <= log_length <= 29;
@@ -50,37 +50,14 @@ public final class Tree {
       @*/
     public Tree(int[] sorted_splitters, int[] tree, int log_buckets) {
         //@ set num_buckets = 1 << log_buckets;
-        //@ set this.sorted_splitters = sorted_splitters;
         final int num_buckets = 1 << log_buckets;
         final int num_splitters = num_buckets - 1;
 
         //@ assert 2 <= num_buckets <= tree.length;
 
+        this.sorted_splitters = sorted_splitters;
         this.log_buckets = log_buckets;
         this.tree = tree;
-        this.build(1, sorted_splitters, 0, num_splitters);
-    }
-
-    /*@ normal_behaviour
-      @ requires this.tree != null;
-      @ requires 1 <= this.log_buckets <= Constants.LOG_MAX_BUCKETS;
-      @ requires 2 <= this.num_buckets <= tree.length;
-      @ requires this.num_buckets == (1 << this.log_buckets);
-      @
-      @ requires 1 <= position && position < this.num_buckets;
-      @ requires 0 <= begin <= end <= sorted_splitters.length;
-      @
-      @ measured_by end - begin;
-      @
-      @ assignable this.tree[position..(1 << this.log_buckets)];
-      @*/
-    /*@ helper */ void build(int position, int[] sorted_splitters, int begin, int end) {
-        final int mid = begin + (end - begin) / 2;
-        this.tree[position] = sorted_splitters[mid];
-        if (2 * position + 1 < (1 << this.log_buckets)) {
-            this.build(2 * position, sorted_splitters, begin, mid);
-            this.build(2 * position + 1, sorted_splitters, mid, end);
-        }
     }
 
     /*@ public model_behaviour
@@ -102,9 +79,9 @@ public final class Tree {
       @*/
 
     /*@ normal_behaviour
-      @ ensures this.num_buckets <= \result < 2 * this.num_buckets;
+      @ ensures 0 <= \result < this.num_buckets;
       @
-      @ ensures this.isClassifiedAs(value, \result - this.num_buckets);
+      @ ensures this.isClassifiedAs(value, \result);
       @
       @ // Needed to bring this method to logic
       @ ensures_free \result == this.classify(value);
@@ -114,18 +91,38 @@ public final class Tree {
       @ accessible this.tree[*], this.sorted_splitters[*];
       @*/
     int classify(int value) {
-        int b = 1;
+        int b = (1 << this.log_buckets) - 1;
+        //@ ghost int exp = this.log_buckets;
 
-        /*@ loop_invariant 0 <= i && i <= this.log_buckets;
-          @
-          @ loop_invariant (1 << i) <= b < (1 << (i + 1));
-          @
-          @ decreases this.log_buckets - i;
+        // |---------------------|
+        //       ^      ^     ^
+        //      b-d   b-d/2   b
+        //
+        // case 1:
+        // |---------------------|
+        //       ^      ^
+        //      b-d     b
+        //
+        // case 2:
+        // |---------------------|
+        //              ^     ^
+        //             b-d    b
+
+        /*@ loop_invariant d - 1 <= b <= this.num_buckets - 1;
+          @ loop_invariant 0 <= exp <= this.log_buckets;
+          @ loop_invariant d == (1 << exp);
+          @ loop_invariant b - d == -1 || this.sorted_splitters[b - d] < value;
+          @ loop_invariant b == this.num_buckets - 1 || value <= this.sorted_splitters[b];
+          @ decreases exp;
           @ assignable \strictly_nothing;
           @*/
-        for (int i = 0; i < this.log_buckets; ++i) {
-            b = 2 * b + Constants.toInt(Constants.cmp(this.tree[b], value));
+        for (int d = 1 << this.log_buckets; d > 1;) {
+            d /= 2;
+            b = this.sorted_splitters[b - d] < value ? b : b - d;
+            //@ set exp = exp - 1;
         }
+
+        //@ assert d == 1;
         return b;
     }
 
@@ -134,27 +131,42 @@ public final class Tree {
       @ requires indices.length == end - begin;
       @ requires \disjoint(values[*], indices[*], this.tree[*], this.sorted_splitters[*]);
       @
-      @ ensures (\forall int i; 0 <= i < indices.length; this.num_buckets <= indices[i] < 2 * this.num_buckets);
+      @ ensures (\forall int i; 0 <= i < indices.length; 0 <= indices[i] < this.num_buckets);
       @ // Needed to bring this method to logic
       @ ensures_free (\forall int i; 0 <= i < indices.length; indices[i] == this.classify(values[begin + i]));
       @
       @ assignable indices[*];
       @*/
     void classify_all(int[] values, int begin, int end, int[] indices) {
-        Functions.fill(indices, 0, indices.length, 1);
+        Functions.fill(indices, 0, indices.length, (1 << this.log_buckets) - 1);
+        //@ ghost int exp = this.log_buckets;
 
-        /*@ loop_invariant 0 <= i && i <= this.log_buckets;
-          @
-          @ loop_invariant (\forall int k; 0 <= k < indices.length; (1 << i) <= indices[k] < (1 << (i + 1)));
-          @
-          @ decreases this.log_buckets - i;
+        /*@ loop_invariant (\forall int i; 0 <= i < indices.length; d - 1 <= indices[i] <= this.num_buckets - 1);
+          @ loop_invariant 0 <= exp <= this.log_buckets;
+          @ loop_invariant d == (1 << exp);
+          @ loop_invariant (\forall int i; 0 <= i < indices.length;
+          @     (indices[i] - d == -1 || this.sorted_splitters[indices[i] - d] < values[begin + i]) &&
+          @     (indices[i] == this.num_buckets - 1 || values[begin + i] <= this.sorted_splitters[indices[i]])
+          @ );
+          @ decreases exp;
           @ assignable indices[*];
           @*/
-        for (int i = 0; i < this.log_buckets; ++i) {
+        for (int d = 1 << this.log_buckets; d > 1;) {
+            //@ assert (d / 2) * 2 == d;
+            d /= 2;
+
             /*@ loop_invariant 0 <= j && j <= indices.length;
               @
-              @ loop_invariant (\forall int k; j <= k < indices.length; (1 << i) <= indices[k] < (1 << (i + 1)));
-              @ loop_invariant (\forall int k; 0 <= k < j; (1 << (i + 1)) <= indices[k] < (1 << (i + 2)));
+              @ loop_invariant (\forall int i; j <= i < indices.length;
+              @     2 * d - 1 <= indices[i] <= this.num_buckets - 1 &&
+              @     (indices[i] - 2 * d == -1 || this.sorted_splitters[indices[i] - 2 * d] < values[begin + i]) &&
+              @     (indices[i] == this.num_buckets - 1 || values[begin + i] <= this.sorted_splitters[indices[i]])
+              @ );
+              @ loop_invariant (\forall int i; 0 <= i < j;
+              @     d - 1 <= indices[i] <= this.num_buckets - 1 &&
+              @     (indices[i] - d == -1 || this.sorted_splitters[indices[i] - d] < values[begin + i]) &&
+              @     (indices[i] == this.num_buckets - 1 || values[begin + i] <= this.sorted_splitters[indices[i]])
+              @ );
               @
               @ decreases indices.length - j;
               @ assignable indices[*];
@@ -162,8 +174,12 @@ public final class Tree {
             for (int j = 0; j < indices.length; ++j) {
                 int value = values[begin + j];
                 int index = indices[j];
-                indices[j] = 2 * index + Constants.toInt(Constants.cmp(this.tree[index], value));
+                indices[j] = this.sorted_splitters[index - d] < value ? index : index - d;
             }
+
+            //@ set exp = exp - 1;
         }
+
+        //@ assert d == 1;
     }
 }
