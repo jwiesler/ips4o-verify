@@ -32,6 +32,9 @@ public final class Tree {
       @ public invariant this.num_buckets <= this.sorted_splitters.length;
       @ public invariant Functions.isSortedSliceTransitive(this.sorted_splitters, 0, this.num_buckets - 1);
       @
+      @ invariant (\forall int i; 1 <= i < this.num_buckets; 1 <= Tree.pi(i, this.log_buckets) < this.num_buckets);
+      @ invariant (\forall int i; 1 <= i < this.num_buckets; this.tree[i] == this.sorted_splitters[Tree.pi(i, this.log_buckets) - 1]);
+      @
       @ accessible \inv: this.tree[*], this.sorted_splitters[*];
       @*/
 
@@ -83,6 +86,26 @@ public final class Tree {
         }
     }
 
+    /*@ model_behaviour
+      @ requires n > 0;
+      @ ensures \result >= 0;
+      @ static no_state model int log2(int n);
+      @*/
+
+    /*@ model_behaviour
+      @ requires n >= 0;
+      @ ensures \result >= 0;
+      @ static no_state model int pow2(int n);
+      @*/
+
+    /*@ model_behaviour
+      @ requires 0 <= log_buckets < Constants.LOG_MAX_BUCKETS;
+      @ requires b > 0;
+      @ static no_state model int pi(int b, int log_buckets) {
+      @     return (2 * (b - Tree.pow2(Tree.log2(b))) + 1) * Tree.pow2(log_buckets - 1 - Tree.log2(b));
+      @ }
+      @*/
+
     /*@ public model_behaviour
       @ requires 0 <= bucket < this.num_buckets;
       @
@@ -101,6 +124,16 @@ public final class Tree {
       @ }
       @*/
 
+    /*@ model_behaviour
+      @ requires 1 <= b < (1 << log_buckets);
+      @ ensures \result;
+      @ static model boolean piLemma(int b, int log_buckets) {
+      @     return
+      @         Tree.pi(2 * b + 1, log_buckets) - Tree.pi(b, log_buckets) == 1 << (log_buckets - 2 - Tree.log2(b)) &&
+      @         Tree.pi(b, log_buckets) - Tree.pi(2 * b, log_buckets) == 1 << (log_buckets - 2 - Tree.log2(b));
+      @ }
+      @*/
+
     /*@ normal_behaviour
       @ ensures this.num_buckets <= \result < 2 * this.num_buckets;
       @
@@ -114,17 +147,71 @@ public final class Tree {
       @ accessible this.tree[*], this.sorted_splitters[*];
       @*/
     int classify(int value) {
+        //@ ghost int b_bin = (1 << this.log_buckets) - 1;
+        //@ ghost int d_bin = (1 << this.log_buckets);
         int b = 1;
 
-        /*@ loop_invariant 0 <= i && i <= this.log_buckets;
+        /*@ loop_invariant 0 <= l && l <= this.log_buckets;
           @
-          @ loop_invariant (1 << i) <= b < (1 << (i + 1));
+          @ // Ghost binary search
+          @ loop_invariant d_bin - 1 <= b_bin <= this.num_buckets - 1;
+          @ loop_invariant d_bin == (1 << (this.log_buckets - l));
+          @ loop_invariant b_bin - d_bin == -1 || this.sorted_splitters[b_bin - d_bin] < value;
+          @ loop_invariant b_bin == this.num_buckets - 1 || value <= this.sorted_splitters[b_bin];
           @
-          @ decreases this.log_buckets - i;
+          @ // Actual search
+          @ loop_invariant (1 << l) <= b < (1 << (l + 1)) && Tree.log2(b) == l;
+          @ // next value to compare to is the same
+          @ loop_invariant l < this.log_buckets ==> b_bin - d_bin / 2 == Tree.pi(b, this.log_buckets) - 1;
+          @ loop_invariant l == this.log_buckets ==> b_bin == b - (1 << this.log_buckets);
+          @
+          @ decreases this.log_buckets - l;
           @ assignable \strictly_nothing;
           @*/
-        for (int i = 0; i < this.log_buckets; ++i) {
-            b = 2 * b + Constants.toInt(Constants.cmp(this.tree[b], value));
+        for (int l = 0; l < this.log_buckets; ++l) {
+            //@ assert (d_bin / 2) * 2 == d_bin;
+            //@ set d_bin = d_bin / 2;
+            //@ assert 0 <= b_bin - d_bin < this.num_buckets;
+            //@ assert 1 + l <= this.log_buckets;
+            //@ assert (1 << (l + 1)) == 2 * (1 << l) && (1 << (l + 2)) == 2 * (1 << (l + 1));
+            //@ assert 0 <= b < this.num_buckets;
+            int cmp;
+            //@ assert this.sorted_splitters[b_bin - d_bin] == this.tree[b];
+            //@ assert this.sorted_splitters[b_bin - d_bin] < value <==> this.tree[b] < value;
+            //@ ghost int tmp;
+            //@ ghost int b_bin_old = b_bin;
+            /*@ normal_behaviour
+              @ ensures tmp == (this.sorted_splitters[b_bin - d_bin] < value ? b_bin : b_bin - d_bin);
+              @ ensures cmp == (this.tree[b] < value ? 1 : 0);
+              @ assignable \strictly_nothing;
+              @*/
+            {
+                //@ set tmp = this.sorted_splitters[b_bin - d_bin] < value ? b_bin : b_bin - d_bin;
+                cmp = this.tree[b] < value ? 1 : 0;
+            }
+            //@ set b_bin = tmp;
+
+            //@ ghost int b_old = b;
+            b = 2 * b + cmp;
+
+            if (l < this.log_buckets - 1) {
+                //@ assert b_bin_old - d_bin == Tree.pi(b_old, this.log_buckets) - 1;
+                //@ assert d_bin == (1 << (this.log_buckets - 1 - l));
+                //@ assert b_old < (1 << (l + 1)) && l <= this.log_buckets - 2;
+                //@ assert b_old < (1 << ((this.log_buckets - 2) + 1));
+                //@ assert (1 << (l + 1)) <= 1 << (this.log_buckets - 2 + 1);
+                //@ assert Tree.piLemma(b_old, this.log_buckets);
+                /*@ assert Tree.pi(b, this.log_buckets) - Tree.pi(b_old, this.log_buckets) == (
+                  @     this.tree[b_old] < value ? (1 << (this.log_buckets - 2 - Tree.log2(b_old))) : -(1 << (this.log_buckets - 2 - Tree.log2(b_old)))
+                  @ );
+                  @*/
+                //@ assert Tree.pi(b, this.log_buckets) - Tree.pi(b_old, this.log_buckets) == b_bin - d_bin / 2 - (b_bin_old - d_bin);
+                //@ assert b_bin - d_bin / 2 == Tree.pi(b, this.log_buckets) - 1;
+                {}
+            } else {
+                //@ assert Tree.log2(b_old) == this.log_buckets - 1;
+                //@ assert b_bin == b - (1 << this.log_buckets) + 1;
+            }
         }
         return b;
     }
