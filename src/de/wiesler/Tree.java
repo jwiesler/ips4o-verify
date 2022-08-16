@@ -99,10 +99,10 @@ public final class Tree {
       @*/
 
     /*@ model_behaviour
-      @ requires 0 <= log_buckets < Constants.LOG_MAX_BUCKETS;
+      @ requires 1 <= log_buckets < Constants.LOG_MAX_BUCKETS;
       @ requires b > 0;
       @ static no_state model int pi(int b, int log_buckets) {
-      @     return (2 * (b - Tree.pow2(Tree.log2(b))) + 1) * Tree.pow2(log_buckets - 1 - Tree.log2(b));
+      @     return (2 * (b - \dl_pow(2, \dl_log(2, b))) + 1) * \dl_pow(2, log_buckets - 1 - \dl_log(2, b));
       @ }
       @*/
 
@@ -125,12 +125,56 @@ public final class Tree {
       @*/
 
     /*@ model_behaviour
+      @ requires b >= 1;
+      @ ensures \result;
+      @ // Provable using powLogMore2
+      @ static model boolean piLemmaUpperBound(int b) {
+      @     return 2 * (b - \dl_pow(2, \dl_log(2, b))) + 1 < \dl_pow(2, \dl_log(2, b) + 1);
+      @ }
+      @*/
+
+    /*@ model_behaviour
+      @ requires 1 <= b < \dl_pow(2, log_buckets);
+      @ requires 1 <= log_buckets;
+      @ ensures \result;
+      @ static model boolean piInRangeLower(int b, int log_buckets) {
+      @     return 0 <= Tree.pi(b, log_buckets);
+      @ }
+      @*/
+
+    /*@ model_behaviour
+      @ requires 1 <= b < \dl_pow(2, log_buckets);
+      @ requires 1 <= log_buckets;
+      @ requires Tree.piLemmaUpperBound(b);
+      @ ensures \result;
+      @ static model boolean piInRangeUpper(int b, int log_buckets) {
+      @     return Tree.pi(b, log_buckets) < \dl_pow(2, log_buckets);
+      @ }
+      @*/
+
+    /*@ model_behaviour
+      @ requires 1 <= b < \dl_pow(2, log_buckets - 1);
+      @ requires 1 <= log_buckets;
+      @ ensures \result;
+      @ static model boolean piLemmaLeft(int b, int log_buckets) {
+      @     return Tree.pi(b, log_buckets) - Tree.pi(2 * b, log_buckets) == \dl_pow(2, log_buckets - 2 - \dl_log(2, b));
+      @ }
+      @*/
+
+    /*@ model_behaviour
+      @ requires 1 <= b < \dl_pow(2, log_buckets - 1);
+      @ requires 1 <= log_buckets;
+      @ ensures \result;
+      @ static model boolean piLemmaRight(int b, int log_buckets) {
+      @     return Tree.pi(2 * b + 1, log_buckets) - Tree.pi(b, log_buckets) == \dl_pow(2, log_buckets - 2 - \dl_log(2, b));
+      @ }
+      @*/
+
+    /*@ model_behaviour
       @ requires 1 <= b < (1 << log_buckets);
       @ ensures \result;
       @ static model boolean piLemma(int b, int log_buckets) {
-      @     return
-      @         Tree.pi(2 * b + 1, log_buckets) - Tree.pi(b, log_buckets) == 1 << (log_buckets - 2 - Tree.log2(b)) &&
-      @         Tree.pi(b, log_buckets) - Tree.pi(2 * b, log_buckets) == 1 << (log_buckets - 2 - Tree.log2(b));
+      @     return Tree.piLemmaLeft(b, log_buckets) && Tree.piLemmaRight(b, log_buckets);
       @ }
       @*/
 
