@@ -87,20 +87,7 @@ public final class Tree {
     }
 
     /*@ model_behaviour
-      @ requires n > 0;
-      @ ensures \result >= 0;
-      @ static no_state model int log2(int n);
-      @*/
-
-    /*@ model_behaviour
-      @ requires n >= 0;
-      @ ensures \result >= 0;
-      @ static no_state model int pow2(int n);
-      @*/
-
-    /*@ model_behaviour
-      @ requires 1 <= log_buckets < Constants.LOG_MAX_BUCKETS;
-      @ requires b > 0;
+      @ requires true;
       @ static no_state model int pi(int b, int log_buckets) {
       @     return (2 * (b - \dl_pow(2, \dl_log(2, b))) + 1) * \dl_pow(2, log_buckets - 1 - \dl_log(2, b));
       @ }
@@ -171,10 +158,18 @@ public final class Tree {
       @*/
 
     /*@ model_behaviour
-      @ requires 1 <= b < (1 << log_buckets);
+      @ requires 1 <= b < \dl_pow(2, log_buckets - 1);
       @ ensures \result;
       @ static model boolean piLemma(int b, int log_buckets) {
       @     return Tree.piLemmaLeft(b, log_buckets) && Tree.piLemmaRight(b, log_buckets);
+      @ }
+      @*/
+
+    /*@ model_behaviour
+      @ requires log_buckets >= 1;
+      @ ensures \result;
+      @ static model boolean piOf1(int log_buckets) {
+      @     return Tree.pi(1, log_buckets) == \dl_pow(2, log_buckets) - \dl_pow(2, log_buckets) / 2;
       @ }
       @*/
 
@@ -191,23 +186,27 @@ public final class Tree {
       @ accessible this.tree[*], this.sorted_splitters[*];
       @*/
     int classify(int value) {
-        //@ ghost int b_bin = (1 << this.log_buckets) - 1;
-        //@ ghost int d_bin = (1 << this.log_buckets);
+        //@ assert \dl_pow(2, 1) <= \dl_pow(2, this.log_buckets) <= \dl_pow(2, Constants.LOG_MAX_BUCKETS);
+        //@ assert \dl_pow(2, this.log_buckets) == this.num_buckets;
+        //@ ghost int b_bin = this.num_buckets - 1;
+        //@ ghost int d_bin = this.num_buckets;
         int b = 1;
+
+        //@ assert Tree.piOf1(this.log_buckets);
 
         /*@ loop_invariant 0 <= l && l <= this.log_buckets;
           @
           @ // Ghost binary search
           @ loop_invariant d_bin - 1 <= b_bin <= this.num_buckets - 1;
-          @ loop_invariant d_bin == (1 << (this.log_buckets - l));
+          @ loop_invariant d_bin == \dl_pow(2, this.log_buckets - l);
           @ loop_invariant b_bin - d_bin == -1 || this.sorted_splitters[b_bin - d_bin] < value;
           @ loop_invariant b_bin == this.num_buckets - 1 || value <= this.sorted_splitters[b_bin];
           @
           @ // Actual search
-          @ loop_invariant (1 << l) <= b < (1 << (l + 1)) && Tree.log2(b) == l;
+          @ loop_invariant \dl_pow(2, l) <= b < \dl_pow(2, l + 1) && \dl_log(2, b) == l;
           @ // next value to compare to is the same
           @ loop_invariant l < this.log_buckets ==> b_bin - d_bin / 2 == Tree.pi(b, this.log_buckets) - 1;
-          @ loop_invariant l == this.log_buckets ==> b_bin == b - (1 << this.log_buckets);
+          @ loop_invariant l == this.log_buckets ==> b_bin == b - \dl_pow(2, this.log_buckets);
           @
           @ decreases this.log_buckets - l;
           @ assignable \strictly_nothing;
@@ -215,14 +214,16 @@ public final class Tree {
         for (int l = 0; l < this.log_buckets; ++l) {
             //@ assert (d_bin / 2) * 2 == d_bin;
             //@ set d_bin = d_bin / 2;
+            // Follows from pow positive
             //@ assert 0 <= b_bin - d_bin < this.num_buckets;
             //@ assert 1 + l <= this.log_buckets;
-            //@ assert (1 << (l + 1)) == 2 * (1 << l) && (1 << (l + 2)) == 2 * (1 << (l + 1));
+            //@ assert \dl_pow(2, l + 1) == 2 * \dl_pow(2, l) && \dl_pow(2, l + 2) == 2 * \dl_pow(2, l + 1);
             //@ assert 0 <= b < this.num_buckets;
-            int cmp;
+            int cmp = -1;
             //@ assert this.sorted_splitters[b_bin - d_bin] == this.tree[b];
             //@ assert this.sorted_splitters[b_bin - d_bin] < value <==> this.tree[b] < value;
-            //@ ghost int tmp;
+            //@ assert 0 <= d_bin <= this.num_buckets;
+            //@ ghost int tmp = -1;
             //@ ghost int b_bin_old = b_bin;
             /*@ normal_behaviour
               @ ensures tmp == (this.sorted_splitters[b_bin - d_bin] < value ? b_bin : b_bin - d_bin);
@@ -238,24 +239,17 @@ public final class Tree {
             //@ ghost int b_old = b;
             b = 2 * b + cmp;
 
-            if (l < this.log_buckets - 1) {
-                //@ assert b_bin_old - d_bin == Tree.pi(b_old, this.log_buckets) - 1;
-                //@ assert d_bin == (1 << (this.log_buckets - 1 - l));
-                //@ assert b_old < (1 << (l + 1)) && l <= this.log_buckets - 2;
-                //@ assert b_old < (1 << ((this.log_buckets - 2) + 1));
-                //@ assert (1 << (l + 1)) <= 1 << (this.log_buckets - 2 + 1);
-                //@ assert Tree.piLemma(b_old, this.log_buckets);
-                /*@ assert Tree.pi(b, this.log_buckets) - Tree.pi(b_old, this.log_buckets) == (
-                  @     this.tree[b_old] < value ? (1 << (this.log_buckets - 2 - Tree.log2(b_old))) : -(1 << (this.log_buckets - 2 - Tree.log2(b_old)))
-                  @ );
-                  @*/
-                //@ assert Tree.pi(b, this.log_buckets) - Tree.pi(b_old, this.log_buckets) == b_bin - d_bin / 2 - (b_bin_old - d_bin);
-                //@ assert b_bin - d_bin / 2 == Tree.pi(b, this.log_buckets) - 1;
-                {}
-            } else {
-                //@ assert Tree.log2(b_old) == this.log_buckets - 1;
-                //@ assert b_bin == b - (1 << this.log_buckets) + 1;
-            }
+            //@ assert b_bin_old - d_bin == Tree.pi(b_old, this.log_buckets) - 1;
+            //@ assert d_bin == \dl_pow(2, (this.log_buckets - 1 - l));
+            //@ assert b_old < \dl_pow(2, (l + 1));
+            //@ assert \dl_pow(2, l + 1) <= \dl_pow(2, this.log_buckets);
+            //@ assert l < this.log_buckets - 1 ==> Tree.piLemma(b_old, this.log_buckets);
+            /*@ assert l < this.log_buckets - 1 ==> Tree.pi(b, this.log_buckets) - Tree.pi(b_old, this.log_buckets) == (
+              @     this.tree[b_old] < value ? (\dl_pow(2, this.log_buckets - 2 - \dl_log(2, b_old))) : -(\dl_pow(2, this.log_buckets - 2 - \dl_log(2, b_old)))
+              @ );
+              @*/
+            //@ assert l < this.log_buckets - 1 ==> \dl_pow(2, this.log_buckets - 2 - \dl_log(2, b_old)) == d_bin / 2;
+            //@ assert l == this.log_buckets - 1 ==> b_bin == b - \dl_pow(2, this.log_buckets);
         }
         return b;
     }

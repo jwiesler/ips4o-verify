@@ -30,6 +30,15 @@ de.wiesler.Functions[de.wiesler.Functions::isSortedSlice([I,int,int)].JML model_
 de.wiesler.Functions[de.wiesler.Functions::isSortedSliceTransitive([I,int,int)].JML model_behavior operation contract.0
 de.wiesler.Functions[de.wiesler.Functions::isValidBucketStarts([I,int)].JML model_behavior operation contract.0
 
+de.wiesler.Tree[de.wiesler.Tree::piOf1(int)].JML model_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::piLemmaUpperBound(int)].JML model_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::piInRangeLower(int, int)].JML model_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::piInRangeUpper(int, int)].JML model_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::piLemmaLeft(int, int)].JML model_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::piLemmaRight(int, int)].JML model_behavior operation contract.0
+
+de.wiesler.Tree[de.wiesler.Tree::piLemma(int, int)].JML model_behavior operation contract.0
+
 de.wiesler.Tree[de.wiesler.Tree::classOfFirstSplitters()].JML model_behavior operation contract.0
 de.wiesler.Tree[de.wiesler.Tree::isClassifiedAs(int,int)].JML model_behavior operation contract.0
 
