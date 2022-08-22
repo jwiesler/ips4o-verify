@@ -173,6 +173,80 @@ public final class Tree {
       @ }
       @*/
 
+    /*@ model_behaviour
+      @ requires true;
+      @ accessible this.sorted_splitters[*];
+      @ model boolean binarySearchInvariant(int b, int d, int value) {
+      @     return d - 1 <= b <= this.num_buckets - 1 &&
+      @         (b - d == -1 || this.sorted_splitters[b - d] < value) &&
+      @         (b == this.num_buckets - 1 || value <= this.sorted_splitters[b]);
+      @ }
+      @*/
+
+    /*@ model_behaviour
+      @ requires this.binarySearchInvariant(b, d, value);
+      @ requires 0 <= l < this.log_buckets;
+      @ requires d == \dl_pow(2, this.log_buckets - l);
+      @ ensures \result;
+      @
+      @ model boolean binarySearchInvariantLemma(int b, int d, int value, int l) {
+      @     return this.binarySearchInvariant(this.sorted_splitters[b - d / 2] < value ? b : b - d / 2, d / 2, value);
+      @ }
+      @*/
+
+    /*@ model_behaviour
+      @ requires true;
+      @ model no_state boolean treeSearchInvariant(int b, int l, int b_bin, int d_bin) {
+      @     return \dl_pow(2, l) <= b < \dl_pow(2, l + 1) &&
+      @         \dl_log(2, b) == l &&
+      @         (l < this.log_buckets ==> b_bin - d_bin / 2 == Tree.pi(b, this.log_buckets) - 1) &&
+      @         (l == this.log_buckets ==> b_bin == b - \dl_pow(2, this.log_buckets));
+      @ }
+      @*/
+
+    /*@ normal_behaviour
+      @ requires this.binarySearchInvariant(b_bin, d_bin, value);
+      @ requires treeSearchInvariant(b, l, b_bin, d_bin);
+      @ requires 0 <= l < this.log_buckets;
+      @ requires d_bin == \dl_pow(2, this.log_buckets - l);
+      @ requires this.num_buckets == \dl_pow(2, this.log_buckets);
+      @ ensures treeSearchInvariant(2 * b + (this.tree[b] < value ? 1 : 0), l + 1, this.sorted_splitters[b_bin - d_bin / 2] < value ? b_bin : b_bin - d_bin / 2, d_bin / 2);
+      @ ensures \result;
+      @ assignable \strictly_nothing;
+      @*/
+    boolean treeSearchInvariantLemmaImpl(int b, int l, int b_bin, int d_bin, int value) {
+        //@ assert 1 <= \dl_pow(2, l);
+        //@ assert \dl_pow(2, l + 1) == 2 * \dl_pow(2, l);
+        //@ assert \dl_pow(2, l + 2) == 2 * \dl_pow(2, l + 1);
+        //@ assert \dl_pow(2, l + 1) <= \dl_pow(2, this.log_buckets);
+        //@ assert this.sorted_splitters[b_bin - d_bin / 2] == this.tree[b];
+        //@ assert \dl_log(2, 2 * b + (this.tree[b] < value ? 1 : 0)) == l + 1;
+        if (l < this.log_buckets - 1) {
+            //@ assert \dl_pow(2, l + 1) <= \dl_pow(2, this.log_buckets - 1);
+            //@ assert Tree.piLemma(b, this.log_buckets);
+            /*@ assert Tree.pi(2 * b + (this.tree[b] < value ? 1 : 0), this.log_buckets) - Tree.pi(b, this.log_buckets) == (
+              @     this.tree[b] < value ? (\dl_pow(2, this.log_buckets - 2 - \dl_log(2, b))) : -(\dl_pow(2, this.log_buckets - 2 - \dl_log(2, b)))
+              @ );
+              @*/
+            //@ assert \dl_pow(2, this.log_buckets - 2 - \dl_log(2, b)) == d_bin / 2 / 2;
+        }
+        return true;
+    }
+
+    /*@ model_behaviour
+      @ requires this.binarySearchInvariant(b_bin, d_bin, value);
+      @ requires treeSearchInvariant(b, l, b_bin, d_bin);
+      @ requires 0 <= l < this.log_buckets;
+      @ requires d_bin == \dl_pow(2, this.log_buckets - l);
+      @ requires this.num_buckets == \dl_pow(2, this.log_buckets);
+      @ ensures \result ==> treeSearchInvariant(2 * b + (this.tree[b] < value ? 1 : 0), l + 1, this.sorted_splitters[b_bin - d_bin / 2] < value ? b_bin : b_bin - d_bin / 2, d_bin / 2);
+      @ ensures \result;
+      @
+      @ model boolean treeSearchInvariantLemma(int b, int l, int b_bin, int d_bin, int value) {
+      @     return treeSearchInvariantLemmaImpl(b, l, b_bin, d_bin, value);
+      @ }
+      @*/
+
     /*@ normal_behaviour
       @ ensures this.num_buckets <= \result < 2 * this.num_buckets;
       @
@@ -195,61 +269,32 @@ public final class Tree {
         //@ assert Tree.piOf1(this.log_buckets);
 
         /*@ loop_invariant 0 <= l && l <= this.log_buckets;
+          @ loop_invariant d_bin == \dl_pow(2, this.log_buckets - l);
           @
           @ // Ghost binary search
-          @ loop_invariant d_bin - 1 <= b_bin <= this.num_buckets - 1;
-          @ loop_invariant d_bin == \dl_pow(2, this.log_buckets - l);
-          @ loop_invariant b_bin - d_bin == -1 || this.sorted_splitters[b_bin - d_bin] < value;
-          @ loop_invariant b_bin == this.num_buckets - 1 || value <= this.sorted_splitters[b_bin];
-          @
-          @ // Actual search
-          @ loop_invariant \dl_pow(2, l) <= b < \dl_pow(2, l + 1) && \dl_log(2, b) == l;
-          @ // next value to compare to is the same
-          @ loop_invariant l < this.log_buckets ==> b_bin - d_bin / 2 == Tree.pi(b, this.log_buckets) - 1;
-          @ loop_invariant l == this.log_buckets ==> b_bin == b - \dl_pow(2, this.log_buckets);
+          @ loop_invariant this.binarySearchInvariant(b_bin, d_bin, value);
+          @ loop_invariant this.treeSearchInvariant(b, l, b_bin, d_bin);
           @
           @ decreases this.log_buckets - l;
           @ assignable \strictly_nothing;
           @*/
         for (int l = 0; l < this.log_buckets; ++l) {
+            //@ assert treeSearchInvariantLemma(b, l, b_bin, d_bin, value);
+            //@ assert this.binarySearchInvariantLemma(b_bin, d_bin, value, l);
+            //@ assert treeSearchInvariant(2 * b + (this.tree[b] < value ? 1 : 0), l + 1, this.sorted_splitters[b_bin - d_bin / 2] < value ? b_bin : b_bin - d_bin / 2, d_bin / 2);
+            //@ assert this.binarySearchInvariant(this.sorted_splitters[b_bin - d_bin / 2] < value ? b_bin : b_bin - d_bin / 2, d_bin / 2, value);
+
             //@ assert (d_bin / 2) * 2 == d_bin;
             //@ set d_bin = d_bin / 2;
-            // Follows from pow positive
+            //@ assert 0 <= \dl_pow(2, this.log_buckets - l) <= \dl_pow(2, this.log_buckets);
             //@ assert 0 <= b_bin - d_bin < this.num_buckets;
-            //@ assert 1 + l <= this.log_buckets;
-            //@ assert \dl_pow(2, l + 1) == 2 * \dl_pow(2, l) && \dl_pow(2, l + 2) == 2 * \dl_pow(2, l + 1);
-            //@ assert 0 <= b < this.num_buckets;
-            int cmp = -1;
-            //@ assert this.sorted_splitters[b_bin - d_bin] == this.tree[b];
-            //@ assert this.sorted_splitters[b_bin - d_bin] < value <==> this.tree[b] < value;
-            //@ assert 0 <= d_bin <= this.num_buckets;
-            //@ ghost int tmp = -1;
-            //@ ghost int b_bin_old = b_bin;
-            /*@ normal_behaviour
-              @ ensures tmp == (this.sorted_splitters[b_bin - d_bin] < value ? b_bin : b_bin - d_bin);
-              @ ensures cmp == (this.tree[b] < value ? 1 : 0);
-              @ assignable \strictly_nothing;
-              @*/
-            {
-                //@ set tmp = this.sorted_splitters[b_bin - d_bin] < value ? b_bin : b_bin - d_bin;
-                cmp = this.tree[b] < value ? 1 : 0;
-            }
-            //@ set b_bin = tmp;
-
-            //@ ghost int b_old = b;
-            b = 2 * b + cmp;
-
-            //@ assert b_bin_old - d_bin == Tree.pi(b_old, this.log_buckets) - 1;
-            //@ assert d_bin == \dl_pow(2, (this.log_buckets - 1 - l));
-            //@ assert b_old < \dl_pow(2, (l + 1));
             //@ assert \dl_pow(2, l + 1) <= \dl_pow(2, this.log_buckets);
-            //@ assert l < this.log_buckets - 1 ==> Tree.piLemma(b_old, this.log_buckets);
-            /*@ assert l < this.log_buckets - 1 ==> Tree.pi(b, this.log_buckets) - Tree.pi(b_old, this.log_buckets) == (
-              @     this.tree[b_old] < value ? (\dl_pow(2, this.log_buckets - 2 - \dl_log(2, b_old))) : -(\dl_pow(2, this.log_buckets - 2 - \dl_log(2, b_old)))
-              @ );
-              @*/
-            //@ assert l < this.log_buckets - 1 ==> \dl_pow(2, this.log_buckets - 2 - \dl_log(2, b_old)) == d_bin / 2;
-            //@ assert l == this.log_buckets - 1 ==> b_bin == b - \dl_pow(2, this.log_buckets);
+            //@ assert 0 <= b < this.num_buckets;
+            //@ assert d_bin == \dl_pow(2, this.log_buckets - l - 1);
+            //@ assert \dl_inInt(l + 1);
+            //@ assert \dl_inInt(2 * b + (this.tree[b] < value ? 1 : 0));
+            //@ set b_bin = this.sorted_splitters[b_bin - d_bin] < value ? b_bin : b_bin - d_bin;
+            b = 2 * b + (this.tree[b] < value ? 1 : 0);
         }
         return b;
     }
@@ -268,27 +313,98 @@ public final class Tree {
     void classify_all(int[] values, int begin, int end, int[] indices) {
         Functions.fill(indices, 0, indices.length, 1);
 
-        /*@ loop_invariant 0 <= i && i <= this.log_buckets;
+        //@ assert \dl_pow(2, 1) <= \dl_pow(2, this.log_buckets) <= \dl_pow(2, Constants.LOG_MAX_BUCKETS);
+        //@ assert \dl_pow(2, this.log_buckets) == this.num_buckets;
+        //@ ghost int[] b_bins = new int[indices.length];
+        //@ ghost int d_bin = this.num_buckets;
+
+        //@ assert Tree.piOf1(this.log_buckets);
+
+        /*@ loop_invariant 0 <= o <= indices.length;
           @
-          @ loop_invariant (\forall int k; 0 <= k < indices.length; (1 << i) <= indices[k] < (1 << (i + 1)));
+          @ // Ghost binary search
+          @ loop_invariant (\forall int j; 0 <= j < o;
+          @     b_bins[j] == this.num_buckets - 1
+          @ );
           @
-          @ decreases this.log_buckets - i;
-          @ assignable indices[*];
+          @ decreases indices.length - o;
+          @ assignable b_bins[*];
           @*/
-        for (int i = 0; i < this.log_buckets; ++i) {
+        for (int o = 0; o < indices.length; ++o) {
+            //@ set b_bins[o] = this.num_buckets - 1;
+        }
+
+        /*@ loop_invariant 0 <= l && l <= this.log_buckets;
+          @ loop_invariant d_bin == \dl_pow(2, this.log_buckets - l);
+          @
+          @ // Ghost binary search
+          @ loop_invariant (\forall int i; 0 <= i < indices.length;
+          @     this.binarySearchInvariant(b_bins[i], d_bin, values[begin + i]) &&
+          @         this.treeSearchInvariant(indices[i], l, b_bins[i], d_bin)
+          @ );
+          @
+          @ decreases this.log_buckets - l;
+          @ assignable b_bins[*], indices[*];
+          @*/
+        for (int l = 0; l < this.log_buckets; ++l) {
+            //@ assert (d_bin / 2) * 2 == d_bin;
+            //@ set d_bin = d_bin / 2;
+
+            //@ assert \dl_pow(2, l + 1) == 2 * \dl_pow(2, l) && \dl_pow(2, l + 2) == 2 * \dl_pow(2, l + 1);
+
             /*@ loop_invariant 0 <= j && j <= indices.length;
               @
-              @ loop_invariant (\forall int k; j <= k < indices.length; (1 << i) <= indices[k] < (1 << (i + 1)));
-              @ loop_invariant (\forall int k; 0 <= k < j; (1 << (i + 1)) <= indices[k] < (1 << (i + 2)));
+              @ loop_invariant (\forall int i; 0 <= i < j;
+              @     this.binarySearchInvariant(b_bins[i], d_bin, values[begin + i]) &&
+              @         this.treeSearchInvariant(indices[i], l + 1, b_bins[i], d_bin)
+              @ );
+              @
+              @ loop_invariant (\forall int i; j <= i < indices.length;
+              @     this.binarySearchInvariant(b_bins[i], 2 * d_bin, values[begin + i]) &&
+              @         this.treeSearchInvariant(indices[i], l, b_bins[i], 2 * d_bin)
+              @ );
               @
               @ decreases indices.length - j;
-              @ assignable indices[*];
+              @ assignable b_bins[*], indices[*];
               @*/
             for (int j = 0; j < indices.length; ++j) {
-                int value = values[begin + j];
-                int index = indices[j];
-                indices[j] = 2 * index + Constants.toInt(Constants.cmp(this.tree[index], value));
+                //@ assert indices != b_bins && values != b_bins;
+                //@ assert this.sorted_splitters != b_bins && this.tree != b_bins;
+
+                /*@ normal_behaviour
+                  @ ensures this.binarySearchInvariant(b_bins[j], d_bin, values[begin + j]) &&
+                  @     this.treeSearchInvariant(indices[j], l + 1, b_bins[j], d_bin);
+                  @ assignable b_bins[j], indices[j];
+                  @*/
+                {
+                    int value = values[begin + j];
+                    int b = indices[j];
+
+                    //@ ghost int b_bin = b_bins[j];
+                    /*@ assert this.binarySearchInvariant(b_bin, 2 * d_bin, value) &&
+                      @     this.treeSearchInvariant(b, l, b_bin, 2 * d_bin);
+                      @*/
+
+                    //@ assert treeSearchInvariantLemma(b, l, b_bin, 2 * d_bin, value);
+                    //@ assert \invariant_for(this);
+                    //@ assert this.binarySearchInvariantLemma(b_bin, 2 * d_bin, value, l);
+                    //@ assert treeSearchInvariant(2 * b + (this.tree[b] < value ? 1 : 0), l + 1, this.sorted_splitters[b_bin - d_bin] < value ? b_bin : b_bin - d_bin, d_bin);
+                    //@ assert this.binarySearchInvariant(this.sorted_splitters[b_bin - d_bin] < value ? b_bin : b_bin - d_bin, d_bin, value);
+
+                    //@ assert 0 <= \dl_pow(2, this.log_buckets - l) <= \dl_pow(2, this.log_buckets);
+                    //@ assert 0 <= b_bin - d_bin < this.num_buckets;
+                    //@ assert \dl_pow(2, l + 1) <= \dl_pow(2, this.log_buckets);
+                    //@ assert 0 <= b < this.num_buckets;
+                    //@ assert d_bin == \dl_pow(2, this.log_buckets - l - 1);
+                    //@ assert \dl_inInt(l + 1);
+                    //@ assert \dl_inInt(2 * b + (this.tree[b] < value ? 1 : 0));
+                    //@ set b_bins[j] = this.sorted_splitters[b_bin - d_bin] < value ? b_bin : b_bin - d_bin;
+                    indices[j] = 2 * b + (this.tree[b] < value ? 1 : 0);
+                }
+                {;;}
             }
         }
+
+        //@ assert d_bin == 1;
     }
 }
