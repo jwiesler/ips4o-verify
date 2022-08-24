@@ -42,10 +42,11 @@ public final class Tree {
         this.log_buckets = log_buckets;
         this.tree = tree;
         this.build(sorted_splitters);
+        //@ assert (1 << this.log_buckets) == \dl_pow(2, this.log_buckets);
         //@ assert (\forall int i; 1 <= i < this.num_buckets; Tree.piInRangeLower(i, log_buckets) && Tree.piInRangeUpper(i, log_buckets));
     }
 
-    /*@ normal_behaviour
+    /*@ public normal_behaviour
       @ requires this.tree != null && sorted_splitters != null;
       @ requires \disjoint(sorted_splitters[*], this.tree[*]);
       @ requires this.num_buckets <= sorted_splitters.length;
@@ -59,9 +60,10 @@ public final class Tree {
       @ assignable this.tree[*];
       @*/
     /*@ helper */ void build(int[] sorted_splitters) {
+        //@ assert 1 <= \dl_pow(2, this.log_buckets) <= \dl_pow(2, 6);
+        //@ assert (1 << this.log_buckets) == \dl_pow(2, this.log_buckets);
         int num_buckets = 1 << this.log_buckets;
         //@ assert this.num_buckets == num_buckets;
-        //@ assert num_buckets == \dl_pow(2, this.log_buckets);
 
         int tree_offset = 1;
         int offset = num_buckets;
@@ -88,26 +90,28 @@ public final class Tree {
             //@ ghost int tree_start_offset = tree_offset;
 
             //@ assert \dl_pow(2, l + 1) - \dl_pow(2, l) == \dl_pow(2, l);
+            //@ assert step * \dl_pow(2, l) == \dl_pow(2, this.log_buckets);
             //@ assert offset - 1 + step * \dl_pow(2, l) >= num_buckets;
             //@ assert offset - 1 + step * (\dl_pow(2, l) - 1) < num_buckets;
 
             /*@ loop_invariant offset - 1 <= o < step + num_buckets;
               @ loop_invariant o == offset - 1 + step * (tree_offset - tree_start_offset);
-              @ loop_invariant \dl_pow(2, l) <= tree_offset;
+              @ loop_invariant \dl_pow(2, l) <= tree_offset <= \dl_pow(2, l + 1);
               @ loop_invariant (\forall int i; 1 <= i < tree_offset;
               @     this.tree[i] == sorted_splitters[Tree.pi(i, this.log_buckets) - 1]
               @ );
-              @ loop_invariant tree_offset < \dl_pow(2, l + 1) ==> o < num_buckets && \dl_log(2, tree_offset) == l;
-              @ loop_invariant tree_offset == \dl_pow(2, l + 1) ==> o >= num_buckets && \dl_log(2, tree_offset) == l + 1;
               @
               @ decreases step + num_buckets - o;
               @ assignable this.tree[*];
               @*/
             for (int o = offset - 1; o < num_buckets; o += step) {
+                //@ assert \dl_log(2, tree_offset) == l;
                 //@ assert Tree.pi(tree_offset, this.log_buckets) - 1 == o;
                 this.tree[tree_offset] = sorted_splitters[o];
                 tree_offset += 1;
             }
+
+            //@ assert tree_offset == \dl_pow(2, l + 1);
         }
     }
 
@@ -150,7 +154,7 @@ public final class Tree {
       @ requires 1 <= log_buckets;
       @ ensures \result;
       @ static model boolean piInRangeLower(int b, int log_buckets) {
-      @     return 0 <= Tree.pi(b, log_buckets);
+      @     return 1 <= Tree.pi(b, log_buckets);
       @ }
       @*/
 
