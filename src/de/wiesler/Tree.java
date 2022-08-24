@@ -6,26 +6,6 @@ public final class Tree {
     //@ ghost final int num_buckets;
     //@ ghost final int[] sorted_splitters;
 
-    // /*@ public model_behaviour
-    //   @ requires 1 <= log_length <= 29;
-    //   @ requires 0 <= index < (1 << log_length);
-    //   @
-    //   @ ensures \result ==> 2 * index + 1 < (1 << log_length);
-    //   @
-    //   @ static model no_state boolean hasChildren(int log_length, int index) {
-    //   @     return 2 * index < (1 << log_length);
-    //   @ }
-    //   @*/
-
-    // /*@ public model_behaviour
-    //   @ requires (1 << log_length) <= tree.length;
-    //   @ static model boolean heapProperty(int[] tree, int log_length) {
-    //   @     return (\forall int i; 0 <= i < (1 << log_length);
-    //   @         Tree.hasChildren(log_length, i) ==> tree[i] < tree[i * 2 + 1]
-    //   @     );
-    //   @ }
-    //   @*/
-
     /*@ public invariant 1 <= this.log_buckets <= Constants.LOG_MAX_BUCKETS;
       @ public invariant this.num_buckets == (1 << this.log_buckets);
       @ public invariant 2 <= this.num_buckets <= this.tree.length;
@@ -61,28 +41,73 @@ public final class Tree {
 
         this.log_buckets = log_buckets;
         this.tree = tree;
-        this.build(1, sorted_splitters, 0, num_splitters);
+        this.build(sorted_splitters);
+        //@ assert (\forall int i; 1 <= i < this.num_buckets; Tree.piInRangeLower(i, log_buckets) && Tree.piInRangeUpper(i, log_buckets));
     }
 
     /*@ normal_behaviour
-      @ requires this.tree != null;
+      @ requires this.tree != null && sorted_splitters != null;
+      @ requires \disjoint(sorted_splitters[*], this.tree[*]);
+      @ requires this.num_buckets <= sorted_splitters.length;
       @ requires 1 <= this.log_buckets <= Constants.LOG_MAX_BUCKETS;
       @ requires 2 <= this.num_buckets <= tree.length;
       @ requires this.num_buckets == (1 << this.log_buckets);
+      @ requires Functions.isSortedSliceTransitive(sorted_splitters, 0, (1 << this.log_buckets) - 1);
       @
-      @ requires 1 <= position && position < this.num_buckets;
-      @ requires 0 <= begin <= end <= sorted_splitters.length;
+      @ ensures (\forall int i; 1 <= i < this.num_buckets; this.tree[i] == sorted_splitters[Tree.pi(i, this.log_buckets) - 1]);
       @
-      @ measured_by end - begin;
-      @
-      @ assignable this.tree[position..(1 << this.log_buckets)];
+      @ assignable this.tree[*];
       @*/
-    /*@ helper */ void build(int position, int[] sorted_splitters, int begin, int end) {
-        final int mid = begin + (end - begin) / 2;
-        this.tree[position] = sorted_splitters[mid];
-        if (2 * position + 1 < (1 << this.log_buckets)) {
-            this.build(2 * position, sorted_splitters, begin, mid);
-            this.build(2 * position + 1, sorted_splitters, mid, end);
+    /*@ helper */ void build(int[] sorted_splitters) {
+        int num_buckets = 1 << this.log_buckets;
+        //@ assert this.num_buckets == num_buckets;
+        //@ assert num_buckets == \dl_pow(2, this.log_buckets);
+
+        int tree_offset = 1;
+        int offset = num_buckets;
+        /*@ loop_invariant 0 <= l <= this.log_buckets;
+          @ loop_invariant tree_offset == \dl_pow(2, l);
+          @ loop_invariant offset == \dl_pow(2, this.log_buckets - l);
+          @ loop_invariant (\forall int i; 1 <= i < tree_offset;
+          @     this.tree[i] == sorted_splitters[Tree.pi(i, this.log_buckets) - 1]
+          @ );
+          @
+          @ decreases this.log_buckets - l;
+          @ assignable this.tree[*];
+          @*/
+        for (int l = 0; l < this.log_buckets; ++l) {
+            final int step = offset;
+            offset /= 2;
+
+            //@ assert step == \dl_pow(2, this.log_buckets - l);
+            //@ assert offset == \dl_pow(2, this.log_buckets - l - 1);
+            //@ assert step == offset * 2;
+            //@ assert 1 <= offset < num_buckets;
+            //@ assert \dl_pow(2, l + 1) <= num_buckets;
+
+            //@ ghost int tree_start_offset = tree_offset;
+
+            //@ assert \dl_pow(2, l + 1) - \dl_pow(2, l) == \dl_pow(2, l);
+            //@ assert offset - 1 + step * \dl_pow(2, l) >= num_buckets;
+            //@ assert offset - 1 + step * (\dl_pow(2, l) - 1) < num_buckets;
+
+            /*@ loop_invariant offset - 1 <= o < step + num_buckets;
+              @ loop_invariant o == offset - 1 + step * (tree_offset - tree_start_offset);
+              @ loop_invariant \dl_pow(2, l) <= tree_offset;
+              @ loop_invariant (\forall int i; 1 <= i < tree_offset;
+              @     this.tree[i] == sorted_splitters[Tree.pi(i, this.log_buckets) - 1]
+              @ );
+              @ loop_invariant tree_offset < \dl_pow(2, l + 1) ==> o < num_buckets && \dl_log(2, tree_offset) == l;
+              @ loop_invariant tree_offset == \dl_pow(2, l + 1) ==> o >= num_buckets && \dl_log(2, tree_offset) == l + 1;
+              @
+              @ decreases step + num_buckets - o;
+              @ assignable this.tree[*];
+              @*/
+            for (int o = offset - 1; o < num_buckets; o += step) {
+                //@ assert Tree.pi(tree_offset, this.log_buckets) - 1 == o;
+                this.tree[tree_offset] = sorted_splitters[o];
+                tree_offset += 1;
+            }
         }
     }
 
