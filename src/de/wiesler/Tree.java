@@ -188,6 +188,7 @@ public final class Tree {
 
     /*@ model_behaviour
       @ requires 1 <= b < \dl_pow(2, log_buckets - 1);
+      @ requires 1 <= log_buckets;
       @ ensures \result;
       @ static model boolean piLemma(int b, int log_buckets) {
       @     return Tree.piLemmaLeft(b, log_buckets) && Tree.piLemmaRight(b, log_buckets);
