@@ -46,7 +46,7 @@ de.wiesler.Sorter[de.wiesler.Sorter::sort([I)].JML normal_behavior operation con
 de.wiesler.Sorter[de.wiesler.Sorter::sort([I,int,int,de.wiesler.Storage)].JML normal_behavior operation contract.0
 de.wiesler.Storage[de.wiesler.Storage::Storage()].JML normal_behavior operation contract.0
 de.wiesler.Storage[de.wiesler.Storage::createArray(int)].JML normal_behavior operation contract.0
-de.wiesler.Tree[de.wiesler.Tree::Tree([I,[I,int)].JML normal_behavior operation contract.0
-de.wiesler.Tree[de.wiesler.Tree::build(int,[I,int,int)].JML normal_behavior operation contract.0
+# de.wiesler.Tree[de.wiesler.Tree::Tree([I,[I,int)].JML normal_behavior operation contract.0
+# de.wiesler.Tree[de.wiesler.Tree::build(int,[I,int,int)].JML normal_behavior operation contract.0
 # de.wiesler.Tree[de.wiesler.Tree::classify(int)].JML normal_behavior operation contract.0
 # de.wiesler.Tree[de.wiesler.Tree::classify_all([I,int,int,[I)].JML normal_behavior operation contract.0
