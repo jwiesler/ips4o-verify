@@ -27,6 +27,9 @@ check-constructors:
 check-class target:
 	{{checkCommand}} --forbid-contracts-file "contracts/ignore.txt" --contracts-filter "^de\.wiesler\.{{target}}\[.*" -s statistics.json
 
+check-overflow-class target:
+	{{checkOverflowCommand}} --forbid-contracts-file "contracts/ignore.txt" --contracts-filter "^de\.wiesler\.{{target}}\[.*"
+
 check-overflow-methods:
 	{{checkOverflowCommand}} --contracts-file "contracts/overflow.txt" --forbid-contracts-file "contracts/constructors.txt" -s statistics-overflow-methods.json
 
