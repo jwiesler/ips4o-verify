@@ -4,6 +4,7 @@ CI_TOOL := "tools/citool-1.4.0-mini.jar"
 
 checkCommand := 'java -Dkey.contractOrder="contract-order.txt" -cp "' + KEY_JAR + ';' + CI_TOOL + '" de.uka.ilkd.key.CheckerKt --no-auto-mode --proof-path proofs/ project.key'
 checkOverflowCommand := 'java -Dkey.contractOrder="contract-order.txt" -cp "' + KEY_OVERFLOW_JAR + ';' + CI_TOOL + '" de.uka.ilkd.key.CheckerKt -v --no-auto-mode --proof-path proofs-overflow/ project.key'
+checkTreeCommand := 'java -Dkey.contractOrder="contract-order.txt" -cp "' + KEY_OVERFLOW_JAR + ';' + CI_TOOL + '" de.uka.ilkd.key.CheckerKt -v --no-auto-mode --proof-path proofs/ project.key'
 
 default:
 	@just --list
@@ -29,6 +30,9 @@ check-class target:
 
 check-overflow-class target:
 	{{checkOverflowCommand}} --forbid-contracts-file "contracts/ignore.txt" --contracts-filter "^de\.wiesler\.{{target}}\[.*"
+
+check-tree:
+    {{checkTreeCommand}} --forbid-contracts-file "contracts/ignore.txt" --contracts-filter "^de\.wiesler\.Tree\[.*"
 
 check-overflow-methods:
 	{{checkOverflowCommand}} --contracts-file "contracts/overflow.txt" --forbid-contracts-file "contracts/constructors.txt" -s statistics-overflow-methods.json
