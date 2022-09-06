@@ -152,6 +152,8 @@ de.wiesler.Functions[de.wiesler.Functions::isValidBucketStarts([I,int)].JML acce
 
 de.wiesler.Tree[java.lang.Object::<inv>()].JML accessible clause.0
 
+de.wiesler.Tree[de.wiesler.Tree::classify(int)].JML normal_behavior operation contract.0
+
 de.wiesler.Tree[de.wiesler.Tree::classify(int)].JML accessible clause.0
 
 de.wiesler.Classifier[java.lang.Object::<inv>()].JML accessible clause.0
@@ -226,8 +228,6 @@ de.wiesler.BucketPointers[de.wiesler.BucketPointers::decrement_read(int)].JML no
 de.wiesler.BucketPointers[de.wiesler.BucketPointers::hasRemainingRead(int)].JML normal_behavior operation contract.0
 de.wiesler.BucketPointers[de.wiesler.BucketPointers::increment_write(int)].JML normal_behavior operation contract.0
 de.wiesler.BucketPointers[de.wiesler.BucketPointers::write(int)].JML normal_behavior operation contract.0
-
-de.wiesler.Tree[de.wiesler.Tree::classify(int)].JML normal_behavior operation contract.0
 
 de.wiesler.Tree[de.wiesler.Tree::classOfFirstSplitters()].JML model_behavior operation contract.0
 
