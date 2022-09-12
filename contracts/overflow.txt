@@ -1,0 +1,52 @@
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::BucketPointers([I,int,int,[I)].JML normal_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::decrement_read(int)].JML normal_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::hasRemainingRead(int)].JML normal_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::increment_write(int)].JML normal_behavior operation contract.0
+de.wiesler.BucketPointers[de.wiesler.BucketPointers::write(int)].JML normal_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::Buffers([I,[I,int)].JML normal_behavior operation contract.0
+# de.wiesler.Buffers[de.wiesler.Buffers::align_to_next_block(int)].JML normal_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::distribute(int,[I,int,int,int,int)].JML normal_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::flush(int,[I,int,int)].JML normal_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::len(int)].JML normal_behavior operation contract.0
+de.wiesler.Buffers[de.wiesler.Buffers::push(int,int)].JML normal_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::Classifier([I,[I,int,boolean)].JML normal_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::calculate_bucket_starts([I,int,int,int,[I,de.wiesler.Buffers)].JML normal_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::classify(int)].JML normal_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::classify_all([I,int,int,[I)].JML normal_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::classify_locally([I,int,int,[I,de.wiesler.Buffers)].JML normal_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::classify_locally_batched([I,int,int,[I,de.wiesler.Buffers)].JML normal_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::equal_buckets()].JML normal_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::finish_batch([I,[I,int,int,int,int,[I,de.wiesler.Buffers)].JML normal_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::from_sorted_samples([I,[I,int,int)].JML normal_behavior operation contract.0
+de.wiesler.Classifier[de.wiesler.Classifier::num_buckets()].JML normal_behavior operation contract.0
+de.wiesler.Cleanup[de.wiesler.Cleanup::cleanup([I,int,int,de.wiesler.Buffers,[I,de.wiesler.BucketPointers,de.wiesler.Classifier,[I)].JML normal_behavior operation contract.0
+# de.wiesler.Constants[de.wiesler.Constants::log2(int)].JML normal_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::copy_nonoverlapping([I,int,[I,int,int)].JML normal_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::copy_unique([I,int,int,int,int,[I)].JML normal_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::fill([I,int,int,int)].JML normal_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::max(int,int)].JML normal_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::min(int,int)].JML normal_behavior operation contract.0
+de.wiesler.Functions[de.wiesler.Functions::select_n([I,int,int,int)].JML normal_behavior operation contract.0
+de.wiesler.Increment[de.wiesler.Increment::Increment(boolean,int)].JML normal_behavior operation contract.0
+de.wiesler.PartitionResult[de.wiesler.PartitionResult::PartitionResult(int,boolean)].JML normal_behavior operation contract.0
+de.wiesler.Partition[de.wiesler.Partition::partition([I,int,int,[I,de.wiesler.Classifier,de.wiesler.Storage)].JML normal_behavior operation contract.0
+de.wiesler.Permute[de.wiesler.Permute::permute([I,int,int,de.wiesler.Classifier,de.wiesler.BucketPointers,[I,[I,[I)].JML normal_behavior operation contract.0
+de.wiesler.Permute[de.wiesler.Permute::place_block(int,[I,int,int,de.wiesler.Classifier,de.wiesler.BucketPointers,[I,[I,[I)].JML normal_behavior operation contract.0
+de.wiesler.Permute[de.wiesler.Permute::swap_block(int,[I,int,int,de.wiesler.Classifier,de.wiesler.BucketPointers,[I,[I,[I)].JML normal_behavior operation contract.0
+# de.wiesler.SampleParameters[de.wiesler.SampleParameters::SampleParameters(int)].JML normal_behavior operation contract.0
+# de.wiesler.SampleParameters[de.wiesler.SampleParameters::log_buckets(int)].JML normal_behavior operation contract.0
+# de.wiesler.SampleParameters[de.wiesler.SampleParameters::oversampling_factor(int)].JML normal_behavior operation contract.0
+# de.wiesler.Sorter[de.wiesler.Sorter::base_case_sort([I,int,int)].JML normal_behavior operation contract.0
+# de.wiesler.Sorter[de.wiesler.Sorter::fallback_sort([I,int,int)].JML normal_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::partition([I,int,int,[I,de.wiesler.Storage)].JML normal_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::sample([I,int,int,de.wiesler.Storage)].JML normal_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::sample_sort([I,int,int,de.wiesler.Storage)].JML normal_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::sample_sort_recurse_on([I,int,int,de.wiesler.Storage,[I,int,boolean,int)].JML normal_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::sort([I)].JML normal_behavior operation contract.0
+de.wiesler.Sorter[de.wiesler.Sorter::sort([I,int,int,de.wiesler.Storage)].JML normal_behavior operation contract.0
+de.wiesler.Storage[de.wiesler.Storage::Storage()].JML normal_behavior operation contract.0
+de.wiesler.Storage[de.wiesler.Storage::createArray(int)].JML normal_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::Tree([I,[I,int)].JML normal_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::build(int,[I,int,int)].JML normal_behavior operation contract.0
+# de.wiesler.Tree[de.wiesler.Tree::classify(int)].JML normal_behavior operation contract.0
+# de.wiesler.Tree[de.wiesler.Tree::classify_all([I,int,int,[I)].JML normal_behavior operation contract.0

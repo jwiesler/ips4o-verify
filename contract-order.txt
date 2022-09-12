@@ -9,8 +9,13 @@ de.wiesler.Buffers[de.wiesler.Buffers::align_to_next_block(int)].JML normal_beha
 de.wiesler.Buffers[de.wiesler.Buffers::blockAligned(int)].JML model_behavior operation contract.0
 
 # constructors here just to be safe that they don't use contracts proven in the final heap
+de.wiesler.Tree[de.wiesler.Tree::piLemmaUpperBound(int)].JML model_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::piInRangeLower(int,int)].JML model_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::piInRangeUpper(int,int)].JML model_behavior operation contract.0
+
+de.wiesler.Tree[de.wiesler.Tree::build([I)].JML normal_behavior operation contract.0
+
 de.wiesler.Tree[de.wiesler.Tree::Tree([I,[I,int)].JML normal_behavior operation contract.0
-de.wiesler.Tree[de.wiesler.Tree::build(int,[I,int,int)].JML normal_behavior operation contract.0
 
 de.wiesler.Storage[de.wiesler.Storage::Storage()].JML normal_behavior operation contract.0
 de.wiesler.Buffers[de.wiesler.Buffers::Buffers([I,[I,int)].JML normal_behavior operation contract.0
@@ -30,7 +35,21 @@ de.wiesler.Functions[de.wiesler.Functions::isSortedSlice([I,int,int)].JML model_
 de.wiesler.Functions[de.wiesler.Functions::isSortedSliceTransitive([I,int,int)].JML model_behavior operation contract.0
 de.wiesler.Functions[de.wiesler.Functions::isValidBucketStarts([I,int)].JML model_behavior operation contract.0
 
-de.wiesler.Tree[de.wiesler.Tree::classOfFirstSplitters()].JML model_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::binarySearchInvariant(int,int,int)].JML model_behavior operation contract.0
+
+de.wiesler.Tree[de.wiesler.Tree::binarySearchInvariant(int,int,int)].JML accessible clause.0
+
+de.wiesler.Tree[de.wiesler.Tree::piOf1(int)].JML model_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::piLemmaLeft(int,int)].JML model_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::piLemmaRight(int,int)].JML model_behavior operation contract.0
+
+de.wiesler.Tree[de.wiesler.Tree::piLemma(int,int)].JML model_behavior operation contract.0
+
+de.wiesler.Tree[de.wiesler.Tree::treeSearchInvariantLemmaImpl(int,int,int,int,int)].JML normal_behavior operation contract.0
+
+de.wiesler.Tree[de.wiesler.Tree::treeSearchInvariantLemma(int,int,int,int,int)].JML model_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::binarySearchInvariantLemma(int,int,int,int)].JML model_behavior operation contract.0
+
 de.wiesler.Tree[de.wiesler.Tree::isClassifiedAs(int,int)].JML model_behavior operation contract.0
 
 de.wiesler.Classifier[de.wiesler.Classifier::classOf(int)].JML model_behavior operation contract.0
@@ -133,6 +152,8 @@ de.wiesler.Functions[de.wiesler.Functions::isValidBucketStarts([I,int)].JML acce
 
 de.wiesler.Tree[java.lang.Object::<inv>()].JML accessible clause.0
 
+de.wiesler.Tree[de.wiesler.Tree::classify(int)].JML normal_behavior operation contract.0
+
 de.wiesler.Tree[de.wiesler.Tree::classify(int)].JML accessible clause.0
 
 de.wiesler.Classifier[java.lang.Object::<inv>()].JML accessible clause.0
@@ -208,7 +229,7 @@ de.wiesler.BucketPointers[de.wiesler.BucketPointers::hasRemainingRead(int)].JML 
 de.wiesler.BucketPointers[de.wiesler.BucketPointers::increment_write(int)].JML normal_behavior operation contract.0
 de.wiesler.BucketPointers[de.wiesler.BucketPointers::write(int)].JML normal_behavior operation contract.0
 
-de.wiesler.Tree[de.wiesler.Tree::classify(int)].JML normal_behavior operation contract.0
+de.wiesler.Tree[de.wiesler.Tree::classOfFirstSplitters()].JML model_behavior operation contract.0
 
 de.wiesler.Tree[de.wiesler.Tree::classify_all([I,int,int,[I)].JML normal_behavior operation contract.0
 
