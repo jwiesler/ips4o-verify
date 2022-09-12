@@ -478,7 +478,9 @@ public final class Sorter {
         PartitionResult partition = partition(values, begin, end, bucket_starts, storage);
 
         if (partition == null) {
-            fallback_sort(values, begin, end);
+            if (end - begin > Constants.SINGLE_LEVEL_THRESHOLD) {
+                fallback_sort(values, begin, end);
+            }
             return;
         }
 

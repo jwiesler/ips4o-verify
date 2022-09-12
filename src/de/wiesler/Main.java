@@ -1,5 +1,7 @@
 package de.wiesler;
 
+import java.util.Arrays;
+
 public class Main {
     private static void bench(int len, int count) {
         var storage = new Storage();
@@ -26,7 +28,21 @@ public class Main {
         System.out.println(len + "," + count + "," + sum + "," + sum_std);
     }
 
+    private static void test() {
+        var storage = new Storage();
+        for (int i = 0; i < 1000000; i++) {
+            var values = new int[i];
+            Arrays.fill(values, 1);
+            Sorter.sort(values, 0, i, storage);
+        }
+    }
+
     public static void main(String[] args) {
+        var storage = new Storage();
+        var values = new int[2049];
+        Arrays.fill(values, 1);
+        Sorter.sort(values, 0, 2049, storage);
+        test();
 //        bench(1 << 8, 1_000_000);
 //        bench(1 << 9, 1_000_000);
 //        bench(1 << 10, 1_000_000);
