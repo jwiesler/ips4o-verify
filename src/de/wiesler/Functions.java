@@ -74,7 +74,7 @@ public final class Functions {
       @
       @ assignable values[begin..end - 1];
       @*/
-    public static void select_n(int[] values, int begin, int end, int num_samples) {
+    public static <T> void select_n(T[] values, int begin, int end, int num_samples) {
         // TODO
     }
 
@@ -126,7 +126,7 @@ public final class Functions {
       @
       @ assignable dest[destPos..destPos + length - 1];
       @*/
-    public static void copy_nonoverlapping(int[] src, int srcPos, int[] dest, int destPos, int length) {
+    public static <T> void copy_nonoverlapping(T[] src, int srcPos, T[] dest, int destPos, int length) {
         // /*@ loop_invariant 0 <= i <= length;
         //   @ loop_invariant (\forall int j; 0 <= j < i; dest[destPos + j] == src[srcPos + j]);
         //   @
@@ -167,13 +167,13 @@ public final class Functions {
       @
       @ assignable target[0..count - 1];
       @*/
-    public static int copy_unique(
-            int[] values,
-            int begin,
-            int end,
-            int count,
-            int step,
-            int[] target
+    public static <T> int copy_unique(
+        T[] values,
+        int begin,
+        int end,
+        int count,
+        int step,
+        T[] target
     ) {
         int offset = begin + step - 1;
         //@ assert offset < end;

@@ -51,15 +51,15 @@ public final class Cleanup {
       @
       @ assignable values[begin..end - 1];
       @*/
-    public static void cleanup(
-            final int[] values,
+    public static <T> void cleanup(
+            final T[] values,
             final int begin,
             final int end,
-            final Buffers buffers,
+            final Buffers<T> buffers,
             final int[] bucket_starts,
             final BucketPointers bucket_pointers,
-            final Classifier classifier,
-            final int[] overflow
+            final Classifier<T> classifier,
+            final T[] overflow
     ) {
         //@ ghost \dl_Heap heapOld = \dl_heap();
         final int num_buckets = classifier.num_buckets();

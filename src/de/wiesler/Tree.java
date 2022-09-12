@@ -1,10 +1,10 @@
 package de.wiesler;
 
-public final class Tree {
-    private /*@ spec_public @*/ final int[] tree;
+public final class Tree<T> {
+    private /*@ spec_public @*/ final T[] tree;
     private /*@ spec_public @*/ final int log_buckets;
     //@ ghost final int num_buckets;
-    //@ ghost final int[] sorted_splitters;
+    //@ ghost final T[] sorted_splitters;
 
     /*@ public invariant 1 <= this.log_buckets <= Constants.LOG_MAX_BUCKETS;
       @ public invariant this.num_buckets == (1 << this.log_buckets);
@@ -31,7 +31,7 @@ public final class Tree {
       @
       @ assignable tree[*];
       @*/
-    public Tree(int[] sorted_splitters, int[] tree, int log_buckets) {
+    public Tree(T[] sorted_splitters, T[] tree, int log_buckets) {
         //@ set num_buckets = 1 << log_buckets;
         //@ set this.sorted_splitters = sorted_splitters;
         final int num_buckets = 1 << log_buckets;
@@ -59,7 +59,7 @@ public final class Tree {
       @
       @ assignable this.tree[*];
       @*/
-    /*@ helper */ void build(int[] sorted_splitters) {
+    /*@ helper */ void build(T[] sorted_splitters) {
         //@ assert 1 <= \dl_pow(2, this.log_buckets) <= \dl_pow(2, 6);
         //@ assert (1 << this.log_buckets) == \dl_pow(2, this.log_buckets);
         int num_buckets = 1 << this.log_buckets;
@@ -290,7 +290,7 @@ public final class Tree {
       @
       @ accessible this.tree[*], this.sorted_splitters[*];
       @*/
-    int classify(int value) {
+    int classify(T value) {
         //@ assert \dl_pow(2, 1) <= \dl_pow(2, this.log_buckets) <= \dl_pow(2, Constants.LOG_MAX_BUCKETS);
         //@ assert \dl_pow(2, this.log_buckets) == this.num_buckets;
         //@ ghost int b_bin = this.num_buckets - 1;
@@ -341,7 +341,7 @@ public final class Tree {
       @
       @ assignable indices[*];
       @*/
-    void classify_all(int[] values, int begin, int end, int[] indices) {
+    void classify_all(T[] values, int begin, int end, int[] indices) {
         Functions.fill(indices, 0, indices.length, 1);
 
         //@ assert \dl_pow(2, 1) <= \dl_pow(2, this.log_buckets) <= \dl_pow(2, Constants.LOG_MAX_BUCKETS);

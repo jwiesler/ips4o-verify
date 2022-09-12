@@ -76,16 +76,16 @@ public final class Permute {
       @ assignable bucket_pointers.buffer[2 * target_bucket + 1];
       @ assignable other_swap[*], overflow[*];
       @*/
-    private static int swap_block(
-            int target_bucket,
-            int[] values,
-            int begin,
-            int end,
-            Classifier classifier,
-            BucketPointers bucket_pointers,
-            int[] current_swap,
-            int[] other_swap,
-            int[] overflow
+    private static <T> int swap_block(
+        int target_bucket,
+        T[] values,
+        int begin,
+        int end,
+        Classifier<T> classifier,
+        BucketPointers bucket_pointers,
+        T[] current_swap,
+        T[] other_swap,
+        T[] overflow
     ) {
         //@ assert bucket_pointers.bucketStart(classifier.num_buckets) == Buffers.blockAligned(end - begin) && bucket_pointers.disjointBucketsLemma(target_bucket);
 
@@ -371,16 +371,16 @@ public final class Permute {
       @ assignable bucket_pointers.buffer[*];
       @ assignable swap_1[*], swap_2[*], overflow[*];
       @*/
-    private static void place_block(
-            int target_bucket,
-            final int[] values,
-            final int begin,
-            final int end,
-            final Classifier classifier,
-            final BucketPointers bucket_pointers,
-            final int[] swap_1,
-            final int[] swap_2,
-            final int[] overflow
+    private static <T> void place_block(
+        int target_bucket,
+        final T[] values,
+        final int begin,
+        final int end,
+        final Classifier<T> classifier,
+        final BucketPointers bucket_pointers,
+        final T[] swap_1,
+        final T[] swap_2,
+        final T[] overflow
     ) {
         //@ ghost int first_target_bucket = target_bucket;
         boolean first_is_current_swap = true;
@@ -418,15 +418,15 @@ public final class Permute {
           @*/
         while (true) {
             int new_target = swap_block(
-                    target_bucket,
-                    values,
-                    begin,
-                    end,
-                    classifier,
-                    bucket_pointers,
-                    first_is_current_swap ? swap_1 : swap_2,
-                    first_is_current_swap ? swap_2 : swap_1,
-                    overflow
+                target_bucket,
+                values,
+                begin,
+                end,
+                classifier,
+                bucket_pointers,
+                first_is_current_swap ? swap_1 : swap_2,
+                first_is_current_swap ? swap_2 : swap_1,
+                overflow
             );
             if (new_target == -1) {
                 break;
@@ -484,15 +484,15 @@ public final class Permute {
       @ assignable bucket_pointers.buffer[*];
       @ assignable swap_1[*], swap_2[*], overflow[*];
       @*/
-    public static void permute(
-            final int[] values,
-            final int begin,
-            final int end,
-            final Classifier classifier,
-            final BucketPointers bucket_pointers,
-            final int[] swap_1,
-            final int[] swap_2,
-            final int[] overflow
+    public static <T> void permute(
+        final T[] values,
+        final int begin,
+        final int end,
+        final Classifier<T> classifier,
+        final BucketPointers bucket_pointers,
+        final T[] swap_1,
+        final T[] swap_2,
+        final T[] overflow
     ) {
         //@ assert bucket_pointers.bucketStart(classifier.num_buckets) == Buffers.blockAligned(end - begin);
         final int num_buckets = classifier.num_buckets();
@@ -570,7 +570,7 @@ public final class Permute {
                 //@ assert classifier.isClassifiedBlocksRange(values, begin + bucket_pointers.nextWriteOf(bucket), begin + read + Buffers.BUFFER_SIZE);
                 //@ assert classifier.isClassifiedBlocksRangeSplit(values, begin + bucket_pointers.nextWriteOf(bucket), begin + read, begin + read + Buffers.BUFFER_SIZE);
                 //@ assert classifier.isClassifiedBlock(values, begin + read, begin + read + Buffers.BUFFER_SIZE);
-                int first_value = swap_1[0];
+                T first_value = swap_1[0];
                 int target_bucket = classifier.classify(first_value);
                 //@ assert classifier.classOfClassifiedBlockFromFirst(values, begin + read, begin + read + Buffers.BUFFER_SIZE, target_bucket);
                 /*@ assert

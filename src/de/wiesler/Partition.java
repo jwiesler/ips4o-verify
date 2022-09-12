@@ -62,15 +62,15 @@ public final class Partition {
       @ assignable storage.swap_2[*];
       @ assignable storage.overflow[*];
       @*/
-    public static void partition(
-        int[] values,
+    public static <T> void partition(
+        T[] values,
         int begin,
         int end,
         int[] bucket_starts,
-        Classifier classifier,
-        Storage storage
+        Classifier<T> classifier,
+        Storage<T> storage
     ) {
-        Buffers buffers = new Buffers(storage.buffers_buffer, storage.buffers_indices, classifier.num_buckets());
+        Buffers<T> buffers = new Buffers(storage.buffers_buffer, storage.buffers_indices, classifier.num_buckets());
         int first_empty_position = classifier.classify_locally(values, begin, end, bucket_starts, buffers);
         //@ ghost \dl_Heap heapAfterClassify = \dl_heap();
 
@@ -96,7 +96,7 @@ public final class Partition {
           @ );
           @*/
 
-        int[] overflow = storage.overflow;
+        T[] overflow = storage.overflow;
         Permute.permute(values, begin, end, classifier, bucket_pointers, storage.swap_1, storage.swap_2, overflow);
 
         Cleanup.cleanup(values,

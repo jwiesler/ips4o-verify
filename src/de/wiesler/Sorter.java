@@ -19,7 +19,7 @@ public final class Sorter {
       @ assignable storage.allArrays;
       @ assignable values[begin..end - 1];
       @*/
-    private static SampleParameters sample(int[] values, int begin, int end, Storage storage) {
+    private static <T> SampleParameters sample(T[] values, int begin, int end, Storage<T> storage) {
         SampleParameters parameters = new SampleParameters(end - begin);
         /*@ normal_behaviour
           @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
@@ -259,12 +259,12 @@ public final class Sorter {
       @ assignable storage.allArrays;
       @ assignable bucket_starts[*];
       @*/
-    private static /*@ nullable */ PartitionResult partition(
-            int[] values,
-            int begin,
-            int end,
-            int[] bucket_starts,
-            Storage storage
+    private static <T> /*@ nullable */ PartitionResult partition(
+        T[] values,
+        int begin,
+        int end,
+        int[] bucket_starts,
+        Storage<T> storage
     ) {
         /*@ normal_behaviour
           @ ensures \disjoint(
@@ -292,7 +292,7 @@ public final class Sorter {
         final int num_samples = sample.num_samples;
         final int num_buckets = sample.num_buckets;
         final int step = sample.step;
-        final int[] splitters = storage.splitters;
+        final T[] splitters = storage.splitters;
 
         //@ ghost \seq before_copy_unique = \dl_seq_def_workaround(begin, end, values);
 
@@ -318,7 +318,7 @@ public final class Sorter {
         }
 
         // >= 2 unique splitters, therefore >= 3 buckets and >= 2 nonempty buckets
-        final Classifier classifier = Classifier.from_sorted_samples(splitters, storage.tree, num_splitters, num_buckets);
+        final Classifier<T> classifier = Classifier.from_sorted_samples(splitters, storage.tree, num_splitters, num_buckets);
 
         // Create this first, classifier is immutable and this removes heap mutations after partition
         final PartitionResult r = new PartitionResult(classifier.num_buckets(), classifier.equal_buckets());
@@ -412,7 +412,16 @@ public final class Sorter {
       @
       @ measured_by end - begin, 1;
       @*/
-    private static void sample_sort_recurse_on(int[] values, int begin, int end, Storage storage, int[] bucket_starts, int num_buckets, boolean equal_buckets, int bucket) {
+    private static <T> void sample_sort_recurse_on(
+        T[] values,
+        int begin,
+        int end,
+        Storage<T> storage,
+        int[] bucket_starts,
+        int num_buckets,
+        boolean equal_buckets,
+        int bucket
+    ) {
         int inner_begin = begin + bucket_starts[bucket];
         int inner_end = begin + bucket_starts[bucket + 1];
 
@@ -461,7 +470,7 @@ public final class Sorter {
       @ assignable values[begin..end - 1];
       @ assignable storage.allArrays;
       @*/
-    private static void sample_sort(int[] values, int begin, int end, Storage storage) {
+    private static <T> void sample_sort(T[] values, int begin, int end, Storage<T> storage) {
         int[] bucket_starts = Storage.createArray(Constants.MAX_BUCKETS + 1);
 
         /*@ normal_behaviour
@@ -551,7 +560,7 @@ public final class Sorter {
       @
       @ assignable values[begin..end - 1];
       @*/
-    public static void fallback_sort(int[] values, int begin, int end) {
+    public static <T> void fallback_sort(T[] values, int begin, int end) {
         java.util.Arrays.sort(values, begin, end);
     }
 
@@ -563,7 +572,7 @@ public final class Sorter {
       @
       @ assignable values[begin..end - 1];
       @*/
-    private static void base_case_sort(int[] values, int begin, int end) {
+    private static <T> void base_case_sort(T[] values, int begin, int end) {
         fallback_sort(values, begin, end);
     }
 
@@ -583,7 +592,7 @@ public final class Sorter {
       @ assignable values[begin..end - 1];
       @ assignable storage.allArrays;
       @*/
-    public static void sort(int[] values, int begin, int end, Storage storage) {
+    public static <T> void sort(T[] values, int begin, int end, Storage<T> storage) {
         if (end - begin <= Constants.ACTUAL_BASE_CASE_SIZE) {
             base_case_sort(values, begin, end);
         } else {
@@ -599,8 +608,8 @@ public final class Sorter {
       @
       @ assignable values[*];
       @*/
-    public static void sort(int[] values) {
-        Storage storage = new Storage();
+    public static <T> void sort(T[] values) {
+        Storage<T> storage = new Storage();
         //@ assert \disjoint(storage.allArrays, values);
         sort(values, 0, values.length, storage);
     }

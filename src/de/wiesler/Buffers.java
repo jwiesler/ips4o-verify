@@ -1,6 +1,6 @@
 package de.wiesler;
 
-public final class Buffers {
+public final class Buffers<T> {
     public static final int BUFFER_SIZE = 1024 / 4;
     public static final int MAX_INT = 0x7FFFFFFF;
     public static final int MAX_LEN = MAX_INT - BUFFER_SIZE + 1;
@@ -85,7 +85,7 @@ public final class Buffers {
         }
     }
 
-    private /*@ spec_public @*/ final int[] buffer;
+    private /*@ spec_public @*/ final T[] buffer;
     private /*@ spec_public @*/ final int[] indices;
     //@ ghost final int num_buckets;
 
@@ -179,7 +179,7 @@ public final class Buffers {
       @
       @ assignable indices[0..num_buckets - 1];
       @*/
-    public Buffers(int[] buffer, int[] indices, int num_buckets) {
+    public Buffers(T[] buffer, int[] indices, int num_buckets) {
         this.buffer = buffer;
         this.indices = indices;
         //@ set this.num_buckets = num_buckets;
@@ -201,7 +201,7 @@ public final class Buffers {
       @ assignable this.indices[bucket];
       @ assignable this.buffer[bucket * BUFFER_SIZE + this.bufferLen(bucket)];
       @*/
-    public void push(int bucket, int value) {
+    public void push(int bucket, T value) {
         int buffer_offset = bucket * BUFFER_SIZE;
         int index = this.indices[bucket];
         this.buffer[buffer_offset + index] = value;
@@ -228,7 +228,7 @@ public final class Buffers {
       @ assignable this.indices[bucket];
       @ assignable values[write..write + BUFFER_SIZE - 1];
       @*/
-    public void flush(int bucket, int[] values, int write, int end) {
+    public void flush(int bucket, T[] values, int write, int end) {
         int buffer_offset = bucket * BUFFER_SIZE;
         Functions.copy_nonoverlapping(this.buffer, buffer_offset, values, write, BUFFER_SIZE);
         this.indices[bucket] = 0;
@@ -258,7 +258,7 @@ public final class Buffers {
       @ assignable values[head_start..(head_start + head_len - 1)];
       @ assignable values[tail_start..(tail_start + tail_len - 1)];
       @*/
-    public void distribute(int bucket, int[] values, int head_start, int head_len, int tail_start, int tail_len) {
+    public void distribute(int bucket, T[] values, int head_start, int head_len, int tail_start, int tail_len) {
         //@ assert head_len + tail_len == this.indices[bucket];
         int offset = bucket * BUFFER_SIZE;
         //@ assert Functions.countElementSplit(this.buffer, offset, offset + head_len, offset + head_len + tail_len);

@@ -1,11 +1,11 @@
 package de.wiesler;
 
-public final class Classifier {
+public final class Classifier<T> {
     public static final int STORAGE_SIZE = (1 << Constants.LOG_MAX_BUCKETS);
 
-    private /*@ spec_public @*/ final Tree tree;
+    private /*@ spec_public @*/ final Tree<T> tree;
     private /*@ spec_public @*/ final int num_buckets;
-    private /*@ spec_public @*/ final int[] sorted_splitters;
+    private /*@ spec_public @*/ final T[] sorted_splitters;
     private /*@ spec_public @*/ final boolean equal_buckets;
 
     /*@ invariant 2 <= this.num_buckets <= Constants.MAX_BUCKETS;
@@ -142,7 +142,7 @@ public final class Classifier {
       @
       @ assignable tree[*];
       @*/
-    public Classifier(int[] sorted_splitters, int[] tree, int log_buckets, boolean equal_buckets) {
+    public Classifier(T[] sorted_splitters, T[] tree, int log_buckets, boolean equal_buckets) {
         int num_buckets = 1 << log_buckets;
         //@ assert 2 <= num_buckets <= (1 << Constants.LOG_MAX_BUCKETS);
 
@@ -195,11 +195,11 @@ public final class Classifier {
       @
       @ assignable splitters[*], tree[*];
       @*/
-    public static Classifier from_sorted_samples(
-            int[] splitters,
-            int[] tree,
-            int num_splitters,
-            int num_buckets
+    public static <T> Classifier<T> from_sorted_samples(
+        T[] splitters,
+        T[] tree,
+        int num_splitters,
+        int num_buckets
     ) {
         // Check for duplicate splitters
         boolean use_equal_buckets = (num_buckets - 1 - num_splitters) >= Constants.EQUAL_BUCKETS_THRESHOLD;
@@ -230,7 +230,7 @@ public final class Classifier {
             splitters[i] = splitters[num_splitters - 1];
         }
 
-        Classifier classifier = new Classifier(splitters, tree, log_buckets, use_equal_buckets);
+        Classifier<T> classifier = new Classifier<T>(splitters, tree, log_buckets, use_equal_buckets);
         //@ assert classifier.classOfFirstSplitters();
         return classifier;
     }
@@ -290,7 +290,7 @@ public final class Classifier {
       @
       @ accessible this.sorted_splitters[*], this.tree.tree[*];
       @*/
-    public int classify(int value) {
+    public int classify(T value) {
         int index = this.tree.classify(value);
         int bucket;
         if (this.equal_buckets) {
@@ -312,7 +312,7 @@ public final class Classifier {
       @
       @ assignable indices[*];
       @*/
-    public void classify_all(int[] values, int begin, int end, int[] indices) {
+    public void classify_all(T[] values, int begin, int end, int[] indices) {
         this.tree.classify_all(values, begin, end, indices);
         if (this.equal_buckets) {
             /*@ loop_invariant 0 <= i <= indices.length;
@@ -324,7 +324,7 @@ public final class Classifier {
               @ assignable indices[*];
               @*/
             for (int i = 0; i < indices.length; ++i) {
-                final int value = values[begin + i];
+                final T value = values[begin + i];
                 final int index = indices[i];
                 final int bucket = index - this.num_buckets / 2;
                 final boolean equal_to_splitter = !Constants.cmp(value, this.sorted_splitters[bucket]);
@@ -445,7 +445,16 @@ public final class Classifier {
       @ assignable bucket_starts[0..this.num_buckets - 1];
       @ assignable buffers.indices[0..this.num_buckets - 1], buffers.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1];
       @*/
-    private int finish_batch(int[] indices, int[] values, int begin, int write, int i, int end, int[] bucket_starts, Buffers buffers) {
+    private int finish_batch(
+        int[] indices,
+        T[] values,
+        int begin,
+        int write,
+        int i,
+        int end,
+        int[] bucket_starts,
+        Buffers<T> buffers
+    ) {
         //@ ghost int old_write = write;
         /*@ loop_invariant 0 <= j && j <= indices.length;
           @
@@ -471,7 +480,7 @@ public final class Classifier {
             //@ ghost \dl_Heap heapAtLoopBodyBegin = \dl_heap();
 
             int bucket = indices[j];
-            int value = values[i + j];
+            T value = values[i + j];
 
             //@ assert this.classOf(value) == bucket;
             //@ assert 0 <= bucket < this.num_buckets;
@@ -575,7 +584,7 @@ public final class Classifier {
       @ assignable bucket_starts[0..this.num_buckets - 1];
       @ assignable buffers.indices[0..this.num_buckets - 1], buffers.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1];
       @*/
-    public int classify_locally_batched(int[] values, int begin, int end, int[] bucket_starts, Buffers buffers) {
+    public int classify_locally_batched(T[] values, int begin, int end, int[] bucket_starts, Buffers<T> buffers) {
         int write = begin;
         int i = begin;
 
@@ -646,7 +655,14 @@ public final class Classifier {
       @
       @ assignable bucket_starts[0..this.num_buckets];
       @*/
-    public void calculate_bucket_starts(int[] values, int begin, int write, int end, int[] bucket_starts, Buffers buffers) {
+    public void calculate_bucket_starts(
+        T[] values,
+        int begin,
+        int write,
+        int end,
+        int[] bucket_starts,
+        Buffers<T> buffers
+    ) {
         // bucket_starts contains the bucket counts without buffer contents
         // Calculate bucket starts
         int sum = 0;
@@ -722,7 +738,7 @@ public final class Classifier {
       @ assignable bucket_starts[0..this.num_buckets];
       @ assignable buffers.indices[0..this.num_buckets - 1], buffers.buffer[0..Buffers.BUFFER_SIZE * this.num_buckets - 1];
       @*/
-    public int classify_locally(int[] values, int begin, int end, int[] bucket_starts, Buffers buffers) {
+    public int classify_locally(T[] values, int begin, int end, int[] bucket_starts, Buffers<T> buffers) {
         /*@ assert (\forall int element; true;
           @     Functions.countElement(values, begin, end, element) ==
           @         Classifier.countElement(values, begin, begin, begin, end, buffers, element)
