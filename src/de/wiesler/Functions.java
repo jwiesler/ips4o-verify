@@ -75,7 +75,12 @@ public final class Functions {
       @ assignable values[begin..end - 1];
       @*/
     public static void select_n(int[] values, int begin, int end, int num_samples) {
-        // TODO
+        for (int i = 0; i < num_samples; ++i) {
+            final int sample = java.util.concurrent.ThreadLocalRandom.current().nextInt(begin + i, end);
+            final int tmp = values[begin + i];
+            values[begin + i] = values[sample];
+            values[sample] = tmp;
+        }
     }
 
     /*@ public normal_behaviour
