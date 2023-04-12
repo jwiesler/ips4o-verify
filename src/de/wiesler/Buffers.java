@@ -205,7 +205,7 @@ public final class Buffers {
         int buffer_offset = bucket * BUFFER_SIZE;
         int index = this.indices[bucket];
         this.buffer[buffer_offset + index] = value;
-        this.indices[bucket] = index + 1;
+        ++this.indices[bucket];
         //@ assert Functions.countElementSplit(this.buffer, bucket * BUFFER_SIZE, bucket * BUFFER_SIZE + index, bucket * BUFFER_SIZE + index + 1);
     }
 

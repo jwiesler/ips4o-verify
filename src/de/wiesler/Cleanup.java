@@ -63,6 +63,7 @@ public final class Cleanup {
     ) {
         //@ ghost \dl_Heap heapOld = \dl_heap();
         final int num_buckets = classifier.num_buckets();
+        final boolean is_last_level = end - begin <= Constants.SINGLE_LEVEL_THRESHOLD;
 
         /*@ loop_invariant 0 <= bucket <= num_buckets;
           @ loop_invariant (\forall int b; 0 <= b < bucket;
@@ -315,6 +316,14 @@ public final class Cleanup {
               @ assignable values[start..stop - 1];
               @*/
             {
+                if (stop - start <= Constants.ACTUAL_BASE_CASE_SIZE || is_last_level) {
+                    //@ ghost \seq bucketValuesBeforeSort = \dl_seq_def_workaround(start, stop, values);
+                    // seqPerm(seq, seq2)
+                    // forall i in seq2; f(i) ==> forall i in seq; f(i)
+                    Sorter.fallback_sort(values, start, stop);
+                    //@ ghost \seq bucketValuesAfterSort = \dl_seq_def_workaround(start, stop, values);
+                    //@ assert (\forall int i; 0 <= i < bucketValuesAfterSort.length; classifier.classOf((int)bucketValuesAfterSort[i]) == bucket);
+                }
             }
 
             /*@ assert \invariant_for(classifier) && \invariant_for(bucket_pointers) && \invariant_for(buffers) &&
