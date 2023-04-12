@@ -441,8 +441,6 @@ public final class Sorter {
               @ measured_by end - begin, 1;
               @*/
             {;;}
-        } else {
-            base_case_sort(values, inner_begin, inner_end);
         }
     }
 
@@ -501,6 +499,7 @@ public final class Sorter {
           @ measured_by end - begin, 2;
           @*/
         {
+            if (end - begin > Constants.SINGLE_LEVEL_THRESHOLD) {
                 /*@ loop_invariant 0 <= bucket && bucket <= num_buckets;
                   @ loop_invariant equal_buckets ==> bucket % 2 == 0;
                   @ loop_invariant \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
@@ -527,6 +526,7 @@ public final class Sorter {
                 if (equal_buckets) {
                     sample_sort_recurse_on(values, begin, end, storage, bucket_starts, num_buckets, equal_buckets, num_buckets - 1);
                 }
+            }
         }
 
         /*@ normal_behaviour
@@ -552,21 +552,7 @@ public final class Sorter {
       @ assignable values[begin..end - 1];
       @*/
     public static void fallback_sort(int[] values, int begin, int end) {
-        insertion_sort(values, begin, end);
-    }
-
-    public static void insertion_sort(int[] values, int begin, int end) {
-        if (end - begin < 2) return;
-
-        for (++begin; begin < end; ++begin) {
-            int value = values[begin];
-            int hole = begin;
-            for (int i = begin - 1; i > 0 && value < values[i]; --i) {
-                values[hole] = values[i];
-                hole = i;
-            }
-            values[hole] = value;
-        }
+        java.util.Arrays.sort(values, begin, end);
     }
 
     /*@ public normal_behaviour
