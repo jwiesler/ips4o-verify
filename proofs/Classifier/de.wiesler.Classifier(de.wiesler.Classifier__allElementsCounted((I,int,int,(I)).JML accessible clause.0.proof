@@ -2,7 +2,7 @@
 
 \settings {
 "#Proof-Settings-Config-File
-#Mon Apr 11 22:39:05 CEST 2022
+#Sun Apr 16 15:17:57 CEST 2023
 [NewSMT]NoTypeHierarchy=false
 [Labels]UseOriginLabels=true
 [StrategyProperty]QUERYAXIOM_OPTIONS_KEY=QUERYAXIOM_ON
@@ -12,7 +12,7 @@
 [StrategyProperty]USER_TACLETS_OPTIONS_KEY1=USER_TACLETS_OFF
 [StrategyProperty]QUANTIFIERS_OPTIONS_KEY=QUANTIFIERS_NON_SPLITTING_WITH_PROGS
 [StrategyProperty]USER_TACLETS_OPTIONS_KEY2=USER_TACLETS_OFF
-[Choice]DefaultChoices=JavaCard-JavaCard\\:on , Strings-Strings\\:on , assertions-assertions\\:safe , bigint-bigint\\:on , finalFields-finalFields\\:immutable , floatRules-floatRules\\:strictfpOnly , initialisation-initialisation\\:disableStaticInitialisation , intRules-intRules\\:arithmeticSemanticsIgnoringOF , integerSimplificationRules-integerSimplificationRules\\:full , javaLoopTreatment-javaLoopTreatment\\:efficient , mergeGenerateIsWeakeningGoal-mergeGenerateIsWeakeningGoal\\:off , methodExpansion-methodExpansion\\:modularOnly , modelFields-modelFields\\:treatAsAxiom , moreSeqRules-moreSeqRules\\:on , permissions-permissions\\:off , programRules-programRules\\:Java , reach-reach\\:on , runtimeExceptions-runtimeExceptions\\:ban , sequences-sequences\\:on , wdChecks-wdChecks\\:off , wdOperator-wdOperator\\:L
+[Choice]DefaultChoices=JavaCard-JavaCard\\:on , Strings-Strings\\:on , assertions-assertions\\:safe , bigint-bigint\\:on , floatRules-floatRules\\:strictfpOnly , initialisation-initialisation\\:disableStaticInitialisation , intRules-intRules\\:arithmeticSemanticsIgnoringOF , integerSimplificationRules-integerSimplificationRules\\:full , javaLoopTreatment-javaLoopTreatment\\:efficient , mergeGenerateIsWeakeningGoal-mergeGenerateIsWeakeningGoal\\:off , methodExpansion-methodExpansion\\:modularOnly , modelFields-modelFields\\:treatAsAxiom , moreSeqRules-moreSeqRules\\:on , permissions-permissions\\:off , programRules-programRules\\:Java , reach-reach\\:on , runtimeExceptions-runtimeExceptions\\:ban , sequences-sequences\\:on , wdChecks-wdChecks\\:off , wdOperator-wdOperator\\:L , finalFields-finalFields\\:immutable
 [StrategyProperty]LOOP_OPTIONS_KEY=LOOP_SCOPE_INV_TACLET
 [StrategyProperty]INF_FLOW_CHECK_PROPERTY=INF_FLOW_CHECK_FALSE
 [SMTSettings]UseBuiltUniqueness=false
@@ -50,7 +50,7 @@
 \javaSource "../../src";
 
 \proofObligation "#Proof Obligation Settings
-#Mon Apr 11 22:39:05 CEST 2022
+#Sun Apr 16 15:17:57 CEST 2023
 contract=de.wiesler.Classifier[de.wiesler.Classifier\\:\\:allElementsCounted([I,int,int,[I)].JML accessible clause.0
 name=de.wiesler.Classifier[de.wiesler.Classifier\\:\\:allElementsCounted([I,int,int,[I)].JML accessible clause.0
 class=de.uka.ilkd.key.proof.init.DependencyContractPO
@@ -60,8 +60,9 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
 (keyLog "0" (keyUser "Julian" ) (keyVersion "802059dea3"))
 (keyLog "1" (keyUser "Julian" ) (keyVersion "802059dea3"))
 (keyLog "2" (keyUser "Julian" ) (keyVersion "e1a85b31e7"))
+(keyLog "3" (keyUser "Julian" ) (keyVersion "e1a85b31e7"))
 
-(autoModeTime "27511")
+(autoModeTime "27878")
 
 (branch "dummy ID"
 (rule "impRight" (formula "1") (newnames "self,values_0,begin,write,bucket_starts,anon_heap"))
@@ -82,8 +83,8 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
 (rule "andLeft" (formula "1"))
 (rule "notLeft" (formula "3"))
  (builtin "One Step Simplification" (formula "15") (userinteraction))
-(rule "Definition_axiom_for_allElementsCounted_in_de_wiesler_Classifier" (formula "15") (term "1") (inst "b=b") (inst "b_0=b_0") (userinteraction))
-(rule "Definition_axiom_for_allElementsCounted_in_de_wiesler_Classifier" (formula "15") (term "0") (inst "b=b") (inst "b_0=b_0") (userinteraction))
+(rule "Definition_axiom_for_allElementsCounted_in_de_wiesler_Classifier" (formula "15") (term "1") (inst "b_0=b_0") (inst "b=b") (userinteraction))
+(rule "Definition_axiom_for_allElementsCounted_in_de_wiesler_Classifier" (formula "15") (term "0") (inst "b_0=b_0") (inst "b=b") (userinteraction))
  (builtin "One Step Simplification" (formula "15") (userinteraction))
 (rule "equiv_right" (formula "15") (userinteraction))
 (branch "Case '->'"
@@ -141,7 +142,7 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
                (rule "cut_direct" (formula "16") (term "0"))
                (branch "CUT: self.tree.tree.* cap allLocs setMinus self.sorted_splitters.* cup self.tree.tree.* cup arrayRange(bucket_starts, 0, self.num_buckets) cup arrayRange(values_0, begin, -1 + write) = {} TRUE"
                    (builtin "One Step Simplification" (formula "17"))
-                  (rule "equalityToElementOfRight" (formula "17") (inst "fv=fv") (inst "ov=ov"))
+                  (rule "equalityToElementOfRight" (formula "17") (inst "ov=ov") (inst "fv=fv"))
                    (builtin "One Step Simplification" (formula "17"))
                   (rule "allRight" (formula "17") (inst "sk=ov_0"))
                   (rule "allRight" (formula "17") (inst "sk=fv_0"))
@@ -197,7 +198,7 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
                (branch "CUT: self.tree.tree.* cap allLocs setMinus self.sorted_splitters.* cup self.tree.tree.* cup arrayRange(bucket_starts, 0, self.num_buckets) cup arrayRange(values_0, begin, -1 + write) = {} FALSE"
                    (builtin "One Step Simplification" (formula "17"))
                   (rule "false_right" (formula "17"))
-                  (rule "equalityToElementOfRight" (formula "16") (inst "fv=fv") (inst "ov=ov"))
+                  (rule "equalityToElementOfRight" (formula "16") (inst "ov=ov") (inst "fv=fv"))
                    (builtin "One Step Simplification" (formula "16"))
                   (rule "allRight" (formula "16") (inst "sk=ov_0"))
                   (rule "allRight" (formula "16") (inst "sk=fv_0"))
@@ -227,7 +228,7 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
             (branch "CUT: self.sorted_splitters.* cap allLocs setMinus self.sorted_splitters.* cup self.tree.tree.* cup arrayRange(bucket_starts, 0, self.num_buckets) cup arrayRange(values_0, begin, -1 + write) = {} FALSE"
                 (builtin "One Step Simplification" (formula "16"))
                (rule "false_right" (formula "16"))
-               (rule "equalityToElementOfRight" (formula "15") (inst "fv=fv") (inst "ov=ov"))
+               (rule "equalityToElementOfRight" (formula "15") (inst "ov=ov") (inst "fv=fv"))
                 (builtin "One Step Simplification" (formula "15"))
                (rule "allRight" (formula "15") (inst "sk=ov_0"))
                (rule "allRight" (formula "15") (inst "sk=fv_0"))
@@ -478,7 +479,7 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
             (rule "cut_direct" (formula "16") (term "0"))
             (branch "CUT: self.tree.tree.* cap allLocs setMinus self.sorted_splitters.* cup self.tree.tree.* cup arrayRange(bucket_starts, 0, self.num_buckets) cup arrayRange(values_0, begin, -1 + write) = {} TRUE"
                 (builtin "One Step Simplification" (formula "17"))
-               (rule "equalityToElementOfRight" (formula "17") (inst "fv=fv") (inst "ov=ov"))
+               (rule "equalityToElementOfRight" (formula "17") (inst "ov=ov") (inst "fv=fv"))
                 (builtin "One Step Simplification" (formula "17"))
                (rule "allRight" (formula "17") (inst "sk=ov_0"))
                (rule "allRight" (formula "17") (inst "sk=fv_0"))
@@ -539,7 +540,7 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
             (branch "CUT: self.tree.tree.* cap allLocs setMinus self.sorted_splitters.* cup self.tree.tree.* cup arrayRange(bucket_starts, 0, self.num_buckets) cup arrayRange(values_0, begin, -1 + write) = {} FALSE"
                 (builtin "One Step Simplification" (formula "17"))
                (rule "false_right" (formula "17"))
-               (rule "equalityToElementOfRight" (formula "16") (inst "fv=fv") (inst "ov=ov"))
+               (rule "equalityToElementOfRight" (formula "16") (inst "ov=ov") (inst "fv=fv"))
                 (builtin "One Step Simplification" (formula "16"))
                (rule "allRight" (formula "16") (inst "sk=ov_0"))
                (rule "allRight" (formula "16") (inst "sk=fv_0"))
@@ -570,7 +571,7 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
              (builtin "One Step Simplification" (formula "16"))
             (rule "false_right" (formula "16"))
             (rule "commuteUnion_2" (formula "15") (term "1,1,0"))
-            (rule "equalityToElementOfRight" (formula "15") (inst "fv=fv") (inst "ov=ov"))
+            (rule "equalityToElementOfRight" (formula "15") (inst "ov=ov") (inst "fv=fv"))
              (builtin "One Step Simplification" (formula "15"))
             (rule "allRight" (formula "15") (inst "sk=ov_0"))
             (rule "allRight" (formula "15") (inst "sk=fv_0"))
@@ -846,7 +847,7 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
          (rule "Contract_axiom_for_isSortedSliceTransitive_in_Functions" (formula "17") (term "0"))
          (rule "replace_known_right" (formula "17") (term "0,0,0") (ifseqformula "30"))
           (builtin "One Step Simplification" (formula "17") (ifInst ""  (formula "4")) (ifInst ""  (formula "18")))
-         (rule "Definition_axiom_for_isSortedSliceTransitive_in_de_wiesler_Functions" (formula "18") (term "0") (inst "j=j") (inst "i=i"))
+         (rule "Definition_axiom_for_isSortedSliceTransitive_in_de_wiesler_Functions" (formula "18") (term "0") (inst "i=i") (inst "j=j"))
           (builtin "One Step Simplification" (formula "18"))
          (rule "inEqSimp_ltToLeq" (formula "18") (term "1,0,0,1,0"))
          (rule "polySimp_mulComm0" (formula "18") (term "1,0,0,1,0,0,1,0"))
@@ -902,7 +903,7 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
          (rule "polySimp_mulLiterals" (formula "18") (term "1,1,0,0,0,1,0"))
          (rule "mul_literals" (formula "18") (term "0,1,0,0,0,1,0"))
          (rule "polySimp_elimOne" (formula "18") (term "1,1,0,0,0,1,0"))
-         (rule "Definition_axiom_for_isSortedSliceTransitive_in_de_wiesler_Functions" (formula "27") (term "0") (inst "i=i") (inst "j=j"))
+         (rule "Definition_axiom_for_isSortedSliceTransitive_in_de_wiesler_Functions" (formula "27") (term "0") (inst "j=j") (inst "i=i"))
           (builtin "One Step Simplification" (formula "27"))
          (rule "inEqSimp_ltToLeq" (formula "27") (term "1,0,0,1,0"))
          (rule "polySimp_rightDist" (formula "27") (term "1,0,0,1,0,0,1,0"))
@@ -1011,9 +1012,9 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
          (rule "commute_or" (formula "27") (term "0,0,1,0"))
          (rule "ifthenelse_split" (formula "15") (term "0"))
          (branch "self.equal_buckets = TRUE TRUE"
-            (rule "newSym_eq" (formula "16") (inst "l=l_0") (inst "newSymDef=mul(int::final(self,
+            (rule "newSym_eq" (formula "16") (inst "newSymDef=mul(int::final(self,
                de.wiesler.Classifier::$num_buckets),
-    Z(0(#)))"))
+    Z(0(#)))") (inst "l=l_0"))
             (rule "times_zero_1" (formula "16") (term "1,1"))
             (rule "add_zero_right" (formula "16") (term "1"))
             (rule "applyEq" (formula "19") (term "1,1,1,0,0") (ifseqformula "16"))
@@ -1053,7 +1054,7 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
             (rule "leq_literals" (formula "13") (term "0"))
              (builtin "One Step Simplification" (formula "13"))
             (rule "true_left" (formula "13"))
-            (rule "elimGcdLeq_antec" (formula "13") (inst "elimGcdRightDiv=Z(4(6(#)))") (inst "elimGcdLeftDiv=l_0") (inst "elimGcd=Z(2(#))"))
+            (rule "elimGcdLeq_antec" (formula "13") (inst "elimGcd=Z(2(#))") (inst "elimGcdLeftDiv=l_0") (inst "elimGcdRightDiv=Z(4(6(#)))"))
             (rule "polySimp_mulLiterals" (formula "13") (term "1,0,1,0"))
             (rule "polySimp_mulLiterals" (formula "13") (term "1,0,0,0,0,1,0"))
             (rule "neg_literal" (formula "13") (term "0,0,0,0,0,1,0"))
@@ -1061,106 +1062,17 @@ class=de.uka.ilkd.key.proof.init.DependencyContractPO
              (builtin "One Step Simplification" (formula "13"))
             (rule "mul_literals" (formula "13") (term "1,0,0,0,0,0"))
             (rule "polySimp_addLiterals" (formula "13") (term "0,0,0,0"))
-            (rule "add_zero_right" (formula "13") (term "0,0,0,0"))
+            (rule "add_literals" (formula "13") (term "0,0,0,0"))
             (rule "polySimp_pullOutFactor0b" (formula "13") (term "0,0"))
             (rule "add_literals" (formula "13") (term "1,1,0,0"))
             (rule "times_zero_1" (formula "13") (term "1,0,0"))
             (rule "add_zero_right" (formula "13") (term "0,0"))
             (rule "qeq_literals" (formula "13") (term "0"))
              (builtin "One Step Simplification" (formula "13"))
-            (rule "arrayLengthIsAShort" (formula "24") (term "0"))
-             (builtin "One Step Simplification" (formula "24"))
-            (rule "true_left" (formula "24"))
-            (rule "arrayLengthIsAShort" (formula "26") (term "0"))
-             (builtin "One Step Simplification" (formula "26"))
-            (rule "true_left" (formula "26"))
-            (rule "arrayLengthNotNegative" (formula "26") (term "0"))
-            (rule "arrayLengthNotNegative" (formula "24") (term "0"))
-            (rule "inEqSimp_subsumption1" (formula "24") (ifseqformula "25"))
-            (rule "leq_literals" (formula "24") (term "0"))
-             (builtin "One Step Simplification" (formula "24"))
-            (rule "true_left" (formula "24"))
-            (rule "arrayLengthNotNegative" (formula "12") (term "0"))
-            (rule "inEqSimp_subsumption1" (formula "12") (ifseqformula "13"))
-            (rule "leq_literals" (formula "12") (term "0"))
-             (builtin "One Step Simplification" (formula "12"))
-            (rule "true_left" (formula "12"))
-            (rule "arrayLengthIsAShort" (formula "12") (term "0"))
-             (builtin "One Step Simplification" (formula "12"))
-            (rule "true_left" (formula "12"))
-            (rule "all_pull_out3" (formula "19") (term "0"))
-            (rule "shift_paren_or" (formula "19") (term "0,0"))
-            (rule "shift_paren_or" (formula "19") (term "0,0,0"))
-            (rule "all_pull_out3" (formula "29") (term "0"))
-            (rule "shift_paren_or" (formula "29") (term "0,0"))
-            (rule "shift_paren_or" (formula "29") (term "0,0,0"))
-            (rule "bsum_equal_split4" (formula "36") (ifseqformula "3"))
-             (builtin "One Step Simplification" (formula "36"))
-            (rule "bsum_lower_equals_upper" (formula "36") (term "1,1,1"))
-            (rule "bsum_lower_equals_upper" (formula "36") (term "0,2,1"))
-            (rule "less_literals" (formula "36") (term "0,1"))
-             (builtin "One Step Simplification" (formula "36"))
-            (rule "eqSymm" (formula "36") (term "1"))
-            (rule "polySimp_elimSub" (formula "36") (term "2,0,1"))
-            (rule "inEqSimp_commuteLeq" (formula "36") (term "0"))
-            (rule "inEqSimp_subsumption6" (formula "36") (term "0") (ifseqformula "25"))
-            (rule "mul_literals" (formula "36") (term "1,1,0,0"))
-            (rule "greater_literals" (formula "36") (term "0,0,0"))
-             (builtin "One Step Simplification" (formula "36"))
-            (rule "leq_literals" (formula "36") (term "0,0"))
-             (builtin "One Step Simplification" (formula "36"))
-            (rule "equal_bsum2" (formula "37") (ifseqformula "3"))
-            (rule "allRight" (formula "37") (inst "sk=b_0"))
-            (rule "impRight" (formula "37"))
-            (rule "andLeft" (formula "1"))
-            (rule "inEqSimp_ltToLeq" (formula "2"))
-            (rule "polySimp_mulAssoc" (formula "2") (term "1,0,0"))
-            (rule "polySimp_mulComm0" (formula "2") (term "0,1,0,0"))
-            (rule "polySimp_mulLiterals" (formula "2") (term "1,0,0"))
-            (rule "inEqSimp_sepPosMonomial0" (formula "2"))
-            (rule "polySimp_mulComm0" (formula "2") (term "1"))
-            (rule "polySimp_rightDist" (formula "2") (term "1"))
-            (rule "polySimp_mulLiterals" (formula "2") (term "1,1"))
-            (rule "mul_literals" (formula "2") (term "0,1"))
-            (rule "pullOutSelect" (formula "39") (term "0") (inst "selectSK=arr_0"))
-            (rule "simplifySelectOfAnon" (formula "1"))
-             (builtin "One Step Simplification" (formula "1") (ifInst ""  (formula "38")) (ifInst ""  (formula "12")))
-            (rule "eqSymm" (formula "40"))
-            (rule "elementOfSetMinus" (formula "1") (term "0,0"))
-             (builtin "One Step Simplification" (formula "1"))
-            (rule "ifthenelse_negated" (formula "1") (term "0"))
-            (rule "elementOfUnion" (formula "1") (term "0,0"))
-            (rule "elementOfArrayRangeConcrete" (formula "1") (term "1,0,0"))
-            (rule "eqSymm" (formula "1") (term "0,0,1,0,0"))
-            (rule "inEqSimp_homoInEq0" (formula "1") (term "1,1,0,0"))
-            (rule "polySimp_addComm1" (formula "1") (term "0,1,1,0,0"))
-            (rule "inEqSimp_sepPosMonomial1" (formula "1") (term "1,1,0,0"))
-            (rule "polySimp_mulComm0" (formula "1") (term "1,1,1,0,0"))
-            (rule "polySimp_rightDist" (formula "1") (term "1,1,1,0,0"))
-            (rule "mul_literals" (formula "1") (term "0,1,1,1,0,0"))
-            (rule "polySimp_mulLiterals" (formula "1") (term "1,1,1,1,0,0"))
-            (rule "polySimp_elimOne" (formula "1") (term "1,1,1,1,0,0"))
-            (rule "elementOfUnion" (formula "1") (term "0,0,0"))
-            (rule "elementOfArrayRangeConcrete" (formula "1") (term "1,0,0,0"))
-             (builtin "One Step Simplification" (formula "1"))
-            (rule "inEqSimp_commuteLeq" (formula "1") (term "0,1,0,0,0"))
-            (rule "replace_known_left" (formula "1") (term "0,1,0,0,0") (ifseqformula "2"))
-             (builtin "One Step Simplification" (formula "1"))
-            (rule "inEqSimp_subsumption0" (formula "1") (term "1,0,0,0") (ifseqformula "3"))
-            (rule "inEqSimp_homoInEq0" (formula "1") (term "0,1,0,0,0"))
-            (rule "polySimp_mulComm0" (formula "1") (term "1,0,0,1,0,0,0"))
-            (rule "polySimp_rightDist" (formula "1") (term "1,0,0,1,0,0,0"))
-            (rule "polySimp_mulLiterals" (formula "1") (term "1,1,0,0,1,0,0,0"))
-            (rule "mul_literals" (formula "1") (term "0,1,0,0,1,0,0,0"))
-            (rule "polySimp_addAssoc" (formula "1") (term "0,0,1,0,0,0"))
-            (rule "polySimp_addComm0" (formula "1") (term "0,0,0,1,0,0,0"))
-            (rule "polySimp_pullOutFactor0b" (formula "1") (term "0,0,1,0,0,0"))
-            (rule "add_literals" (formula "1") (term "1,1,0,0,1,0,0,0"))
-            (rule "times_zero_1" (formula "1") (term "1,0,0,1,0,0,0"))
-            (rule "add_zero_right" (formula "1") (term "0,0,1,0,0,0"))
-            (rule "qeq_literals" (formula "1") (term "0,1,0,0,0"))
-             (builtin "One Step Simplification" (formula "1") (ifInst ""  (formula "40")))
-            (rule "closeFalse" (formula "1"))
+            (rule "true_left" (formula "13"))
+            (rule "equal_bsum3" (formula "34") (ifseqformula "3") (ifseqformula "1"))
+             (builtin "One Step Simplification" (formula "34"))
+            (rule "closeTrue" (formula "34"))
          )
          (branch "self.equal_buckets = TRUE FALSE"
             (rule "applyEq" (formula "27") (term "1,1,0,0,0,1,0") (ifseqformula "15"))

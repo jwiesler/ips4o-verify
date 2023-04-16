@@ -206,7 +206,7 @@ public final class Classifier {
 
         // Fill the array to the next power of two
         int log_buckets = Constants.log2(num_splitters) + 1;
-        // Cut for result >= 6, lower bound
+        // Cut for result >= Constants.LOG_MAX_BUCKETS, lower bound
         //@ assert log_buckets <= Constants.LOG_MAX_BUCKETS;
         int actual_num_buckets = 1 << log_buckets;
         //@ assert actual_num_buckets <= splitters.length && num_splitters < actual_num_buckets;

@@ -63,6 +63,7 @@ public final class Cleanup {
     ) {
         //@ ghost \dl_Heap heapOld = \dl_heap();
         final int num_buckets = classifier.num_buckets();
+        final boolean is_last_level = end - begin <= Constants.SINGLE_LEVEL_THRESHOLD;
 
         /*@ loop_invariant 0 <= bucket <= num_buckets;
           @ loop_invariant (\forall int b; 0 <= b < bucket;
@@ -314,8 +315,7 @@ public final class Cleanup {
               @
               @ assignable values[start..stop - 1];
               @*/
-            {
-            }
+            {}
 
             /*@ assert \invariant_for(classifier) && \invariant_for(bucket_pointers) && \invariant_for(buffers) &&
               @     Functions.countElementSplit(values, begin, begin + \old(bucket_starts[bucket]), begin + \old(bucket_starts[bucket + 1])) &&
