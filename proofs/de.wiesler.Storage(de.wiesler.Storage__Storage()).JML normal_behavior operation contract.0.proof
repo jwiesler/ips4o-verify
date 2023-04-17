@@ -2,7 +2,7 @@
 
 \settings {
 "#Proof-Settings-Config-File
-#Thu May 05 18:49:23 CEST 2022
+#Mon Apr 17 12:28:36 CEST 2023
 [NewSMT]NoTypeHierarchy=false
 [Labels]UseOriginLabels=true
 [StrategyProperty]QUERYAXIOM_OPTIONS_KEY=QUERYAXIOM_ON
@@ -12,7 +12,7 @@
 [StrategyProperty]USER_TACLETS_OPTIONS_KEY1=USER_TACLETS_OFF
 [StrategyProperty]QUANTIFIERS_OPTIONS_KEY=QUANTIFIERS_NON_SPLITTING_WITH_PROGS
 [StrategyProperty]USER_TACLETS_OPTIONS_KEY2=USER_TACLETS_OFF
-[Choice]DefaultChoices=JavaCard-JavaCard\\:on , Strings-Strings\\:on , assertions-assertions\\:safe , bigint-bigint\\:on , finalFields-finalFields\\:onHeap , floatRules-floatRules\\:strictfpOnly , initialisation-initialisation\\:disableStaticInitialisation , intRules-intRules\\:arithmeticSemanticsIgnoringOF , integerSimplificationRules-integerSimplificationRules\\:full , javaLoopTreatment-javaLoopTreatment\\:efficient , mergeGenerateIsWeakeningGoal-mergeGenerateIsWeakeningGoal\\:off , methodExpansion-methodExpansion\\:modularOnly , modelFields-modelFields\\:treatAsAxiom , moreSeqRules-moreSeqRules\\:on , permissions-permissions\\:off , programRules-programRules\\:Java , reach-reach\\:on , runtimeExceptions-runtimeExceptions\\:ban , sequences-sequences\\:on , wdChecks-wdChecks\\:off , wdOperator-wdOperator\\:L
+[Choice]DefaultChoices=JavaCard-JavaCard\\:on , Strings-Strings\\:on , assertions-assertions\\:safe , bigint-bigint\\:on , floatRules-floatRules\\:strictfpOnly , initialisation-initialisation\\:disableStaticInitialisation , intRules-intRules\\:arithmeticSemanticsIgnoringOF , integerSimplificationRules-integerSimplificationRules\\:full , javaLoopTreatment-javaLoopTreatment\\:efficient , mergeGenerateIsWeakeningGoal-mergeGenerateIsWeakeningGoal\\:off , methodExpansion-methodExpansion\\:modularOnly , modelFields-modelFields\\:treatAsAxiom , moreSeqRules-moreSeqRules\\:on , permissions-permissions\\:off , programRules-programRules\\:Java , reach-reach\\:on , runtimeExceptions-runtimeExceptions\\:ban , sequences-sequences\\:on , wdChecks-wdChecks\\:off , wdOperator-wdOperator\\:L , finalFields-finalFields\\:onHeap
 [StrategyProperty]LOOP_OPTIONS_KEY=LOOP_SCOPE_INV_TACLET
 [StrategyProperty]INF_FLOW_CHECK_PROPERTY=INF_FLOW_CHECK_FALSE
 [SMTSettings]UseBuiltUniqueness=false
@@ -50,7 +50,7 @@
 \javaSource "../src";
 
 \proofObligation "#Proof Obligation Settings
-#Thu May 05 18:49:23 CEST 2022
+#Mon Apr 17 12:28:36 CEST 2023
 contract=de.wiesler.Storage[de.wiesler.Storage\\:\\:Storage()].JML normal_behavior operation contract.0
 name=de.wiesler.Storage[de.wiesler.Storage\\:\\:Storage()].JML normal_behavior operation contract.0
 class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
@@ -59,8 +59,9 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
 \proof {
 (keyLog "0" (keyUser "Julian" ) (keyVersion "e1a85b31e7"))
 (keyLog "1" (keyUser "Julian" ) (keyVersion "e1a85b31e7"))
+(keyLog "2" (keyUser "Julian" ) (keyVersion "e1a85b31e7"))
 
-(autoModeTime "34519")
+(autoModeTime "35421")
 
 (branch "dummy ID"
 (rule "impRight" (formula "1") (newnames "heapAtPre,o,f"))
@@ -277,7 +278,7 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
          (rule "blockEmpty" (formula "33") (term "1"))
          (rule "assignment_write_attribute_this" (formula "33"))
           (builtin "One Step Simplification" (formula "33"))
-         (rule "eval_order_access4" (formula "33") (term "1") (inst "#v0=s") (inst "#v1=x_arr"))
+         (rule "eval_order_access4" (formula "33") (term "1") (inst "#v1=x_arr") (inst "#v0=s"))
          (rule "variableDeclarationAssign" (formula "33") (term "1"))
          (rule "variableDeclaration" (formula "33") (term "1") (newnames "s_2"))
          (rule "assignment" (formula "33") (term "1"))
@@ -351,7 +352,7 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
             (rule "assignment_write_attribute" (formula "44"))
             (branch "Normal Execution (s_2 != null)"
                 (builtin "One Step Simplification" (formula "44"))
-               (rule "eval_order_access4" (formula "44") (term "1") (inst "#v1=x_arr") (inst "#v0=s"))
+               (rule "eval_order_access4" (formula "44") (term "1") (inst "#v0=s") (inst "#v1=x_arr"))
                (rule "variableDeclarationAssign" (formula "44") (term "1"))
                (rule "variableDeclaration" (formula "44") (term "1") (newnames "s_3"))
                (rule "assignment" (formula "44") (term "1"))
@@ -1802,14 +1803,14 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
                                                             (rule "cut_direct" (formula "104") (term "1"))
                                                             (branch "CUT: result_23.* subset freshLocs(heap) TRUE"
                                                                 (builtin "One Step Simplification" (formula "105"))
-                                                               (rule "subsetToElementOfRight" (formula "105") (inst "ov=ov") (inst "fv=fv"))
+                                                               (rule "subsetToElementOfRight" (formula "105") (inst "fv=fv") (inst "ov=ov"))
                                                                 (builtin "One Step Simplification" (formula "105") (ifInst ""  (formula "100")) (ifInst ""  (formula "98")))
                                                                (rule "closeTrue" (formula "105"))
                                                             )
                                                             (branch "CUT: result_23.* subset freshLocs(heap) FALSE"
                                                                 (builtin "One Step Simplification" (formula "105"))
                                                                (rule "false_right" (formula "105"))
-                                                               (rule "subsetToElementOfRight" (formula "104") (inst "ov=ov") (inst "fv=fv"))
+                                                               (rule "subsetToElementOfRight" (formula "104") (inst "fv=fv") (inst "ov=ov"))
                                                                 (builtin "One Step Simplification" (formula "104") (ifInst ""  (formula "96")) (ifInst ""  (formula "93")))
                                                                (rule "closeTrue" (formula "104"))
                                                             )
@@ -1817,7 +1818,7 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
                                                          (branch "CUT: result_0.* subset freshLocs(heap) FALSE"
                                                              (builtin "One Step Simplification" (formula "104"))
                                                             (rule "false_right" (formula "104"))
-                                                            (rule "subsetToElementOfRight" (formula "103") (inst "ov=ov") (inst "fv=fv"))
+                                                            (rule "subsetToElementOfRight" (formula "103") (inst "fv=fv") (inst "ov=ov"))
                                                              (builtin "One Step Simplification" (formula "103") (ifInst ""  (formula "81")) (ifInst ""  (formula "82")))
                                                             (rule "closeTrue" (formula "103"))
                                                          )
@@ -1825,7 +1826,7 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
                                                       (branch "CUT: result_2.* subset freshLocs(heap) FALSE"
                                                           (builtin "One Step Simplification" (formula "103"))
                                                          (rule "false_right" (formula "103"))
-                                                         (rule "subsetToElementOfRight" (formula "102") (inst "ov=ov") (inst "fv=fv"))
+                                                         (rule "subsetToElementOfRight" (formula "102") (inst "fv=fv") (inst "ov=ov"))
                                                           (builtin "One Step Simplification" (formula "102") (ifInst ""  (formula "72")) (ifInst ""  (formula "65")))
                                                          (rule "closeTrue" (formula "102"))
                                                       )
@@ -1833,7 +1834,7 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
                                                    (branch "CUT: result.* subset freshLocs(heap) FALSE"
                                                        (builtin "One Step Simplification" (formula "102"))
                                                       (rule "false_right" (formula "102"))
-                                                      (rule "subsetToElementOfRight" (formula "101") (inst "ov=ov") (inst "fv=fv"))
+                                                      (rule "subsetToElementOfRight" (formula "101") (inst "fv=fv") (inst "ov=ov"))
                                                        (builtin "One Step Simplification" (formula "101") (ifInst ""  (formula "85")) (ifInst ""  (formula "86")))
                                                       (rule "closeTrue" (formula "101"))
                                                    )
@@ -1841,7 +1842,7 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
                                                 (branch "CUT: result_21.* subset freshLocs(heap) FALSE"
                                                     (builtin "One Step Simplification" (formula "101"))
                                                    (rule "false_right" (formula "101"))
-                                                   (rule "subsetToElementOfRight" (formula "100") (inst "ov=ov") (inst "fv=fv"))
+                                                   (rule "subsetToElementOfRight" (formula "100") (inst "fv=fv") (inst "ov=ov"))
                                                     (builtin "One Step Simplification" (formula "100") (ifInst ""  (formula "97")) (ifInst ""  (formula "96")))
                                                    (rule "closeTrue" (formula "100"))
                                                 )
@@ -1849,7 +1850,7 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
                                              (branch "CUT: result_1.* subset freshLocs(heap) FALSE"
                                                  (builtin "One Step Simplification" (formula "100"))
                                                 (rule "false_right" (formula "100"))
-                                                (rule "subsetToElementOfRight" (formula "99") (inst "ov=ov") (inst "fv=fv"))
+                                                (rule "subsetToElementOfRight" (formula "99") (inst "fv=fv") (inst "ov=ov"))
                                                  (builtin "One Step Simplification" (formula "99") (ifInst ""  (formula "76")) (ifInst ""  (formula "70")))
                                                 (rule "closeTrue" (formula "99"))
                                              )
@@ -1857,7 +1858,7 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
                                           (branch "CUT: result_3.* subset freshLocs(heap) FALSE"
                                               (builtin "One Step Simplification" (formula "99"))
                                              (rule "false_right" (formula "99"))
-                                             (rule "subsetToElementOfRight" (formula "98") (inst "ov=ov") (inst "fv=fv"))
+                                             (rule "subsetToElementOfRight" (formula "98") (inst "fv=fv") (inst "ov=ov"))
                                               (builtin "One Step Simplification" (formula "98") (ifInst ""  (formula "60")) (ifInst ""  (formula "52")))
                                              (rule "closeTrue" (formula "98"))
                                           )
@@ -2443,11 +2444,9 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
                                                                                                                      (rule "applyEq" (formula "18") (term "3,0,0") (ifseqformula "1"))
                                                                                                                      (rule "applyEq" (formula "92") (term "1,0") (ifseqformula "1"))
                                                                                                                      (rule "applyEq" (formula "15") (term "0,0") (ifseqformula "1"))
-                                                                                                                     (rule "applyEq" (formula "92") (term "1,0") (ifseqformula "1"))
-                                                                                                                     (rule "applyEq" (formula "16") (term "1,0,1,0") (ifseqformula "1"))
                                                                                                                      (rule "applyEq" (formula "92") (term "0") (ifseqformula "1"))
                                                                                                                      (rule "applyEq" (formula "14") (term "1,0") (ifseqformula "1"))
-                                                                                                                     (rule "close" (formula "72") (ifseqformula "14"))
+                                                                                                                     (rule "close" (formula "71") (ifseqformula "14"))
                                                                                                                   )
                                                                                                                )
                                                                                                                (branch
@@ -2492,11 +2491,8 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
                                                                                                                   (rule "applyEq" (formula "18") (term "3,0,0") (ifseqformula "1"))
                                                                                                                   (rule "applyEq" (formula "92") (term "1,0") (ifseqformula "1"))
                                                                                                                   (rule "applyEq" (formula "15") (term "0,0") (ifseqformula "1"))
-                                                                                                                  (rule "applyEq" (formula "92") (term "1,0") (ifseqformula "1"))
-                                                                                                                  (rule "applyEq" (formula "16") (term "1,0,1,0") (ifseqformula "1"))
-                                                                                                                  (rule "applyEq" (formula "92") (term "0") (ifseqformula "1"))
                                                                                                                   (rule "applyEq" (formula "14") (term "1,0") (ifseqformula "1"))
-                                                                                                                  (rule "close" (formula "64") (ifseqformula "14"))
+                                                                                                                  (rule "close" (formula "63") (ifseqformula "14"))
                                                                                                                )
                                                                                                             )
                                                                                                             (branch
