@@ -320,16 +320,7 @@ public final class Cleanup {
               @
               @ assignable_free values[start..stop - 1];
               @*/
-            {
-                if (stop - start <= Constants.ACTUAL_BASE_CASE_SIZE || is_last_level) {
-                    //@ ghost \seq bucketValuesBeforeSort = \dl_seq_def_workaround(start, stop, values);
-                    // seqPerm(seq, seq2)
-                    // forall i in seq2; f(i) ==> forall i in seq; f(i)
-                    Sorter.fallback_sort(values, start, stop);
-                    //@ ghost \seq bucketValuesAfterSort = \dl_seq_def_workaround(start, stop, values);
-                    //@ assume (\forall int i; 0 <= i < bucketValuesAfterSort.length; classifier.classOf((int)bucketValuesAfterSort[i]) == bucket);
-                }
-            }
+            {}
 
             /*@ assume \invariant_for(classifier) && \invariant_for(bucket_pointers) && \invariant_for(buffers) &&
               @     Functions.countElementSplit(values, begin, begin + \old(bucket_starts[bucket]), begin + \old(bucket_starts[bucket + 1])) &&

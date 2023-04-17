@@ -2,7 +2,7 @@
 
 \settings {
 "#Proof-Settings-Config-File
-#Mon Sep 05 20:48:04 CEST 2022
+#Sun Apr 10 19:53:14 CEST 2022
 [NewSMT]NoTypeHierarchy=false
 [Labels]UseOriginLabels=true
 [StrategyProperty]QUERYAXIOM_OPTIONS_KEY=QUERYAXIOM_ON
@@ -50,7 +50,7 @@
 \javaSource "../../src";
 
 \proofObligation "#Proof Obligation Settings
-#Mon Sep 05 20:48:04 CEST 2022
+#Sun Apr 10 19:53:14 CEST 2022
 contract=de.wiesler.Tree[de.wiesler.Tree\\:\\:isClassifiedAs(int,int)].JML model_behavior operation contract.0
 name=de.wiesler.Tree[de.wiesler.Tree\\:\\:isClassifiedAs(int,int)].JML model_behavior operation contract.0
 class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
@@ -58,18 +58,15 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
 
 \proof {
 (keyLog "0" (keyUser "Julian" ) (keyVersion "82c4308ea5"))
-(keyLog "1" (keyUser "Julian" ) (keyVersion "e1a85b31e7"))
 
-(autoModeTime "41")
+(autoModeTime "33")
 
 (branch "dummy ID"
- (builtin "One Step Simplification" (formula "1") (newnames "heapAtPre,heapBefore,o,f"))
+ (builtin "One Step Simplification" (formula "1") (newnames "heapAtPre_0,heapBefore,o,f"))
 (rule "impRight" (formula "1"))
 (rule "andLeft" (formula "1"))
 (rule "andLeft" (formula "1"))
 (rule "andLeft" (formula "3"))
-(rule "andLeft" (formula "1"))
-(rule "andLeft" (formula "4"))
-(rule "close" (formula "7") (ifseqformula "5"))
+(rule "close" (formula "5") (ifseqformula "4"))
 )
 }

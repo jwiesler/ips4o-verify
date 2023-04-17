@@ -143,8 +143,7 @@ public final class Sorter {
     /*@ public model_behaviour
       @ requires true;
       @ static model boolean smallBucketIsSorted(int[] values, int begin, int end, int bucket_begin, int bucket_end) {
-      @     return bucket_end - bucket_begin <= Constants.ACTUAL_BASE_CASE_SIZE || end - begin <= Constants.SINGLE_LEVEL_THRESHOLD ==>
-      @             Functions.isSortedSlice(values, begin + bucket_begin, begin + bucket_end);
+      @     return true;
       @ }
       @*/
 
@@ -424,32 +423,48 @@ public final class Sorter {
         int inner_begin = begin + bucket_starts[bucket];
         int inner_end = begin + bucket_starts[bucket + 1];
 
-        if (inner_end - inner_begin > Constants.ACTUAL_BASE_CASE_SIZE) {
-            /*@ normal_behaviour
-              @ ensures_free Functions.bucketStartsOrdering(bucket_starts, num_buckets, bucket);
-              @ assignable_free \strictly_nothing;
-              @ measured_by end - begin, 1;
-              @*/
-            {;;}
-            /*@ normal_behaviour
-              @ ensures_free 0 <= bucket_starts[bucket] <= bucket_starts[bucket + 1] <= bucket_starts[num_buckets] &&
-              @     (\forall int b; 0 <= b < num_buckets && b != bucket;
-              @         (b < bucket ==> 0 <= bucket_starts[b] <= bucket_starts[b + 1] <= bucket_starts[bucket]) &&
-              @         (b > bucket ==> bucket_starts[bucket + 1] <= bucket_starts[b] <= bucket_starts[b + 1] <= bucket_starts[num_buckets]));
-              @ assignable_free \strictly_nothing;
-              @ measured_by end - begin, 1;
-              @*/
-            {;;}
-            sample_sort(values, inner_begin, inner_end, storage);
-
-            /*@ normal_behaviour
-              @ ensures_free \dl_seqPerm(\dl_seq_def_workaround(begin, inner_begin, values), \old(\dl_seq_def_workaround(begin, inner_begin, values)));
-              @ ensures_free \dl_seqPerm(\dl_seq_def_workaround(inner_end, end, values), \old(\dl_seq_def_workaround(inner_end, end, values)));
-              @ assignable_free \strictly_nothing;
-              @ measured_by end - begin, 1;
-              @*/
-            {;;}
+        /*@ normal_behaviour
+          @ ensures_free Functions.bucketStartsOrdering(bucket_starts, num_buckets, bucket);
+          @ assignable_free \strictly_nothing;
+          @ measured_by end - begin, 1;
+          @*/
+        {;;}
+        /*@ normal_behaviour
+          @ ensures_free 0 <= bucket_starts[bucket] <= bucket_starts[bucket + 1] <= bucket_starts[num_buckets] &&
+          @     (\forall int b; 0 <= b < num_buckets && b != bucket;
+          @         (b < bucket ==> 0 <= bucket_starts[b] <= bucket_starts[b + 1] <= bucket_starts[bucket]) &&
+          @         (b > bucket ==> bucket_starts[bucket + 1] <= bucket_starts[b] <= bucket_starts[b + 1] <= bucket_starts[num_buckets]));
+          @ assignable_free \strictly_nothing;
+          @ measured_by end - begin, 1;
+          @*/
+        {;;}
+        /*@ normal_behaviour
+          @ ensures_free \dl_seqPerm(\dl_seq_def_workaround(begin + bucket_starts[bucket], inner_end, values), \old(\dl_seq_def_workaround(begin + bucket_starts[bucket], begin + bucket_starts[bucket + 1], values)));
+          @ ensures_free Functions.isSortedSlice(values, begin + bucket_starts[bucket], inner_end);
+          @ assignable_free values[inner_begin..inner_end - 1], storage.allArrays;
+          @ measured_by end - begin, 1;
+          @*/
+        {
+            if (inner_end - inner_begin > Constants.ACTUAL_BASE_CASE_SIZE) {
+                sample_sort(values, inner_begin, inner_end, storage);
+            } else {
+                base_case_sort(values, inner_begin, inner_end);
+            }
         }
+        /*@ normal_behaviour
+          @ ensures_free \dl_seq_def_workaround(begin, inner_begin, values) == \old(\dl_seq_def_workaround(begin, begin + bucket_starts[bucket], values));
+          @ ensures_free \dl_seq_def_workaround(inner_end, end, values) == \old(\dl_seq_def_workaround(begin + bucket_starts[bucket + 1], end, values));
+          @ assignable_free \strictly_nothing;
+          @ measured_by end - begin, 1;
+          @*/
+        {;;}
+        /*@ normal_behaviour
+          @ ensures_free \dl_seqPerm(\dl_seq_def_workaround(begin, inner_begin, values), \old(\dl_seq_def_workaround(begin, begin + bucket_starts[bucket], values)));
+          @ ensures_free \dl_seqPerm(\dl_seq_def_workaround(inner_end, end, values), \old(\dl_seq_def_workaround(begin + bucket_starts[bucket + 1], end, values)));
+          @ assignable_free \strictly_nothing;
+          @ measured_by end - begin, 1;
+          @*/
+        {;;}
     }
 
     /*@ public normal_behaviour
@@ -509,33 +524,31 @@ public final class Sorter {
           @ measured_by end - begin, 2;
           @*/
         {
-            if (end - begin > Constants.SINGLE_LEVEL_THRESHOLD) {
-                /*@ loop_invariant_free 0 <= bucket && bucket <= num_buckets;
-                  @ loop_invariant_free equal_buckets ==> bucket % 2 == 0;
-                  @ loop_invariant_free \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
-                  @
-                  @ loop_invariant_free Sorter.allBucketsInRangeSorted(values, begin, end, bucket_starts, num_buckets, 0, bucket < num_buckets || !equal_buckets ? bucket : num_buckets - 1);
-                  @ // Stays partitioned
-                  @ loop_invariant_free Sorter.allBucketsPartitioned(values, begin, end, bucket_starts, num_buckets);
-                  @ // All subsequent buckets keep the small sorted property (especially the last one if equal_buckets)
-                  @ loop_invariant_free Sorter.smallBucketsInRangeSorted(values, begin, end, bucket_starts, num_buckets, bucket < num_buckets || !equal_buckets ? bucket : num_buckets - 1, num_buckets);
-                  @ loop_invariant_free equal_buckets ==>
-                  @     bucket % 2 == 0 && bucket != num_buckets - 1 &&
-                  @     // starting at the next bucket, ending before the last bucket
-                  @     Sorter.equalityBucketsInRange(values, begin, end, bucket_starts, num_buckets, bucket + 1, num_buckets - 1);
-                  @
-                  @ decreases num_buckets - bucket;
-                  @
-                  @ assignable_free values[begin..end - 1];
-                  @ assignable_free storage.allArrays;
-                  @*/
-                for (int bucket = 0; bucket < num_buckets; bucket += 1 + Constants.toInt(equal_buckets)) {
-                    sample_sort_recurse_on(values, begin, end, storage, bucket_starts, num_buckets, equal_buckets, bucket);
-                }
+            /*@ loop_invariant_free 0 <= bucket && bucket <= num_buckets;
+              @ loop_invariant_free equal_buckets ==> bucket % 2 == 0;
+              @ loop_invariant_free \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
+              @
+              @ loop_invariant_free Sorter.allBucketsInRangeSorted(values, begin, end, bucket_starts, num_buckets, 0, bucket < num_buckets || !equal_buckets ? bucket : num_buckets - 1);
+              @ // Stays partitioned
+              @ loop_invariant_free Sorter.allBucketsPartitioned(values, begin, end, bucket_starts, num_buckets);
+              @ // All subsequent buckets keep the small sorted property (especially the last one if equal_buckets)
+              @ loop_invariant_free Sorter.smallBucketsInRangeSorted(values, begin, end, bucket_starts, num_buckets, bucket < num_buckets || !equal_buckets ? bucket : num_buckets - 1, num_buckets);
+              @ loop_invariant_free equal_buckets ==>
+              @     bucket % 2 == 0 && bucket != num_buckets - 1 &&
+              @     // starting at the next bucket, ending before the last bucket
+              @     Sorter.equalityBucketsInRange(values, begin, end, bucket_starts, num_buckets, bucket + 1, num_buckets - 1);
+              @
+              @ decreases num_buckets - bucket;
+              @
+              @ assignable_free values[begin..end - 1];
+              @ assignable_free storage.allArrays;
+              @*/
+            for (int bucket = 0; bucket < num_buckets; bucket += 1 + Constants.toInt(equal_buckets)) {
+                sample_sort_recurse_on(values, begin, end, storage, bucket_starts, num_buckets, equal_buckets, bucket);
+            }
 
-                if (equal_buckets) {
-                    sample_sort_recurse_on(values, begin, end, storage, bucket_starts, num_buckets, equal_buckets, num_buckets - 1);
-                }
+            if (equal_buckets) {
+                sample_sort_recurse_on(values, begin, end, storage, bucket_starts, num_buckets, equal_buckets, num_buckets - 1);
             }
         }
 
@@ -562,7 +575,21 @@ public final class Sorter {
       @ assignable_free values[begin..end - 1];
       @*/
     public static void fallback_sort(int[] values, int begin, int end) {
-//        java.util.Arrays.sort(values, begin, end);
+        // insertion_sort(values, begin, end);
+    }
+
+    public static void insertion_sort(int[] values, int begin, int end) {
+        if (end - begin < 2) return;
+
+        for (++begin; begin < end; ++begin) {
+            int value = values[begin];
+            int hole = begin;
+            for (int i = begin - 1; i > 0 && value < values[i]; --i) {
+                values[hole] = values[i];
+                hole = i;
+            }
+            values[hole] = value;
+        }
     }
 
     /*@ public normal_behaviour

@@ -10,7 +10,7 @@ default:
 	@just --list
 
 run:
-	java -jar {{KEY_JAR}} project.key
+	java -Dkey.contractOrder="contract-order.txt" -jar {{KEY_JAR}}
 
 compile:
 	find -name "*.java" > sources.txt

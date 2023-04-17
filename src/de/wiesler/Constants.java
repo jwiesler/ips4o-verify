@@ -3,7 +3,7 @@ package de.wiesler;
 public final class Constants {
     public static final int BASE_CASE_SIZE = 32;
     public static final int ACTUAL_BASE_CASE_SIZE = 4 * BASE_CASE_SIZE;
-    public static final int LOG_MAX_BUCKETS = 6;
+    public static final int LOG_MAX_BUCKETS = 8;
     public static final int MAX_BUCKETS = 1 << (LOG_MAX_BUCKETS + 1);
     public static final int SINGLE_LEVEL_THRESHOLD = BASE_CASE_SIZE * (1 << LOG_MAX_BUCKETS);
     public static final int TWO_LEVEL_THRESHOLD = SINGLE_LEVEL_THRESHOLD * (1 << LOG_MAX_BUCKETS);

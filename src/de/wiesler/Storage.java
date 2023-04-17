@@ -75,7 +75,7 @@ public final class Storage {
       @ ensures_free \fresh(this.allArrays);
       @ assignable_free \nothing;
       @*/
-    Storage() {
+    public Storage() {
         this.splitters = createArray(Classifier.STORAGE_SIZE);
         this.tree = createArray(Classifier.STORAGE_SIZE);
         this.bucket_pointers = createArray(2 * Constants.MAX_BUCKETS);
