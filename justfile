@@ -11,6 +11,9 @@ default:
 
 run:
 	java -Dkey.contractOrder="contract-order.txt" -jar {{KEY_JAR}}
+	
+run-overflow:
+	java -Dkey.contractOrder="contract-order.txt" -jar {{KEY_OVERFLOW_JAR}}
 
 compile:
 	find -name "*.java" > sources.txt

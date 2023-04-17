@@ -227,7 +227,7 @@ public final class Tree {
     /*@ model_behaviour
       @ requires true;
       @ // final only no_state
-      @ model no_state boolean treeSearchInvariant(int b, int l, int b_bin, int d_bin) {
+      @ model boolean treeSearchInvariant(int b, int l, int b_bin, int d_bin) {
       @     return \dl_pow(2, l) <= b < \dl_pow(2, l + 1) &&
       @         \dl_log(2, b) == l &&
       @         (l < this.log_buckets ==> b_bin - d_bin / 2 == Tree.pi(b, this.log_buckets) - 1) &&

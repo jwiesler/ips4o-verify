@@ -36,7 +36,7 @@ public final class BucketPointers {
       @ ensures_free 0 < bucket <= this.num_buckets ==> this.bucketStart(bucket - 1) <= \result;
       @
       @ // final only no_state
-      @ model no_state int bucketStart(int bucket) {
+      @ model int bucketStart(int bucket) {
       @     return Buffers.blockAligned((int) this.bucket_starts[bucket]);
       @ }
       @*/
@@ -49,7 +49,7 @@ public final class BucketPointers {
       @ ensures_free Buffers.isBlockAligned(\result);
       @
       @ // final only no_state
-      @ model no_state int bucketSize(int bucket) {
+      @ model int bucketSize(int bucket) {
       @     return this.bucketStart(bucket + 1) - this.bucketStart(bucket);
       @ }
       @*/
