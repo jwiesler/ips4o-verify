@@ -121,24 +121,26 @@ dependencies {
 val mainClassName = "de.uka.ilkd.key.CheckerKt"
 
 fun JavaExec.checkCommand() {
-    mainClass = "de.uka.ilkd.key.Main"
+    mainClass = "de.uka.ilkd.key.CheckerKt"
     classpath = keyClasspath
     systemProperty("key.contractOrder", "contract-order.txt")
-    args("--no-auto-mode", "--proof-path", "proofs/", "project.key")
+    args("--no-auto-mode", "--proof-path", "proofs/", "src/main/key/project.key")
     group = "key"
+    tasks.named("check").get().dependsOn(this)
 }
 
 fun JavaExec.checkOverflowCommand() {
-    mainClass = "de.uka.ilkd.key.Main"
+    mainClass = "de.uka.ilkd.key.CheckerKt"
     systemProperty("key.contractOrder", "contract-order.txt")
-    args("-v", "--no-auto-mode", "--proof-path", "proofs-overflow/", "project.key")
+    args("-v", "--no-auto-mode", "--proof-path", "proofs-overflow/", "src/main/key/project.key")
     classpath = keyClasspathOverflow
     group = "key"
+    tasks.named("check").get().dependsOn(this)
 }
 
 tasks.create<JavaExec>("run") {
-    mainClass = "de.uka.ilkd.key.Main"
-    classpath = keyClasspath
+    mainClass = "de.uka.ilkd.key.core.Main"
+    classpath = files("tools/key-2.11.0-exe.jar", "tools/citool-1.4.0-mini.jar")
     systemProperty("key.contractOrder", "contract-order.txt")
 }
 
@@ -148,6 +150,7 @@ tasks.create<JavaExec>("checkAll") {
 }
 
 tasks.create<JavaExec>("checkMethods") {
+    checkCommand()
     args(
         "--forbid-contracts", "-file", "contracts/ignore.txt", "-s", "statistics-methods.json",
         "--forbid-contracts-file", "contracts/constructors.txt"
