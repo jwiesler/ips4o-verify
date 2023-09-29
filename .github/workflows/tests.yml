@@ -1,0 +1,49 @@
+name: Broad Release Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron:  '0 5 * * 1' # every monday morning
+
+permissions:
+  checks: write
+
+jobs:
+  unit-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        java: [8,11,17,21]
+    continue-on-error: true
+    runs-on: ${{ matrix.os }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'correto'
+
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@v2.4.2
+        with:
+            arguments: --continue test
+
+      - name: Verify with KeY
+        uses: gradle/gradle-build-action@v2.4.2
+        with:
+            arguments: --continue checkAll
+
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3.1.1
+        if: success() || failure()
+        with:
+          name: test-results-${{ matrix.os }}
+          path: |
+            **/build/test-results/*/*.xml
+            **/build/reports/
+            !**/jacocoTestReport.xml
