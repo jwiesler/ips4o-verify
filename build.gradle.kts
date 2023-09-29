@@ -115,23 +115,23 @@ val keyClasspath: Configuration = configurations.create("key")
 val keyClasspathOverflow: Configuration = configurations.create("keyoverflow")
 dependencies {
     keyClasspath(files("tools/key-2.11.0-exe.jar", "tools/citool-1.4.0-mini.jar"))
-    keyClasspathOverflow(files("tools/key-2.11.0-exe.jar", "tools/citool-1.4.0-mini.jar"))
+    keyClasspathOverflow(files("tools/key-2.11.0-o-exe.jar", "tools/citool-1.4.0-mini.jar"))
 }
 
 val mainClassName = "de.uka.ilkd.key.CheckerKt"
 
 fun JavaExec.checkCommand() {
-    mainClass = "de.uka.ilkd.key.Main"
+    mainClass = "de.uka.ilkd.key.CheckerKt"
     classpath = keyClasspath
     systemProperty("key.contractOrder", "contract-order.txt")
-    args("--no-auto-mode", "--proof-path", "proofs/", "project.key")
+    args("--no-auto-mode", "--proof-path", "src/key/main/", "src/key/project.key")
     group = "key"
 }
 
 fun JavaExec.checkOverflowCommand() {
-    mainClass = "de.uka.ilkd.key.Main"
+    mainClass = "de.uka.ilkd.key.CheckerKt"
     systemProperty("key.contractOrder", "contract-order.txt")
-    args("-v", "--no-auto-mode", "--proof-path", "proofs-overflow/", "project.key")
+    args("--no-auto-mode", "--proof-path", "src/key/main/", "src/key/project.key")
     classpath = keyClasspathOverflow
     group = "key"
 }
@@ -144,12 +144,12 @@ tasks.create<JavaExec>("run") {
 
 tasks.create<JavaExec>("checkAll") {
     checkCommand()
-    args("--forbid-contracts", "-file", "contracts/ignore.txt", "-s", "statistics.json")
+    args("--forbid-contracts-file", "contracts/ignore.txt", "-s", "statistics.json")
 }
 
 tasks.create<JavaExec>("checkMethods") {
     args(
-        "--forbid-contracts", "-file", "contracts/ignore.txt", "-s", "statistics-methods.json",
+        "--forbid-contracts-file", "contracts/ignore.txt", "-s", "statistics-methods.json",
         "--forbid-contracts-file", "contracts/constructors.txt"
     )
 }

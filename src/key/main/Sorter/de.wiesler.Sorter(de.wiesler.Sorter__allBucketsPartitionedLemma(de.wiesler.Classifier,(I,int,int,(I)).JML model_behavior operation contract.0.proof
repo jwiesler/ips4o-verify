@@ -47,7 +47,7 @@
 "
 }
 
-\javaSource "../../src";
+\javaSource "../../../java/main";
 
 \proofObligation "#Proof Obligation Settings
 #Thu Apr 14 12:51:41 CEST 2022
