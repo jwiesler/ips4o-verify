@@ -19,7 +19,7 @@ publishing {
         create<MavenPublication>("maven") {
             from(components.getByName("java"))
             pom {
-                //name = "${project.group}:${project.name}"
+                name = project.name
                 description = "A fast and formally verified sorting algorithm."
                 url = "https://github.com/keyproject/ips4o-verify"
                 licenses {
@@ -92,6 +92,7 @@ java {
 }
 
 signing {
+    useGpgCmd()
     sign(publishing.publications["maven"])
 }
 
