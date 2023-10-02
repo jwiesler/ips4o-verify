@@ -3,8 +3,7 @@ name: Broad Release Tests
 on:
   workflow_dispatch:
   push:
-      - "main"
-      - "master"
+      branches: ["main", "master"]
   schedule:
     - cron:  '0 5 * * 1' # every monday morning
 
