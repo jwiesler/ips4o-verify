@@ -2,6 +2,9 @@ name: Broad Release Tests
 
 on:
   workflow_dispatch:
+  push:
+      - "main"
+      - "master"
   schedule:
     - cron:  '0 5 * * 1' # every monday morning
 
@@ -15,7 +18,7 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         java: [8,11,17,21]
-    continue-on-error: true
+    continue-on-error: false
     runs-on: ${{ matrix.os }}
     env:
       GH_TOKEN: ${{ github.token }}
