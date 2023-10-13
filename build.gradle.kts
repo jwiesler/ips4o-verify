@@ -125,7 +125,7 @@ fun JavaExec.checkCommand() {
     mainClass = "de.uka.ilkd.key.CheckerKt"
     classpath = keyClasspath
     systemProperty("key.contractOrder", "contract-order.txt")
-    args("--no-auto-mode", "--proof-path", "proofs/", "src/main/key/project.key")
+    args("--verbose", "--no-auto-mode", "--proof-path", "src/main/key/", "src/main/key/project.key")
     group = "key"
     tasks.named("check").get().dependsOn(this)
 }
