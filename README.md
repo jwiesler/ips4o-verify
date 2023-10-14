@@ -35,9 +35,22 @@ specification that annotates the Java code (in comments) adds another
 
 ## Using ips4o in your project
 
-You can add the following dependency to your `build.gradle` file:
+You can use the following [maven coordinates](todo) to use `ips4o` in your JVM projects.
 
-XXX
+
+```groovy
+dependencies {
+    implementation("org.key-project.ips4o:ips4o-verify:1.0")
+}
+```
+
+```xml
+<dependency>
+    <groupId>org.key-project.ips4o</groupId>
+    <artifactId>ips4o-verify</artifactId>
+    <version>1.0</version>
+</dependency>
+```
 
 ## Verified Properties
 
@@ -117,7 +130,7 @@ to java such that the contract order file is loaded.
   they have been shown in the original proof obligations.  They have
   to be loaded using the second KeY binary
   [`key-2.11.0-o-exe.jar`](tools/key-2.11.0-o-exe.jar).
-  
+
 * To run proofs in
   [`contracts/constructors.txt`](contracts/constructors.txt) the
   `no_state` modifier on `BucketPointers::bucketStart` and

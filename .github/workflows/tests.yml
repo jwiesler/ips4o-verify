@@ -1,41 +1,37 @@
 name: Proof Replay
 
-on: [push]
+on: [ push ]
 
 permissions:
-  checks: write
+    checks: write
 
 jobs:
-  replay-proofs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Set up JDK 21
-        uses: actions/setup-java@v3
-        with:
-          java-version: 21
-          distribution: 'corretto'
+    compile_and_test:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v3
+            -   name: Set up JDK 21
+                uses: actions/setup-java@v3
+                with:
+                    java-version: 21
+                    distribution: 'corretto'
+            -   name: Build with Gradle
+                uses: gradle/gradle-build-action@v2.4.2
+                with:
+                    arguments: --continue assemble check
 
-      - name: Build with Gradle
-        uses: gradle/gradle-build-action@v2.4.2
-        with:
-            arguments: --continue compileJava
-
-      - name: Verify with KeY
-        run: make check-methods check-constructors
-
-  replay-overlay-proofs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Set up JDK 21
-        uses: actions/setup-java@v3
-        with:
-          java-version: 21
-          distribution: 'corretto'
-
-      - name: Verify with KeY
-        run: make check-overflow-methods check-overflow-constructors
-
+    replay-proofs:
+        strategy:
+            fail-fast: false
+            matrix:
+                target: [ check-overflow-methods check-overflow-constructors check-methods check-constructors ]
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v3
+            -   name: Set up JDK 21
+                uses: actions/setup-java@v3
+                with:
+                    java-version: 21
+                    distribution: 'corretto'
+            -   name: "Verify with KeY ${{ matrix.target }}"
+                run: make ${{ matrix.target }}
