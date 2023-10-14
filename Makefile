@@ -2,9 +2,9 @@ KEY_JAR=tools/key-2.11.0-exe.jar
 KEY_OVERFLOW_JAR=tools/key-2.11.0-o-exe.jar
 CI_TOOL=tools/citool-1.4.0-mini.jar
 
-checkCommand=java -Dkey.contractOrder="contract-order.txt" -cp "$(KEY_JAR):$(CI_TOOL)" de.uka.ilkd.key.CheckerKt --no-auto-mode --proof-path src/main/key
+checkCommand=java -Dlogback.configurationFile=./gradle/disablelogging.xml -Dkey.contractOrder="contract-order.txt" -cp "$(KEY_JAR):$(CI_TOOL)" de.uka.ilkd.key.CheckerKt --no-auto-mode --proof-path src/main/key
 
-checkOverflowCommand=java -Dkey.contractOrder="contract-order.txt" -cp "$(KEY_OVERFLOW_JAR):$(CI_TOOL)" de.uka.ilkd.key.CheckerKt -v --no-auto-mode --proof-path src/main/key-overflow
+checkOverflowCommand=java -Dlogback.configurationFile=./gradle/disablelogging.xml -Dkey.contractOrder="contract-order.txt" -cp "$(KEY_OVERFLOW_JAR):$(CI_TOOL)" de.uka.ilkd.key.CheckerKt -v --no-auto-mode --proof-path src/main/key-overflow
 
 default:
 	@echo Available targets:
