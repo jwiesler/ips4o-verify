@@ -565,7 +565,7 @@ public final class Sorter {
       @ assignable values[begin..end - 1];
       @*/
     public static void fallback_sort(int[] values, int begin, int end) {
-        // insertion_sort(values, begin, end);
+        insertion_sort(values, begin, end);
     }
 
     public static void insertion_sort(int[] values, int begin, int end) {
