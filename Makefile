@@ -11,6 +11,8 @@ default:
 	@sed -n 's/^\([a-zA-Z_-]\+\):.*/   \1/p' Makefile
 
 run:
+	@echo Consider loading one of the following files:
+	@find -iname "project*.key"
 	java -Dkey.contractOrder="contract-order.txt" -jar $(KEY_JAR)
 
 compile:

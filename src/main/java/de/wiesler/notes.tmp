@@ -1,0 +1,32 @@
+
+
+sp(su(cur),old)
+
+before = su(cur)
+
+su(cur') = swap(before, i, hole)
+
+---------------
+
+sp(su(cur'), old)
+
+
+sp(swap(before, i, hole), old)
+
+
+cut: sp(swap(before, i, hole), before)
+
+
+
+
+
+
+1 2 4 5 3
+
+1 2 4 5 5
+      3
+
+1 2 4 4 5
+    3
+      ^ hole
+    ^ i

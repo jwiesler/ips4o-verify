@@ -568,16 +568,74 @@ public final class Sorter {
         insertion_sort(values, begin, end);
     }
 
+    /*@ model_behaviour
+      @   requires 0 <= idx < seq.length;
+      @   ensures (\forall int x; 0 <= x < seq.length; 
+      @              \result[x] == (x == idx ? value : seq[x]));
+      @ static model \seq seqUpd(\seq seq, int idx, int value) {
+      @   return \seq_concat(\seq_concat(
+      @     \seq_sub(seq, 0, idx),
+      @     \seq_singleton(value)),
+      @     \seq_sub(seq, idx+1, seq.length));
+      @ }
+      @*/
+
+    /*@ public normal_behaviour
+      @ requires 0 <= begin <= end <= values.length;
+      @
+      @ ensures \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), \old(\dl_seq_def_workaround(begin, end, values)));
+      @
+      @ ensures Functions.isSortedSlice(values, begin, end);
+      @
+      @ assignable values[begin..end - 1];
+      @*/
     public static void insertion_sort(int[] values, int begin, int end) {
         if (end - begin < 2) return;
+        int k = begin + 1;
 
-        for (++begin; begin < end; ++begin) {
-            int value = values[begin];
-            int hole = begin;
-            for (int i = begin - 1; i > 0 && value < values[i]; --i) {
+        /*@ loop_invariant \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), 
+          @                       \old(\dl_seq_def_workaround(begin, end, values)));
+          @ loop_invariant begin < k <= end;
+          @ loop_invariant Functions.isSortedSlice(values, begin, k);
+          @ assignable values[begin..end - 1];
+          @ decreases end - k;
+          */
+
+        for (; k < end; ++k) {
+            int value = values[k];
+            int hole = k;
+
+            int i = k - 1;
+
+            /*@ loop_invariant hole == i + 1;
+              @ loop_invariant begin-1 <= i < k;
+              @ loop_invariant i == k - 1 || Functions.isSortedSlice(values, begin, k+1);
+              @ loop_invariant Functions.isSortedSlice(values, begin, k);
+              @ loop_invariant \dl_seqPerm(
+              @    seqUpd(\dl_seq_def_workaround(begin, end, values), hole, value), 
+              @    \old(\dl_seq_def_workaround(begin, end, values)));
+              @ loop_invariant value <= values[hole];
+              @ assignable values[begin..k];
+              @ decreases i + 1;
+             */
+            // assert (i >= begin && value < values[i]) == (i >= 0 && value < values[i]);
+
+            while(i >= begin && value < values[i]) {
+                // assert hole == i + 1 : i + " vs " + hole;
+                //@ ghost \seq before;
+                // This assume statement is harmless!
+                //@ assume before == seqUpd(\dl_seq_def_workaround(begin, end, values), hole, value);
                 values[hole] = values[i];
+                
+                /*@ assert seqUpd(\dl_seq_def_workaround(begin, end, values), hole, value) ==
+                  @   \dl_seqSwap(before, i, hole);
+                  @*/
+
                 hole = i;
+                i--;
             }
+            // assert value <= values[hole];
+            // assert i < 0 || value >= values[i];
             values[hole] = value;
         }
     }
@@ -591,6 +649,7 @@ public final class Sorter {
       @ assignable values[begin..end - 1];
       @*/
     private static void base_case_sort(int[] values, int begin, int end) {
+        System.out.println("BC: " + begin + " " + end);
         fallback_sort(values, begin, end);
     }
 
