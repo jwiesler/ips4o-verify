@@ -572,7 +572,8 @@ public final class Sorter {
       @   requires 0 <= idx < seq.length;
       @   ensures (\forall int x; 0 <= x < seq.length; 
       @              \result[x] == (x == idx ? value : seq[x]));
-      @ static model \seq seqUpd(\seq seq, int idx, int value) {
+      @   ensures \result.length == seq.length;
+      @ static no_state model \seq seqUpd(\seq seq, int idx, int value) {
       @   return \seq_concat(\seq_concat(
       @     \seq_sub(seq, 0, idx),
       @     \seq_singleton(value)),
@@ -596,11 +597,11 @@ public final class Sorter {
         /*@ loop_invariant \dl_seqPerm(\dl_seq_def_workaround(begin, end, values), 
           @                       \old(\dl_seq_def_workaround(begin, end, values)));
           @ loop_invariant begin < k <= end;
+          @ loop_invariant (\forall int x; k <= x < end; values[x] == \old(values[x]));
           @ loop_invariant Functions.isSortedSlice(values, begin, k);
           @ assignable values[begin..end - 1];
           @ decreases end - k;
-          */
-
+          @*/
         for (; k < end; ++k) {
             int value = values[k];
             int hole = k;
@@ -612,7 +613,7 @@ public final class Sorter {
               @ loop_invariant i == k - 1 || Functions.isSortedSlice(values, begin, k+1);
               @ loop_invariant Functions.isSortedSlice(values, begin, k);
               @ loop_invariant \dl_seqPerm(
-              @    seqUpd(\dl_seq_def_workaround(begin, end, values), hole, value), 
+              @    seqUpd(\dl_seq_def_workaround(begin, end, values), hole - begin, value), 
               @    \old(\dl_seq_def_workaround(begin, end, values)));
               @ loop_invariant value <= values[hole];
               @ assignable values[begin..k];
@@ -624,11 +625,11 @@ public final class Sorter {
                 // assert hole == i + 1 : i + " vs " + hole;
                 //@ ghost \seq before;
                 // This assume statement is harmless!
-                //@ assume before == seqUpd(\dl_seq_def_workaround(begin, end, values), hole, value);
+                //@ assume before == seqUpd(\dl_seq_def_workaround(begin, end, values), hole-begin, value);
                 values[hole] = values[i];
                 
-                /*@ assert seqUpd(\dl_seq_def_workaround(begin, end, values), hole, value) ==
-                  @   \dl_seqSwap(before, i, hole);
+                /*@ assert seqUpd(\dl_seq_def_workaround(begin, end, values), i-begin, value) ==
+                  @   \dl_seqSwap(before, i-begin, hole-begin);
                   @*/
 
                 hole = i;

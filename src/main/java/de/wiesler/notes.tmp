@@ -30,3 +30,14 @@ cut: sp(swap(before, i, hole), before)
     3
       ^ hole
     ^ i
+
+    ^ hole
+  ^ i
+
+1 2 4 3 5
+
+
+
+upd(S, hole, value)
+
+
