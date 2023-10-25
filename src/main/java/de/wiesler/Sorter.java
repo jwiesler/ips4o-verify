@@ -650,7 +650,6 @@ public final class Sorter {
       @ assignable values[begin..end - 1];
       @*/
     private static void base_case_sort(int[] values, int begin, int end) {
-        System.out.println("BC: " + begin + " " + end);
         fallback_sort(values, begin, end);
     }
 
