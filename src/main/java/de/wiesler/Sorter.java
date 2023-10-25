@@ -628,7 +628,7 @@ public final class Sorter {
                 //@ assume before == seqUpd(\dl_seq_def_workaround(begin, end, values), hole-begin, value);
                 values[hole] = values[i];
                 
-                /*@ assert seqUpd(\dl_seq_def_workaround(begin, end, values), i-begin, value) ==
+                /* @ assert seqUpd(\dl_seq_def_workaround(begin, end, values), i-begin, value) ==
                   @   \dl_seqSwap(before, i-begin, hole-begin);
                   @*/
 
