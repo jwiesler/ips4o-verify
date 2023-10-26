@@ -36,9 +36,9 @@ if readlink -f */bin/z3; then
   echo "::notice::{Z3 found. Caching works! Skip installation}"
 else 
   echo "Download Z3"
-  gh release download --skip-existing -p 'z3-*-x64-glibc-*.zip' -R Z3Prover/z3
+  wget 'https://github.com/Z3Prover/z3/releases/download/z3-4.12.2/z3-4.12.2-x64-glibc-2.31.zip'
   unzip -n z3*.zip
-  rm z3-*-x64-glibc-*.zip  
+  rm z3-*.zip  
 fi
 
 Z3=$(readlink -f */bin/z3)
@@ -67,7 +67,7 @@ echo "::endgroup::"
 #################################################
 
 echo "::group::{check installation/versions}"
-$Z3 --version
+$Z3 -version
 
 $CVC5 --version
 echo "::endgroup::"
