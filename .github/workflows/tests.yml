@@ -33,5 +33,8 @@ jobs:
                 with:
                     java-version: 21
                     distribution: 'corretto'
+            -   name: Install SMT-Solvers
+                run: .github/dlsmt.sh
+                shell: bash                    
             -   name: "Verify with KeY ${{ matrix.target }}"
                 run: make ${{ matrix.target }}
