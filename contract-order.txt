@@ -228,6 +228,7 @@ de.wiesler.Classifier[de.wiesler.Classifier::classify_locally_batched([I,int,int
 
 de.wiesler.Classifier[de.wiesler.Classifier::classify_locally([I,int,int,[I,de.wiesler.Buffers)].JML normal_behavior operation contract.0
 
+de.wiesler.Sorter[de.wiesler.Sorter::insertion_sort([I,int,int)].JML normal_behavior operation contract.0
 de.wiesler.Sorter[de.wiesler.Sorter::fallback_sort([I,int,int)].JML normal_behavior operation contract.0
 
 de.wiesler.Sorter[de.wiesler.Sorter::base_case_sort([I,int,int)].JML normal_behavior operation contract.0
