@@ -606,8 +606,6 @@ public final class Sorter {
             int value = values[k];
             int hole = k;
 
-            int i = k - 1;
-
             /*@ loop_invariant hole == i + 1;
               @ loop_invariant begin-1 <= i < k;
               @ loop_invariant i == k - 1 || Functions.isSortedSlice(values, begin, k+1);
@@ -619,24 +617,11 @@ public final class Sorter {
               @ assignable values[begin..k];
               @ decreases i + 1;
              */
-            // assert (i >= begin && value < values[i]) == (i >= 0 && value < values[i]);
-
-            while(i >= begin && value < values[i]) {
-                // assert hole == i + 1 : i + " vs " + hole;
-                //@ ghost \seq before;
-                // This assume statement is harmless!
-                //@ assume before == seqUpd(\dl_seq_def_workaround(begin, end, values), hole-begin, value);
+            for(int i = k - 1; i >= begin && value < values[i]; i--) {
                 values[hole] = values[i];
-                
-                /* @ assert seqUpd(\dl_seq_def_workaround(begin, end, values), i-begin, value) ==
-                  @   \dl_seqSwap(before, i-begin, hole-begin);
-                  @*/
-
                 hole = i;
-                i--;
             }
-            // assert value <= values[hole];
-            // assert i < 0 || value >= values[i];
+
             values[hole] = value;
         }
     }
