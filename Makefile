@@ -14,6 +14,11 @@ proofSettings:
 	mkdir -p $${HOME}/.key
 	cp proofIndependentSettings.props $${HOME}/.key
 
+overflow-run:
+	@echo Consider loading one of the following files:
+	@find -iname "project*.key"
+	java -Dkey.contractOrder="contract-order.txt" -jar $(KEY_OVERFLOW_JAR)
+
 run:
 	@echo Consider loading one of the following files:
 	@find -iname "project*.key"

@@ -1,4 +1,4 @@
-# block contracts
+# block contracts are proved inline and need not be proved explicitly
 de.wiesler.BucketPointers[de.wiesler.BucketPointers::<init>([I,int,int,[I)].JML normal_behavior block contract.0
 de.wiesler.BucketPointers[de.wiesler.BucketPointers::<init>([I,int,int,[I)].JML normal_behavior block contract.1
 de.wiesler.BucketPointers[de.wiesler.BucketPointers::<init>([I,int,int,[I)].JML normal_behavior block contract.2
