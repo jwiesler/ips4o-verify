@@ -10,6 +10,10 @@ default:
 	@echo Available targets:
 	@sed -n 's/^\([a-zA-Z_-]\+\):.*/   \1/p' Makefile
 
+proofSettings:
+	mkdir -p $${HOME}/.key
+	cp proofIndependentSettings.props $${HOME}/.key
+
 run:
 	@echo Consider loading one of the following files:
 	@find -iname "project*.key"
@@ -33,7 +37,7 @@ constr-overflow-src:
 
 check: check-methods check-constructors check-overflow-methods check-overflow-constructors
 
-check-methods:
+check-methods: proofSettings
 	$(checkCommand) --forbid-contracts-file "contracts/ignore.txt" --forbid-contracts-file "contracts/constructors.txt" -s statistics-methods.json src/main/key/project.key
 
 check-constructors: constr-src
