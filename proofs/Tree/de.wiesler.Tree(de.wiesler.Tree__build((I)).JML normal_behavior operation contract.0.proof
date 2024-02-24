@@ -259,7 +259,7 @@ class=de.uka.ilkd.key.proof.init.FunctionalOperationContractPO
          (branch "Case 2"
              (builtin "One Step Simplification" (formula "17"))
             (rule "eqTermCut" (formula "17") (term "1") (inst "s=pow(Z(2(#)), Z(6(#)))") (userinteraction))
-            (branch "Assume 64 = pow(2, 6)"
+            (branch "Assume 64 = pow(2, de.wiesler.Constants.LOG_MAX_BUCKETS)"
                (rule "applyEqRigid" (formula "18") (term "1") (ifseqformula "1") (userinteraction))
                (rule "powMonoConcrete" (formula "18") (userinteraction))
                (rule "greater_literals" (formula "18") (term "1"))

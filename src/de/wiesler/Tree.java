@@ -60,7 +60,7 @@ public final class Tree {
       @ assignable this.tree[*];
       @*/
     /*@ helper */ void build(int[] sorted_splitters) {
-        //@ assert 1 <= \dl_pow(2, this.log_buckets) <= \dl_pow(2, 6);
+        //@ assert 1 <= \dl_pow(2, this.log_buckets) <= \dl_pow(2, Constants.LOG_MAX_BUCKETS);
         //@ assert (1 << this.log_buckets) == \dl_pow(2, this.log_buckets);
         int num_buckets = 1 << this.log_buckets;
         //@ assert this.num_buckets == num_buckets;
